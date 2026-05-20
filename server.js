@@ -45,7 +45,7 @@ db.connect(err => {
     // Crear tablas necesarias
     crearTablaTokens();
     crearTablaRecuperacionTokens();
-    agregarColumnasIntentos(); // NUEVA FUNCIÓN
+    agregarColumnasIntentos();
 });
 
 // ================= CONFIGURACIÓN DE GMAIL =================
@@ -104,7 +104,6 @@ function crearTablaRecuperacionTokens() {
     });
 }
 
-// NUEVA FUNCIÓN: Agregar columnas de intentos fallidos si no existen
 function agregarColumnasIntentos() {
     db.query(`SHOW COLUMNS FROM trabajadores LIKE 'intentos_fallidos'`, (err, results) => {
         if (err) {
@@ -140,7 +139,6 @@ function agregarColumnasIntentos() {
 app.post('/api/trabajadores/login', async (req, res) => {
     const { nombre_usuario, password } = req.body;
     
-    // Buscar por nombre_usuario, email o NombreCompleto
     const sql = `SELECT * FROM trabajadores WHERE (nombre_usuario = ? OR email = ? OR NombreCompleto = ?) AND Activo = 1`;
     
     db.query(sql, [nombre_usuario, nombre_usuario, nombre_usuario], async (err, results) => {
@@ -151,18 +149,16 @@ app.post('/api/trabajadores/login', async (req, res) => {
         
         const trabajador = results[0];
         
-        // ========== VERIFICAR BLOQUEO TEMPORAL ==========
         if (trabajador.bloqueado_hasta && new Date(trabajador.bloqueado_hasta) > new Date()) {
             const minutosRestantes = Math.ceil((new Date(trabajador.bloqueado_hasta) - new Date()) / 60000);
             return res.status(401).json({ 
                 success: false, 
-                message: `⚠️ Demasiados intentos fallidos. Cuenta bloqueada por ${minutosRestantes} minutos.` 
+                message: `Demasiados intentos fallidos. Cuenta bloqueada por ${minutosRestantes} minutos.` 
             });
         }
         
         let passwordValida = false;
         
-        // MÉTODO 1: Verificar con MD5
         const md5pass = crypto.createHash('md5').update(password).digest('hex');
         
         if (trabajador.password_hash === md5pass) {
@@ -170,7 +166,6 @@ app.post('/api/trabajadores/login', async (req, res) => {
             console.log(`✅ Login MD5 exitoso para: ${trabajador.NombreCompleto}`);
         }
         
-        // MÉTODO 2: Verificar con bcrypt
         if (!passwordValida && trabajador.password_hash && trabajador.password_hash.startsWith('$2b$')) {
             try {
                 passwordValida = await bcrypt.compare(password, trabajador.password_hash);
@@ -180,19 +175,15 @@ app.post('/api/trabajadores/login', async (req, res) => {
             }
         }
         
-        // MÉTODO 3: Contraseña temporal '1234'
         if (!passwordValida && password === '1234') {
             passwordValida = true;
             console.log(`⚠️ Login con contraseña temporal 1234 para: ${trabajador.NombreCompleto}`);
         }
         
-        // ========== SI LA CONTRASEÑA ES CORRECTA ==========
         if (passwordValida) {
-            // Reiniciar intentos fallidos
             db.query(`UPDATE trabajadores SET intentos_fallidos = 0, bloqueado_hasta = NULL WHERE Id_Trabajador = ?`, 
                 [trabajador.Id_Trabajador]);
             
-            // Generar token JWT
             const token = jwt.sign(
                 { id: trabajador.Id_Trabajador, nombre: trabajador.NombreCompleto, rol: 'trabajador' },
                 SECRET_KEY,
@@ -212,11 +203,9 @@ app.post('/api/trabajadores/login', async (req, res) => {
             });
         }
         
-        // ========== CONTRASEÑA INCORRECTA: AUMENTAR INTENTOS ==========
         const nuevosIntentos = (trabajador.intentos_fallidos || 0) + 1;
         
         if (nuevosIntentos >= 5) {
-            // Bloquear por 15 minutos después de 5 intentos fallidos
             const bloqueadoHasta = new Date();
             bloqueadoHasta.setMinutes(bloqueadoHasta.getMinutes() + 15);
             
@@ -225,7 +214,7 @@ app.post('/api/trabajadores/login', async (req, res) => {
                 
             return res.status(401).json({ 
                 success: false, 
-                message: "❌ Demasiados intentos fallidos. Cuenta bloqueada por 15 minutos." 
+                message: "Demasiados intentos fallidos. Cuenta bloqueada por 15 minutos." 
             });
         } else {
             db.query(`UPDATE trabajadores SET intentos_fallidos = ? WHERE Id_Trabajador = ?`, 
@@ -234,13 +223,12 @@ app.post('/api/trabajadores/login', async (req, res) => {
             const intentosRestantes = 5 - nuevosIntentos;
             return res.status(401).json({ 
                 success: false, 
-                message: `❌ Contraseña incorrecta. Le quedan ${intentosRestantes} intento${intentosRestantes !== 1 ? 's' : ''}.` 
+                message: `Contraseña incorrecta. Le quedan ${intentosRestantes} intento${intentosRestantes !== 1 ? 's' : ''}.` 
             });
         }
     });
 });
 
-// Endpoint para verificar estado de cuenta (intentos restantes)
 app.get('/api/trabajadores/estado-cuenta/:id', (req, res) => {
     const { id } = req.params;
     
@@ -294,14 +282,12 @@ app.post('/api/trabajadores', async (req, res) => {
         return res.status(400).json({ error: 'El correo electrónico es requerido' });
     }
     
-    // Verificar email único
     db.query(`SELECT * FROM trabajadores WHERE email = ?`, [email], async (err, results) => {
         if (err) return res.status(500).json({ error: err.sqlMessage });
         if (results.length > 0) {
             return res.status(400).json({ error: 'Ya existe un trabajador con ese correo electrónico' });
         }
         
-        // Generar nombre de usuario único
         let nombreUsuario = NombreCompleto.toLowerCase().replace(/[^a-z0-9]/g, '.').replace(/\.+/g, '.').replace(/^\.|\.$/g, '');
         
         const verificarUsuario = (usuario, callback) => {
@@ -318,7 +304,6 @@ app.post('/api/trabajadores', async (req, res) => {
         verificarUsuario(nombreUsuario, async (err, usuarioFinal) => {
             if (err) return res.status(500).json({ error: err.sqlMessage });
             
-            // Usar MD5 para la contraseña temporal
             const md5pass = crypto.createHash('md5').update('1234').digest('hex');
             
             const sql = `INSERT INTO trabajadores (NombreCompleto, Celular, Salario, Activo, email, nombre_usuario, password_hash, debe_cambiar_password) 
@@ -579,7 +564,7 @@ app.post('/api/admin/recuperar-email', (req, res) => {
             subject: 'Recuperación de Contraseña - Tienda Chepita',
             html: `
                 <div style="font-family: Arial, sans-serif; border: 2px solid #A63C89; padding: 20px; border-radius: 10px;">
-                    <h2 style="color: #A63C89;">🔐 Recuperación de Contraseña</h2>
+                    <h2 style="color: #A63C89;">Recuperación de Contraseña</h2>
                     <p>Hola <strong>${usuario}</strong>,</p>
                     <p>Hemos recibido una solicitud para restablecer tu contraseña. Para crear una nueva, haz clic en el siguiente botón:</p>
                     <div style="text-align: center; margin: 25px 0;">
@@ -599,6 +584,20 @@ app.post('/api/admin/recuperar-email', (req, res) => {
             }
             res.json({ success: true, message: "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña." });
         });
+    });
+});
+
+// ========== ENDPOINT PARA VERIFICAR TOKEN DE ADMIN ==========
+app.get('/api/admin/verificar-token-recuperacion/:token', (req, res) => {
+    const { token } = req.params;
+    
+    const tokenData = resetTokens[token];
+    if (!tokenData || Date.now() > tokenData.expiresAt) {
+        return res.status(400).json({ valido: false, message: 'El enlace ha expirado o ya fue usado' });
+    }
+    
+    res.json({
+        valido: true
     });
 });
 
@@ -1312,10 +1311,10 @@ app.post('/api/trabajadores/recuperar-password', (req, res) => {
             const mailOptions = {
                 from: 'Tienda Chepita <isabelchepita678@gmail.com>',
                 to: trabajador.email,
-                subject: '🔐 Recuperación de Contraseña - Tienda Chepita',
+                subject: 'Recuperación de Contraseña - Tienda Chepita',
                 html: `
                     <div style="font-family: Arial, sans-serif; border: 2px solid #A63C89; padding: 20px; border-radius: 10px;">
-                        <h2 style="color: #A63C89;">🔐 Recuperación de Contraseña</h2>
+                        <h2 style="color: #A63C89;">Recuperación de Contraseña</h2>
                         <p>Hola <strong>${trabajador.NombreCompleto}</strong>,</p>
                         <p>Hemos recibido una solicitud para restablecer tu contraseña.</p>
                         <p>Para crear una nueva contraseña, haz clic en el siguiente botón:</p>
