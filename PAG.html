@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda Chepita - Acceso</title>
+    <!-- METAS ANTI-CACHÉ -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="PAG.css">
+    <style>
+        .modal-mensaje {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(202,160,216,0.25);
+            backdrop-filter: blur(6px);
+        }
+
+        .modal-contenido {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            animation: fadeInModal 0.3s ease-out;
+            border-radius: 25px;
+            box-shadow: 0 20px 40px rgba(202,160,216,0.2);
+        }
+
+        @keyframes fadeInModal {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-contenido h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: #b57acb;
+        }
+
+        .modal-contenido input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #f3d1e6;
+            border-radius: 14px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .modal-contenido input:focus {
+            border-color: #caa0d8;
+            box-shadow: 0 0 0 3px rgba(202,160,216,0.2);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .modal-btn {
+            background: linear-gradient(135deg, #e7b6d4, #caa0d8);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .modal-btn:hover {
+            background: linear-gradient(135deg, #d9468f, #caa0d8);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(202,160,216,0.4);
+        }
+
+        .modal-btn.cancelar {
+            background: #f3e8ff;
+            color: #b57acb;
+        }
+
+        .modal-btn.cancelar:hover {
+            background: #e9d5ff;
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .forgot-password a {
+            color: #4f46e5;
+            font-size: 13px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-bar">
+        <div class="brands-container">
+            <div class="brands-track">
+            <img src="imagenes/marcas/logo1.png">
+            <img src="imagenes/marcas/logo2.png">
+            <img src="imagenes/marcas/logo3.png">
+            <img src="imagenes/marcas/logo4.png">
+            <img src="imagenes/marcas/logo5.png">
+            <img src="imagenes/marcas/logo6.png">
+            <img src="imagenes/marcas/logo1.png">
+            <img src="imagenes/marcas/logo2.png">
+            <img src="imagenes/marcas/logo3.png">
+            <img src="imagenes/marcas/logo4.png">
+            <img src="imagenes/marcas/logo5.png">
+            <img src="imagenes/marcas/logo6.png">
+            </div>
+        </div>
+        <div class="clock-box">
+            <span id="fecha"></span>
+            <span id="hora"></span>
+        </div>
+    </header>
+
+<div class="main-layout">
+    <div class="left-side">
+        <img src="imagenes/Izquierda.png" class="logo-grande">
+    </div>
+    <div class="right-side">
+        <div class="container">
+            <div id="stepProfile" class="step active">
+                <div class="login-selection vertical">
+                    <button class="btn-login caja" onclick="selectProfile('caja')">
+                        <i class="fa-solid fa-cash-register"></i>
+                        <strong>CAJA</strong>
+                    </button>
+                    <button class="btn-login admin" onclick="selectProfile('admin')">
+                        <i class="fa-solid fa-user-shield"></i>
+                        <strong>ADMINISTRADOR</strong>
+                    </button>
+                </div>
+            </div>
+
+            <div id="stepLoginAdmin" class="step">
+                <button class="back-btn" onclick="goBackToProfile()">← Volver</button>
+                <div class="login-header">
+                    <div class="login-icon"></div>
+                    <h3>Acceso Administrador</h3>
+                </div>
+                <form id="loginAdminForm" onsubmit="return validateAdminLogin(event)">
+                    <div class="input-group">
+                        <label>USUARIO</label>
+                        <div class="input-icon">
+                            <input type="text" id="adminUser" placeholder="Ingrese su usuario">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>CONTRASEÑA</label>
+                        <div class="input-icon">
+                            <input type="password" id="adminPass" placeholder="Ingrese su contraseña">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit">Ingresar</button>
+                    <div id="adminError" class="error-message"></div>
+                </form>
+                <div class="forgot-password">
+                    <a onclick="mostrarModalRecuperar()">¿Olvidaste tu contraseña?</a>
+                </div>
+            </div>
+
+            <div id="stepLoginCaja" class="step">
+                <button class="back-btn" onclick="goBackToProfile()">← Volver</button>
+                <div class="login-header">
+                    <div class="login-icon">💵</div>
+                    <h3>Acceso Caja</h3>
+                    <p class="subtitle-login">Seleccione su nombre de la lista</p>
+                </div>
+                <form id="loginCajaForm" onsubmit="return validateCajaLogin(event)">
+                    <div class="input-group">
+                        <label>SELECCIONE SU NOMBRE</label>
+                        <div class="input-icon">
+                            <select id="cajaTrabajador" class="select-trabajador">
+                                <option value="">Cargando trabajadores...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>CÓDIGO DE SEGURIDAD</label>
+                        <div class="input-icon">
+                            <input type="password" id="cajaCodigo" placeholder="Ingrese su código de seguridad">
+                        </div>
+                        <small class="input-help">Su código es su número de celular registrado</small>
+                    </div>
+                    <button type="submit" class="btn-submit">Iniciar Jornada</button>
+                    <div id="cajaError" class="error-message"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalRecuperar" class="modal-mensaje">
+        <div class="modal-contenido">
+            <h3>Recuperar Contraseña</h3>
+            <div id="paso1Recuperacion">
+                <p>Seleccione el método de recuperación:</p>
+                <div class="modal-buttons" style="flex-direction: column; gap: 10px;">
+                    <button class="modal-btn" onclick="mostrarRecuperarPregunta()">Responder pregunta de seguridad</button>
+                    <button class="modal-btn" onclick="mostrarRecuperarEmail()">Recibir por correo electrónico</button>
+                    <button class="modal-btn cancelar" onclick="cerrarModalRecuperar()">Cancelar</button>
+                </div>
+            </div>
+            <div id="pasoPregunta" style="display:none;">
+                <div class="input-group">
+                    <label>USUARIO</label>
+                    <input type="text" id="recuperarUsuario" placeholder="Ingrese su usuario">
+                </div>
+                <div class="input-group">
+                    <label>RESPUESTA DE SEGURIDAD</label>
+                    <input type="text" id="recuperarRespuesta" placeholder="¿Cuál es el nombre de tu primera mascota?">
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn" onclick="recuperarPorPregunta()">Verificar</button>
+                    <button class="modal-btn cancelar" onclick="volverPaso1()">Volver</button>
+                </div>
+            </div>
+            <div id="pasoEmail" style="display:none;">
+                <div class="input-group">
+                    <label>CORREO ELECTRÓNICO</label>
+                    <input type="email" id="recuperarEmail" placeholder="Ingrese su correo registrado">
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn" onclick="recuperarPorEmail()">Enviar</button>
+                    <button class="modal-btn cancelar" onclick="volverPaso1()">Volver</button>
+                </div>
+            </div>
+            <div id="resultadoRecuperacion" style="display:none;">
+                <p id="resultadoTexto"></p>
+                <div class="modal-buttons">
+                    <button class="modal-btn" onclick="cerrarModalRecuperar()">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedProfile = null;
+
+        // LIMPIAR CUALQUIER SESIÓN RESIDUAL AL CARGAR LOGIN
+        (function limpiarSesionAnterior() {
+            sessionStorage.clear();
+        })();
+
+        function selectProfile(profile) {
+            selectedProfile = profile;
+            document.getElementById('stepProfile').classList.remove('active');
+            
+            if (profile === 'admin') {
+                document.getElementById('stepLoginAdmin').classList.add('active');
+                document.getElementById('adminUser').focus();
+            } else {
+                document.getElementById('stepLoginCaja').classList.add('active');
+                cargarTrabajadores();
+            }
+            
+            document.getElementById('adminError').style.display = 'none';
+            document.getElementById('cajaError').style.display = 'none';
+        }
+
+        function goBackToProfile() {
+            selectedProfile = null;
+            document.getElementById('stepLoginAdmin').classList.remove('active');
+            document.getElementById('stepLoginCaja').classList.remove('active');
+            document.getElementById('stepProfile').classList.add('active');
+            document.getElementById('adminUser').value = '';
+            document.getElementById('adminPass').value = '';
+            document.getElementById('cajaTrabajador').value = '';
+            document.getElementById('cajaCodigo').value = '';
+        }
+
+        async function validateAdminLogin(event) {
+            event.preventDefault();
+            
+            const usuario = document.getElementById('adminUser').value.trim();
+            const password = document.getElementById('adminPass').value;
+            const errorDiv = document.getElementById('adminError');
+            
+            if (!usuario || !password) {
+                errorDiv.textContent = 'Por favor, complete todos los campos';
+                errorDiv.style.display = 'block';
+                setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
+                return false;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ usuario, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    sessionStorage.clear();
+                    sessionStorage.setItem('esAdmin', 'true');
+                    sessionStorage.setItem('tipoUsuario', 'admin');
+                    sessionStorage.setItem('adminUser', data.user);
+                    sessionStorage.setItem('sesionIniciada', 'true');
+                    sessionStorage.setItem('fechaLogin', new Date().toISOString());
+                    
+                    console.log('✅ Admin login exitoso:', data.user);
+                    // USAR replace() EN VEZ DE href - ESTO EVITA EL BOTÓN ATRÁS
+                    window.location.replace("menu_admin.html");
+                    return true;
+                } else {
+                    errorDiv.textContent = data.message || 'Usuario o contraseña incorrectos';
+                    errorDiv.style.display = 'block';
+                    document.getElementById('adminPass').value = '';
+                    document.getElementById('adminPass').focus();
+                    setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error en login:', error);
+                errorDiv.textContent = 'Error de conexión con el servidor';
+                errorDiv.style.display = 'block';
+                setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
+                return false;
+            }
+        }
+
+        async function cargarTrabajadores() {
+            try {
+                const response = await fetch('/api/trabajadores/activos');
+                
+                if (!response.ok) {
+                    throw new Error('Error al cargar trabajadores');
+                }
+                
+                const trabajadores = await response.json();
+                const select = document.getElementById('cajaTrabajador');
+                
+                if (trabajadores.length === 0) {
+                    select.innerHTML = '<option value="">No hay trabajadores registrados</option>';
+                } else {
+                    select.innerHTML = '<option value="">Seleccione su nombre</option>';
+                    trabajadores.forEach(trabajador => {
+                        select.innerHTML += `<option value="${trabajador.Id_Trabajador}" data-celular="${trabajador.Celular}" data-nombre="${trabajador.NombreCompleto}">${trabajador.NombreCompleto}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error("Error cargando trabajadores:", error);
+                const select = document.getElementById('cajaTrabajador');
+                select.innerHTML = '<option value="">Error al cargar trabajadores</option>';
+            }
+        }
+
+        async function validateCajaLogin(event) {
+            event.preventDefault();
+            
+            const select = document.getElementById('cajaTrabajador');
+            const idTrabajador = select.value;
+            const codigoIngresado = document.getElementById('cajaCodigo').value.trim();
+            const errorDiv = document.getElementById('cajaError');
+            
+            if (!idTrabajador) {
+                errorDiv.textContent = 'Por favor, seleccione su nombre de la lista';
+                errorDiv.style.display = 'block';
+                setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
+                return false;
+            }
+            
+            const opcionSeleccionada = select.options[select.selectedIndex];
+            const celularRegistrado = opcionSeleccionada.getAttribute('data-celular');
+            const nombreTrabajador = opcionSeleccionada.getAttribute('data-nombre');
+            
+            if (String(codigoIngresado).trim() === String(celularRegistrado).trim()) {
+                sessionStorage.clear();
+                
+                sessionStorage.setItem('cajeroActual', nombreTrabajador);
+                sessionStorage.setItem('cajeroId', idTrabajador);
+                sessionStorage.setItem('fechaInicioJornada', new Date().toISOString());
+                sessionStorage.setItem('tipoUsuario', 'caja');
+                sessionStorage.setItem('sesionIniciada', 'true');
+                
+                console.log('✅ Login exitoso:', nombreTrabajador);
+                
+                window.location.replace("menu_caja.html");
+                return true;
+            } else {
+                errorDiv.textContent = `Código incorrecto. El código para ${nombreTrabajador} es: ${celularRegistrado}`;
+                errorDiv.style.display = 'block';
+                document.getElementById('cajaCodigo').value = '';
+                document.getElementById('cajaCodigo').focus();
+                setTimeout(() => { errorDiv.style.display = 'none'; }, 4000);
+                return false;
+            }
+        }
+
+        function mostrarModalRecuperar() {
+            document.getElementById('paso1Recuperacion').style.display = 'block';
+            document.getElementById('pasoPregunta').style.display = 'none';
+            document.getElementById('pasoEmail').style.display = 'none';
+            document.getElementById('resultadoRecuperacion').style.display = 'none';
+            document.getElementById('modalRecuperar').style.display = 'flex';
+        }
+        
+        function cerrarModalRecuperar() {
+            document.getElementById('modalRecuperar').style.display = 'none';
+        }
+        
+        function volverPaso1() {
+            document.getElementById('pasoPregunta').style.display = 'none';
+            document.getElementById('pasoEmail').style.display = 'none';
+            document.getElementById('resultadoRecuperacion').style.display = 'none';
+            document.getElementById('paso1Recuperacion').style.display = 'block';
+        }
+        
+        function mostrarRecuperarPregunta() {
+            document.getElementById('paso1Recuperacion').style.display = 'none';
+            document.getElementById('pasoPregunta').style.display = 'block';
+            document.getElementById('recuperarUsuario').value = '';
+            document.getElementById('recuperarRespuesta').value = '';
+        }
+        
+        function mostrarRecuperarEmail() {
+            document.getElementById('paso1Recuperacion').style.display = 'none';
+            document.getElementById('pasoEmail').style.display = 'block';
+            document.getElementById('recuperarEmail').value = '';
+        }
+        
+        async function recuperarPorPregunta() {
+            const usuario = document.getElementById('recuperarUsuario').value.trim();
+            const respuesta = document.getElementById('recuperarRespuesta').value.trim();
+            const resultadoDiv = document.getElementById('resultadoRecuperacion');
+            const resultadoTexto = document.getElementById('resultadoTexto');
+            
+            if (!usuario || !respuesta) {
+                resultadoTexto.innerHTML = '❌ Por favor, complete todos los campos.';
+                resultadoDiv.style.display = 'block';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/recuperar-pregunta', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario, respuesta })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultadoTexto.innerHTML = `✅ Su contraseña es: <strong>${data.password}</strong><br><br>Guárdela en un lugar seguro.`;
+                    resultadoDiv.style.display = 'block';
+                    document.getElementById('pasoPregunta').style.display = 'none';
+                } else {
+                    resultadoTexto.innerHTML = '❌ ' + (data.message || 'Respuesta incorrecta');
+                    resultadoDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultadoTexto.innerHTML = '❌ Error de conexión con el servidor';
+                resultadoDiv.style.display = 'block';
+            }
+        }
+        
+        async function recuperarPorEmail() {
+            const email = document.getElementById('recuperarEmail').value.trim();
+            const resultadoDiv = document.getElementById('resultadoRecuperacion');
+            const resultadoTexto = document.getElementById('resultadoTexto');
+            
+            if (!email) {
+                resultadoTexto.innerHTML = '❌ Por favor, ingrese su correo electrónico.';
+                resultadoDiv.style.display = 'block';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/recuperar-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultadoTexto.innerHTML = `✅ ${data.message}<br><br>Revise su bandeja de entrada o correo no deseado.`;
+                    resultadoDiv.style.display = 'block';
+                    document.getElementById('pasoEmail').style.display = 'none';
+                } else {
+                    resultadoTexto.innerHTML = '❌ ' + (data.message || 'Correo no registrado');
+                    resultadoDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultadoTexto.innerHTML = '❌ Error de conexión con el servidor';
+                resultadoDiv.style.display = 'block';
+            }
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalRecuperar');
+            if (event.target === modal) {
+                cerrarModalRecuperar();
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Enabled",
+                "ssl": {
+                    "ca": "C:\\Users\\laptop\\Desktop\\trabajo\\cam.pem"
+                }
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "gateway01.us-west-2.prod.aws.tidbcloud.com",
+            "port": 4000,
+            "driver": "TiDB",
+            "name": "chepita",
+            "group": "cloud",
+            "database": "sys",
+            "username": "2UZiGCoGSM8ehZk.root"
+        }
+    ]
+}

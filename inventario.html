@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario - Variedades Chepita</title>
+    <link rel="stylesheet" href="inventario.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos para autocompletado NO invasivo */
+        .autocomplete-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        .autocomplete-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.25s ease;
+            background: white;
+            color: #1e293b;
+        }
+        .autocomplete-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .autocomplete-suggestion-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        .autocomplete-suggestion-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: #1e293b;
+        }
+        .autocomplete-suggestion-item:hover {
+            background: #f1f5f9;
+        }
+        .autocomplete-suggestion-item:last-child {
+            border-bottom: none;
+        }
+        .suggestion-highlight {
+            background-color: #fef3c7;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="top-nav">
+        <h2></h2>
+        <button class="btn-volver-top" onclick="window.location.href='menu_admin.html'">Volver al menu</button>
+    </div>
+
+    <div id="errorBox" class="error-message"></div>
+
+    <div class="filtros">
+        <input type="text" id="searchInput" placeholder="Buscar producto..." onkeyup="filtrarTabla()">
+        <div class="filtro-categoria-wrapper">
+            <select id="categoriaFilter" onchange="filtrarTabla()">
+                <option value="">Todas las categorias</option>
+            </select>
+            <button class="btn-categoria-editar" onclick="abrirModalGestionCategorias()" title="Gestionar categorias">
+                <i class="fas fa-edit"></i>
+            </button>
+        </div>
+        <select id="estadoFilter" onchange="filtrarTabla()">
+            <option value="">Todos los estados</option>
+            <option value="Disponible">Disponible</option>
+            <option value="Agotado">Agotado</option>
+            <option value="Descontinuado">Descontinuado</option>
+        </select>
+    </div>
+
+    <div class="admin-actions-bar">
+        <div class="btn-group">
+            <button class="btn-admin btn-add" onclick="abrirModalAgregar()">
+                <i class="fas fa-plus"></i> Agregar Producto
+            </button>
+            <button id="btnModoEditar" class="btn-admin btn-edit-mode" onclick="toggleModo('editar')">
+                <i class="fas fa-edit"></i> Editar Producto
+            </button>
+            <button id="btnModoEliminar" class="btn-admin btn-delete-mode" onclick="toggleModo('eliminar')">
+                <i class="fas fa-trash"></i> Eliminar Producto
+            </button>
+        </div>
+        <div class="btn-group">
+            <button class="btn-admin btn-consumo" onclick="abrirModalConsumo()">
+                <i class="fas fa-apple-alt"></i> Consumo Interno
+            </button>
+            <button class="btn-admin btn-perdida" onclick="abrirModalPerdida()">
+                <i class="fas fa-exclamation-triangle"></i> Perdida
+            </button>
+            <button class="btn-admin btn-informe" onclick="generarInforme()">
+                <i class="fas fa-file-alt"></i> Informe
+            </button>
+        </div>
+        <span id="indicadorModo" class="modo-info"></span>
+    </div>
+
+    <div class="table-container">
+        <table id="tablaInventario">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Marca</th>
+                    <th>Categoria</th>
+                    <th>Precio Venta</th>
+                    <th>Stock</th>
+                    <th>Proveedor</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody id="cuerpoTabla">
+                <tr><td colspan="7" class="loading">Cargando inventario...<\/td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Agregar Producto -->
+<div class="custom-modal-overlay" id="addModal">
+    <div class="custom-modal">
+        <h3>Agregar Nuevo Producto</h3>
+        <div class="form-edit">
+            <div class="form-group">
+                <label>Nombre del Producto:</label>
+                <input type="text" id="addNombre" maxlength="50">
+                <div id="addNombreError" class="error-msg"></div>
+            </div>
+            <div class="form-group">
+                <label>Stock Inicial (1-9999):</label>
+                <input type="number" id="addStock" min="1" max="9999" value="1">
+                <div id="addStockError" class="error-msg"></div>
+            </div>
+            <div class="form-group">
+                <label>Precio Venta (C$ 1-10000):</label>
+                <input type="number" id="addPrecio" min="1" max="10000" step="0.01">
+                <div id="addPrecioError" class="error-msg"></div>
+            </div>
+            <div class="form-group">
+                <label>Marca:</label>
+                <input type="text" id="addMarca" maxlength="50">
+            </div>
+            <div class="form-group">
+                <label>Proveedor:</label>
+                <div class="proveedor-search-container">
+                    <input type="text" id="addProveedorSearch" class="proveedor-search-input" placeholder="Buscar proveedor..." autocomplete="off">
+                    <div id="proveedorDropdown" class="proveedor-dropdown"></div>
+                </div>
+                <input type="hidden" id="addProveedorId">
+                <div id="addProveedorError" class="error-msg"></div>
+            </div>
+            <div class="form-group">
+                <label>Categoria:</label>
+                <select id="addCategoria"></select>
+            </div>
+        </div>
+        <div class="custom-modal-buttons">
+            <button class="custom-modal-btn confirm" onclick="guardarNuevoProducto()">Guardar Producto</button>
+            <button class="custom-modal-btn cancel" onclick="cerrarModal('addModal')">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Producto -->
+<div class="custom-modal-overlay" id="editModal">
+    <div class="custom-modal">
+        <h3>Editar Producto</h3>
+        <div class="form-edit">
+            <input type="hidden" id="editId">
+            <div class="form-group">
+                <label>Nombre del Producto:</label>
+                <input type="text" id="editNombre" maxlength="50">
+                <div id="editNombreError" class="error-msg"></div>
+            </div>
+            <div class="form-group">
+                <label>Precio de Venta (C$ 1-10000):</label>
+                <input type="number" id="editPrecio" min="1" max="10000" step="0.01">
+                <div id="editPrecioError" class="error-msg"></div>
+            </div>
+            <div class="form-group">
+                <label>Marca:</label>
+                <input type="text" id="editMarca" maxlength="50">
+            </div>
+            <div class="form-group">
+                <label>Stock Actual (1-9999):</label>
+                <input type="number" id="editStockTotal" min="1" max="9999">
+                <div id="editStockError" class="error-msg"></div>
+            </div>
+            <div class="form-group">
+                <label>Estado:</label>
+                <select id="editEstado">
+                    <option value="1">Disponible</option>
+                    <option value="2">Descontinuado</option>
+                    <option value="3">Agotado</option>
+                </select>
+            </div>
+        </div>
+        <div class="custom-modal-buttons">
+            <button class="custom-modal-btn confirm" onclick="guardarEdicion()">Guardar Cambios</button>
+            <button class="custom-modal-btn cancel" onclick="cerrarModal('editModal')">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Gestion Categorias -->
+<div class="custom-modal-overlay" id="gestionCategoriasModal">
+    <div class="custom-modal modal-ancha">
+        <h3>Gestionar Categorias</h3>
+        <div class="form-edit">
+            <div class="form-group">
+                <label>Nueva Categoria:</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="nuevaCategoria" placeholder="Nombre de la categoria" style="flex: 1;">
+                    <button class="btn-small" onclick="crearNuevaCategoria()">Agregar</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Categorias existentes:</label>
+                <div id="listaCategorias" class="lista-categorias">
+                    <div class="loading">Cargando...</div>
+                </div>
+            </div>
+        </div>
+        <div class="custom-modal-buttons">
+            <button class="custom-modal-btn cancel" onclick="cerrarModal('gestionCategoriasModal')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Consumo Interno -->
+<div class="custom-modal-overlay" id="consumoModal">
+    <div class="custom-modal" style="width: 520px; max-width: 95%;">
+        <h3 style="text-align: center; margin-bottom: 20px;">Consumo Interno</h3>
+        
+        <div class="consumo-switch-container">
+            <span class="consumo-switch-label">Modo Historial</span>
+            <div class="consumo-switch">
+                <span class="switch-option switch-agregar">Agregar</span>
+                <label class="switch">
+                    <input type="checkbox" id="modoConsumoCheckbox" onchange="toggleModoConsumo()">
+                    <span class="slider round"></span>
+                </label>
+                <span class="switch-option switch-tabla">Ver Tabla</span>
+            </div>
+        </div>
+        
+        <div id="modoAgregarConsumo" class="modo-agregar-consumo">
+            <div class="consumo-form-group">
+                <label>Producto <span style="color: #dc3545;">*</span></label>
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="consumoProductoSearch" class="autocomplete-input" placeholder="Escriba el nombre del producto..." autocomplete="off">
+                    <div id="consumoSuggestionBox" class="autocomplete-suggestion-box"></div>
+                </div>
+                <input type="hidden" id="consumoProductoId">
+                <div id="consumoProductoError" class="error-msg"></div>
+            </div>
+
+            <div class="consumo-form-group">
+                <label>Precio de venta (C$)</label>
+                <input type="text" id="consumoPrecio" class="consumo-precio-readonly" readonly>
+                <div id="consumoPrecioError" class="error-msg"></div>
+            </div>
+
+            <div class="consumo-form-group">
+                <label>Cantidad <span style="color: #dc3545;">*</span></label>
+                <input type="number" id="consumoCantidad" min="1" value="1">
+                <div id="consumoCantidadError" class="error-msg"></div>
+            </div>
+
+            <div class="consumo-form-group">
+                <label>Fecha</label>
+                <input type="text" id="consumoFecha" class="consumo-fecha-readonly" readonly>
+                <div id="consumoFechaError" class="error-msg"></div>
+            </div>
+
+            <div class="custom-modal-buttons" style="margin-top: 20px; justify-content: space-between;">
+                <button class="custom-modal-btn confirm" onclick="guardarConsumo()" style="flex: 1; margin-right: 10px;">Registrar Consumo</button>
+                <button class="custom-modal-btn cancel" onclick="cerrarModal('consumoModal')" style="flex: 1;">Cerrar</button>
+            </div>
+        </div>
+        
+        <div id="modoVerHistorial" class="modo-ver-historial">
+            <div class="consumo-lista-container" style="margin-top: 0;">
+                <div id="listaConsumosModal" class="lista-categorias" style="max-height: 350px; overflow-y: auto;">
+                    <div class="loading">Cargando consumos...</div>
+                </div>
+            </div>
+            <div class="custom-modal-buttons" style="margin-top: 15px;">
+                <button class="custom-modal-btn cancel" onclick="cerrarModal('consumoModal')">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Consumo -->
+<div class="custom-modal-overlay" id="editarConsumoModal">
+    <div class="custom-modal" style="width: 400px; max-width: 95%;">
+        <h3 style="text-align: center; margin-bottom: 20px;">Editar Consumo</h3>
+        <div class="consumo-form-group">
+            <label>Producto</label>
+            <input type="text" id="editarConsumoProducto" class="consumo-fecha-readonly" readonly style="background: #f0f0f0;">
+        </div>
+        <div class="consumo-form-group">
+            <label>Cantidad <span style="color: #dc3545;">*</span></label>
+            <input type="number" id="editarConsumoCantidad" min="1" value="1">
+            <div id="editarConsumoError" class="error-msg"></div>
+        </div>
+        <div class="custom-modal-buttons" style="margin-top: 20px; justify-content: space-between;">
+            <button class="custom-modal-btn confirm" onclick="guardarEdicionConsumo()" style="flex: 1; margin-right: 10px;">Guardar Cambios</button>
+            <button class="custom-modal-btn cancel" onclick="cerrarModal('editarConsumoModal')" style="flex: 1;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Perdidas -->
+<div class="custom-modal-overlay" id="perdidaModal">
+    <div class="custom-modal" style="width: 450px; max-width: 95%;">
+        <h3 style="text-align: center; margin-bottom: 20px;">Registrar Perdida</h3>
+        
+        <div class="perdida-switch-container">
+            <span class="perdida-switch-label">Modo Historial</span>
+            <div class="perdida-switch">
+                <span class="switch-option switch-agregar-perdida">Agregar</span>
+                <label class="switch">
+                    <input type="checkbox" id="modoPerdidaCheckbox" onchange="toggleModoPerdida()">
+                    <span class="slider round"></span>
+                </label>
+                <span class="switch-option switch-tabla-perdida">Ver Tabla</span>
+            </div>
+        </div>
+        
+        <div id="modoAgregarPerdida" class="modo-agregar-perdida">
+            <div class="perdida-form-group">
+                <label>Producto <span style="color: #dc3545;">*</span></label>
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="perdidaProductoSearch" class="autocomplete-input" placeholder="Escriba el nombre del producto..." autocomplete="off">
+                    <div id="perdidaSuggestionBox" class="autocomplete-suggestion-box"></div>
+                </div>
+                <input type="hidden" id="perdidaProductoId">
+                <div id="perdidaProductoError" class="error-msg"></div>
+            </div>
+
+            <div class="perdida-form-group">
+                <label>Cantidad <span style="color: #dc3545;">*</span></label>
+                <input type="number" id="perdidaCantidad" min="1" value="1">
+                <div id="perdidaCantidadError" class="error-msg"></div>
+            </div>
+
+            <div class="perdida-form-group">
+                <label>Fecha</label>
+                <input type="text" id="perdidaFecha" class="perdida-fecha-readonly" readonly>
+                <div id="perdidaFechaError" class="error-msg"></div>
+            </div>
+
+            <div class="perdida-form-group">
+                <label>Motivo <span style="color: #dc3545;">*</span></label>
+                <input type="text" id="perdidaMotivo" placeholder="Ej. Danado, caducado, rotura, etc.">
+                <div id="perdidaMotivoError" class="error-msg"></div>
+            </div>
+
+            <div class="custom-modal-buttons" style="margin-top: 20px; justify-content: space-between;">
+                <button class="custom-modal-btn confirm" onclick="guardarPerdida()" style="flex: 1; margin-right: 10px;">Registrar Perdida</button>
+                <button class="custom-modal-btn cancel" onclick="cerrarModal('perdidaModal')" style="flex: 1;">Cerrar</button>
+            </div>
+        </div>
+        
+        <div id="modoVerHistorialPerdida" class="modo-ver-historial-perdida">
+            <div class="perdida-lista-container" style="margin-top: 0;">
+                <div id="listaPerdidasModal" class="lista-categorias" style="max-height: 350px; overflow-y: auto;">
+                    <div class="loading">Cargando perdidas...</div>
+                </div>
+            </div>
+            <div class="custom-modal-buttons" style="margin-top: 15px;">
+                <button class="custom-modal-btn cancel" onclick="cerrarModal('perdidaModal')">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Perdida -->
+<div class="custom-modal-overlay" id="editarPerdidaModal">
+    <div class="custom-modal" style="width: 400px; max-width: 95%;">
+        <h3 style="text-align: center; margin-bottom: 20px;">Editar Perdida</h3>
+        <div class="perdida-form-group">
+            <label>Producto</label>
+            <input type="text" id="editarPerdidaProducto" class="perdida-fecha-readonly" readonly style="background: #f0f0f0;">
+        </div>
+        <div class="perdida-form-group">
+            <label>Cantidad <span style="color: #dc3545;">*</span></label>
+            <input type="number" id="editarPerdidaCantidad" min="1">
+            <div id="editarPerdidaError" class="error-msg"></div>
+        </div>
+        <div class="perdida-form-group">
+            <label>Motivo</label>
+            <input type="text" id="editarPerdidaMotivo">
+        </div>
+        <div class="custom-modal-buttons" style="margin-top: 20px; justify-content: space-between;">
+            <button class="custom-modal-btn confirm" onclick="guardarEdicionPerdida()" style="flex: 1; margin-right: 10px;">Guardar Cambios</button>
+            <button class="custom-modal-btn cancel" onclick="cerrarModal('editarPerdidaModal')" style="flex: 1;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmacion -->
+<div class="custom-modal-overlay" id="confirmModal">
+    <div class="custom-modal">
+        <h3 id="confirmTitle">Confirmar accion</h3>
+        <p id="confirmMessage" style="margin: 15px 0; text-align: center;"></p>
+        <div class="custom-modal-buttons">
+            <button class="custom-modal-btn confirm" id="confirmYes">Si, continuar</button>
+            <button class="custom-modal-btn cancel" id="confirmNo">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Mensajes -->
+<div class="custom-modal-overlay" id="mensajeModal">
+    <div class="custom-modal">
+        <h3 id="mensajeTitulo"></h3>
+        <p id="mensajeTexto" style="margin: 15px 0; text-align: center;"></p>
+        <div class="custom-modal-buttons">
+            <button class="custom-modal-btn confirm" onclick="cerrarModal('mensajeModal')">Aceptar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let inventarioData = [];
+    let proveedoresLista = [];
+    let categoriasLista = [];
+    let modoActual = null;
+    
+    let consumosData = [];
+    let productosData = [];
+    let consumoEditandoId = null;
+    
+    let perdidasData = [];
+    let perdidaEditandoId = null;
+
+    function validarNumero(valor, campo, min, max, mensajeError) {
+        const num = parseFloat(valor);
+        if (isNaN(num)) {
+            campo.classList.add('invalid');
+            return { valid: false, error: 'Ingrese un numero valido' };
+        }
+        if (num < min || num > max) {
+            campo.classList.add('invalid');
+            return { valid: false, error: mensajeError || `Valor debe estar entre ${min} y ${max}` };
+        }
+        campo.classList.remove('invalid');
+        return { valid: true, value: num };
+    }
+
+    function validarTexto(valor, campo, mensajeError) {
+        if (valor.trim() === '') {
+            campo.classList.add('invalid');
+            return { valid: false, error: mensajeError || 'Este campo no puede estar vacio' };
+        }
+        campo.classList.remove('invalid');
+        return { valid: true, value: valor };
+    }
+
+    function limpiarErrores() {
+        document.querySelectorAll('.error-msg').forEach(el => el.classList.remove('show'));
+        document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+    }
+
+    function cerrarModal(id) { 
+        document.getElementById(id).style.display = 'none'; 
+        limpiarErrores();
+        document.getElementById('proveedorDropdown')?.classList.remove('show');
+        document.getElementById('consumoSuggestionBox')?.classList.remove('show');
+        document.getElementById('perdidaSuggestionBox')?.classList.remove('show');
+    }
+
+    function mostrarMensaje(titulo, texto, esError = false) {
+        const t = document.getElementById('mensajeTitulo');
+        t.innerText = titulo;
+        t.style.color = esError ? '#dc3545' : '#28a745';
+        document.getElementById('mensajeTexto').innerText = texto;
+        document.getElementById('mensajeModal').style.display = 'flex';
+    }
+
+    function mostrarConfirmacion(mensaje, accionSi) {
+        document.getElementById('confirmMessage').innerText = mensaje;
+        document.getElementById('confirmModal').style.display = 'flex';
+        document.getElementById('confirmYes').onclick = () => {
+            cerrarModal('confirmModal');
+            accionSi();
+        };
+        document.getElementById('confirmNo').onclick = () => cerrarModal('confirmModal');
+    }
+
+    function cargarCategorias() {
+        return fetch('/api/categorias')
+            .then(res => res.json())
+            .then(data => {
+                categoriasLista = data;
+                actualizarSelectCategorias();
+                return data;
+            });
+    }
+
+    function actualizarSelectCategorias() {
+        const filterSelect = document.getElementById('categoriaFilter');
+        const addSelect = document.getElementById('addCategoria');
+        
+        const valorActualFilter = filterSelect.value;
+        const valorActualAdd = addSelect.value;
+        
+        filterSelect.innerHTML = '<option value="">Todas las categorias</option>';
+        addSelect.innerHTML = '';
+        
+        categoriasLista.forEach(c => {
+            const optFilter = new Option(c.Nombre, c.Nombre);
+            filterSelect.add(optFilter);
+            const optAdd = new Option(c.Nombre, c.Id_Categoria);
+            addSelect.add(optAdd);
+        });
+        
+        if (valorActualFilter && categoriasLista.some(c => c.Nombre === valorActualFilter)) {
+            filterSelect.value = valorActualFilter;
+        }
+        if (valorActualAdd && categoriasLista.some(c => c.Id_Categoria == valorActualAdd)) {
+            addSelect.value = valorActualAdd;
+        }
+    }
+
+    function actualizarListaCategoriasModal() {
+        const container = document.getElementById('listaCategorias');
+        if (!container) return;
+        
+        if (categoriasLista.length === 0) {
+            container.innerHTML = '<div class="loading">No hay categorias</div>';
+            return;
+        }
+        
+        container.innerHTML = categoriasLista.map(c => `
+            <div class="categoria-item">
+                <span>${escapeHtml(c.Nombre)}</span>
+                <button class="btn-eliminar-categoria" onclick="eliminarCategoria(${c.Id_Categoria}, '${escapeHtml(c.Nombre)}')">Eliminar</button>
+            </div>
+        `).join('');
+    }
+
+    function abrirModalGestionCategorias() {
+        cargarCategorias().then(() => {
+            actualizarListaCategoriasModal();
+            document.getElementById('gestionCategoriasModal').style.display = 'flex';
+            document.getElementById('nuevaCategoria').value = '';
+        });
+    }
+
+    async function crearNuevaCategoria() {
+        const nombre = document.getElementById('nuevaCategoria').value.trim();
+        if (!nombre) {
+            mostrarMensaje('Error', 'Ingrese un nombre para la categoria', true);
+            return;
+        }
+        if (nombre.includes(' ')) {
+            mostrarMensaje('Error', 'El nombre de la categoria no puede contener espacios', true);
+            return;
+        }
+        
+        try {
+            const res = await fetch('/api/categorias', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ Nombre: nombre })
+            });
+            
+            if (res.ok) {
+                mostrarMensaje('Exito', 'Categoria creada correctamente');
+                await cargarCategorias();
+                actualizarListaCategoriasModal();
+                document.getElementById('nuevaCategoria').value = '';
+                cargarInventario();
+            } else {
+                const error = await res.json();
+                mostrarMensaje('Error', error.error || 'No se pudo crear la categoria', true);
+            }
+        } catch (e) {
+            mostrarMensaje('Error', 'Error al crear categoria', true);
+        }
+    }
+
+    async function eliminarCategoria(idCategoria, nombre) {
+        mostrarConfirmacion(`¿Eliminar la categoria "${nombre}"? Los productos de esta categoria pasaran a "Sin Categoria"`, async () => {
+            try {
+                const res = await fetch(`/api/categorias/${idCategoria}`, { method: 'DELETE' });
+                
+                if (res.ok) {
+                    mostrarMensaje('Exito', 'Categoria eliminada correctamente');
+                    await cargarCategorias();
+                    actualizarListaCategoriasModal();
+                    cargarInventario();
+                } else {
+                    const error = await res.json();
+                    mostrarMensaje('Error', error.error || 'No se pudo eliminar la categoria', true);
+                }
+            } catch (e) {
+                mostrarMensaje('Error', 'Error al eliminar categoria', true);
+            }
+        });
+    }
+
+    async function cargarInventario() {
+        try {
+            const [resProd, resProv] = await Promise.all([
+                fetch('/api/productos'),
+                fetch('/api/proveedores')
+            ]);
+
+            const productos = await resProd.json();
+            proveedoresLista = await resProv.json();
+            
+            await cargarCategorias();
+
+            for (let p of productos) {
+                try {
+                    const resAbast = await fetch(`/api/producto-proveedor/${p.Id_Producto}`);
+                    const abast = await resAbast.json();
+                    p.Proveedor = abast.Nombre_Proveedor || 'Sin asignar';
+                } catch (e) {
+                    p.Proveedor = 'Sin asignar';
+                }
+            }
+
+            inventarioData = productos;
+            mostrarTabla();
+        } catch (error) {
+            mostrarMensaje('Error', 'No se pudieron cargar los datos', true);
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function mostrarTabla() {
+        const tbody = document.getElementById('cuerpoTabla');
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const catF = document.getElementById('categoriaFilter').value;
+        const estF = document.getElementById('estadoFilter').value;
+
+        const filtrados = inventarioData.filter(p => {
+            const matchTxt = p.Nombre.toLowerCase().includes(search) || 
+                           (p.Marca && p.Marca.toLowerCase().includes(search));
+            const matchCat = !catF || p.Nombre_Categoria === catF;
+            const matchEst = !estF || p.Nombre_Estado === estF;
+            return matchTxt && matchCat && matchEst;
+        });
+
+        if (filtrados.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="loading">No hay resultados<\/td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = filtrados.map(p => `
+            <tr onclick="manejarClickFila(${p.Id_Producto})" style="cursor: ${modoActual ? 'pointer' : 'default'}">
+                <td><strong>${escapeHtml(p.Nombre)}</strong></td>
+                <td>${escapeHtml(p.Marca || 'N/A')}</td>
+                <td>${escapeHtml(p.Nombre_Categoria)}</td>
+                <td>C$ ${parseFloat(p.Precio).toFixed(2)}</td>
+                <td class="stock-valor">${p.Stock}</td>
+                <td>${escapeHtml(p.Proveedor)}</td>
+                <td><span class="status-badge status-${p.Nombre_Estado}">${p.Nombre_Estado}</span></td>
+            </tr>
+        `).join('');
+    }
+
+    function toggleModo(modo) {
+        const indicador = document.getElementById('indicadorModo');
+        if (modoActual === modo) {
+            modoActual = null;
+            indicador.innerText = "";
+        } else {
+            modoActual = modo;
+            indicador.innerText = `Modo ${modo.toUpperCase()} activo: Selecciona un producto de la lista.`;
+        }
+        document.getElementById('btnModoEditar').classList.toggle('active', modoActual === 'editar');
+        document.getElementById('btnModoEliminar').classList.toggle('active', modoActual === 'eliminar');
+        mostrarTabla();
+    }
+
+    function initProveedorBuscador() {
+        const searchInput = document.getElementById('addProveedorSearch');
+        const dropdown = document.getElementById('proveedorDropdown');
+        const hiddenId = document.getElementById('addProveedorId');
+
+        function renderProveedores(filter = '') {
+            const filtered = proveedoresLista.filter(p => 
+                p.Nombre.toLowerCase().includes(filter.toLowerCase())
+            );
+            
+            if (filtered.length === 0) {
+                dropdown.innerHTML = '<div class="proveedor-option">No hay proveedores</div>';
+            } else {
+                dropdown.innerHTML = filtered.map(p => `
+                    <div class="proveedor-option" data-id="${p.Id_Proveedor}" data-nombre="${escapeHtml(p.Nombre)}">
+                        ${escapeHtml(p.Nombre)} - ${escapeHtml(p.Empresa || '')}
+                    </div>
+                `).join('');
+            }
+            
+            document.querySelectorAll('.proveedor-option').forEach(opt => {
+                opt.addEventListener('click', () => {
+                    searchInput.value = opt.dataset.nombre;
+                    hiddenId.value = opt.dataset.id;
+                    dropdown.classList.remove('show');
+                    searchInput.classList.remove('invalid');
+                    document.getElementById('addProveedorError')?.classList.remove('show');
+                });
+            });
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            renderProveedores(e.target.value);
+            dropdown.classList.add('show');
+        });
+
+        searchInput.addEventListener('focus', () => {
+            renderProveedores(searchInput.value);
+            dropdown.classList.add('show');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+    }
+
+    function abrirModalAgregar() {
+        limpiarErrores();
+        document.getElementById('addNombre').value = '';
+        document.getElementById('addStock').value = '1';
+        document.getElementById('addPrecio').value = '';
+        document.getElementById('addMarca').value = '';
+        document.getElementById('addProveedorSearch').value = '';
+        document.getElementById('addProveedorId').value = '';
+        document.getElementById('addModal').style.display = 'flex';
+        fetch('/api/proveedores')
+            .then(res => res.json())
+            .then(data => {
+                proveedoresLista = data;
+            });
+    }
+
+    async function guardarNuevoProducto() {
+        limpiarErrores();
+        let isValid = true;
+
+        const nombreInput = document.getElementById('addNombre');
+        const nombreValid = validarTexto(nombreInput.value, nombreInput, 'El nombre no puede estar vacio');
+        if (!nombreValid.valid) {
+            document.getElementById('addNombreError').innerText = nombreValid.error;
+            document.getElementById('addNombreError').classList.add('show');
+            isValid = false;
+        }
+
+        const stockInput = document.getElementById('addStock');
+        const stockValid = validarNumero(stockInput.value, stockInput, 1, 9999, 'Stock debe estar entre 1 y 9999');
+        if (!stockValid.valid) {
+            document.getElementById('addStockError').innerText = stockValid.error;
+            document.getElementById('addStockError').classList.add('show');
+            isValid = false;
+        }
+
+        const precioInput = document.getElementById('addPrecio');
+        const precioValid = validarNumero(precioInput.value, precioInput, 1, 10000, 'Precio debe estar entre C$1 y C$10000');
+        if (!precioValid.valid) {
+            document.getElementById('addPrecioError').innerText = precioValid.error;
+            document.getElementById('addPrecioError').classList.add('show');
+            isValid = false;
+        }
+
+        const proveedorId = document.getElementById('addProveedorId').value;
+        if (!proveedorId) {
+            document.getElementById('addProveedorError').innerText = 'Seleccione un proveedor de la lista';
+            document.getElementById('addProveedorError').classList.add('show');
+            isValid = false;
+        }
+
+        if (!isValid) return;
+
+        const datos = {
+            Nombre: nombreValid.value,
+            Stock: stockValid.value,
+            Precio: precioValid.value,
+            Marca: document.getElementById('addMarca').value,
+            Id_Proveedor: proveedorId,
+            Id_Categoria: document.getElementById('addCategoria').value
+        };
+
+        try {
+            const res = await fetch('/api/productos', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(datos)
+            });
+            if (res.ok) {
+                cerrarModal('addModal');
+                mostrarMensaje('Exito', 'Producto agregado correctamente');
+                cargarInventario();
+            } else {
+                const error = await res.json();
+                mostrarMensaje('Error', error.error || 'No se pudo guardar', true);
+            }
+        } catch (e) { 
+            mostrarMensaje('Error', 'No se pudo guardar', true); 
+        }
+    }
+
+    function manejarClickFila(id) {
+        const producto = inventarioData.find(p => p.Id_Producto === id);
+        if (!producto) return;
+        if (modoActual === 'editar') abrirModalEditar(producto);
+        if (modoActual === 'eliminar') {
+            mostrarConfirmacion(`¿Eliminar definitivamente ${producto.Nombre}?`, () => eliminarProducto(id));
+        }
+    }
+
+    function abrirModalEditar(p) {
+        limpiarErrores();
+        document.getElementById('editId').value = p.Id_Producto;
+        document.getElementById('editNombre').value = p.Nombre;
+        document.getElementById('editPrecio').value = p.Precio;
+        document.getElementById('editMarca').value = p.Marca || '';
+        document.getElementById('editStockTotal').value = p.Stock;
+        const estados = { "Disponible": 1, "Descontinuado": 2, "Agotado": 3 };
+        document.getElementById('editEstado').value = estados[p.Nombre_Estado] || 1;
+        document.getElementById('editModal').style.display = 'flex';
+    }
+
+    async function guardarEdicion() {
+        limpiarErrores();
+        let isValid = true;
+
+        const nombreInput = document.getElementById('editNombre');
+        const nombreValid = validarTexto(nombreInput.value, nombreInput, 'El nombre no puede estar vacio');
+        if (!nombreValid.valid) {
+            document.getElementById('editNombreError').innerText = nombreValid.error;
+            document.getElementById('editNombreError').classList.add('show');
+            isValid = false;
+        }
+
+        const precioInput = document.getElementById('editPrecio');
+        const precioValid = validarNumero(precioInput.value, precioInput, 1, 10000, 'Precio debe estar entre C$1 y C$10000');
+        if (!precioValid.valid) {
+            document.getElementById('editPrecioError').innerText = precioValid.error;
+            document.getElementById('editPrecioError').classList.add('show');
+            isValid = false;
+        }
+
+        const stockInput = document.getElementById('editStockTotal');
+        const stockValid = validarNumero(stockInput.value, stockInput, 1, 9999, 'Stock debe estar entre 1 y 9999');
+        if (!stockValid.valid) {
+            document.getElementById('editStockError').innerText = stockValid.error;
+            document.getElementById('editStockError').classList.add('show');
+            isValid = false;
+        }
+
+        if (!isValid) return;
+
+        const id = document.getElementById('editId').value;
+        const datos = {
+            Nombre: nombreValid.value,
+            Precio: precioValid.value,
+            Marca: document.getElementById('editMarca').value,
+            Id_Estado: document.getElementById('editEstado').value
+        };
+        const stock = stockValid.value;
+
+        try {
+            await Promise.all([
+                fetch(`/api/productos/${id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(datos)
+                }),
+                fetch(`/api/productos/${id}/stock`, {
+                    method: 'PATCH',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ stock: stock })
+                })
+            ]);
+            cerrarModal('editModal');
+            mostrarMensaje('Exito', 'Producto actualizado correctamente');
+            await cargarInventario(); 
+        } catch (e) { 
+            mostrarMensaje('Error', 'Error al actualizar', true); 
+        }
+    }
+
+    async function eliminarProducto(id) {
+        try {
+            const res = await fetch(`/api/productos/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                mostrarMensaje('Eliminado', 'Producto borrado correctamente');
+                cargarInventario();
+            } else {
+                const error = await res.json();
+                mostrarMensaje('Error', error.error || 'Error al eliminar', true);
+            }
+        } catch (e) { 
+            mostrarMensaje('Error', 'Error al eliminar', true); 
+        }
+    }
+
+    function filtrarTabla() { mostrarTabla(); }
+    
+    // ================= FUNCION DE INFORME (MODIFICADA CON PROCEDIMIENTO) =================
+    function generarInforme() {
+        console.log('📞 [MENU] Botón Informe clickeado - Ejecutando procedimiento sp_productos_bajo_stock...');
+        
+        // Llamar al procedimiento sp_productos_bajo_stock
+        fetch('/api/productos/bajo-stock')
+            .then(res => res.json())
+            .then(productos => {
+                console.log(`✅ [PROCEDIMIENTO] sp_productos_bajo_stock - ${productos.length} productos con bajo stock`);
+                if (productos.length > 0) {
+                    console.log('⚠️ [PROCEDIMIENTO] Lista de productos con stock bajo (menos de 10 unidades):');
+                    productos.forEach(p => {
+                        console.log(`   📦 ${p.Nombre} - Stock: ${p.Stock} unidades - Precio: C$${parseFloat(p.Precio).toFixed(2)}`);
+                    });
+                } else {
+                    console.log('✅ [PROCEDIMIENTO] No hay productos con stock bajo');
+                }
+                // Después de mostrar en consola, redirigir al informe
+                window.location.href = 'informe.html';
+            })
+            .catch(err => {
+                console.error('❌ [PROCEDIMIENTO] Error al ejecutar sp_productos_bajo_stock:', err);
+                // Aún así redirigir al informe
+                window.location.href = 'informe.html';
+            });
+    }
+
+    // ================= FUNCIONES DE CONSUMO INTERNO =================
+    
+    async function cargarProductosParaConsumo() {
+        try {
+            const respuesta = await fetch('/api/productos');
+            const productos = await respuesta.json();
+            if (!respuesta.ok) throw new Error(productos.error);
+            productosData = productos.filter(p => p.Stock > 0);
+        } catch (error) {
+            console.error("Error cargando productos:", error);
+        }
+    }
+
+    function initConsumoAutocomplete() {
+        const input = document.getElementById('consumoProductoSearch');
+        const suggestionBox = document.getElementById('consumoSuggestionBox');
+        
+        function mostrarSugerencias(value) {
+            if (value.length === 0) {
+                suggestionBox.style.display = 'none';
+                suggestionBox.innerHTML = '';
+                return;
+            }
+            
+            const matches = productosData.filter(p => 
+                p.Nombre.toLowerCase().includes(value.toLowerCase()) && p.Stock > 0
+            ).slice(0, 8);
+            
+            if (matches.length === 0) {
+                suggestionBox.style.display = 'none';
+                return;
+            }
+            
+            suggestionBox.innerHTML = matches.map(p => `
+                <div class="autocomplete-suggestion-item" data-id="${p.Id_Producto}" data-nombre="${escapeHtml(p.Nombre)}" data-precio="${p.Precio}">
+                    <strong>${escapeHtml(p.Nombre)}</strong>
+                    <small style="display: block; font-size: 11px; color: #666;">Stock: ${p.Stock} und - Precio: C$${parseFloat(p.Precio).toFixed(2)}</small>
+                </div>
+            `).join('');
+            
+            suggestionBox.style.display = 'block';
+            
+            document.querySelectorAll('#consumoSuggestionBox .autocomplete-suggestion-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    input.value = item.dataset.nombre;
+                    document.getElementById('consumoProductoId').value = item.dataset.id;
+                    document.getElementById('consumoPrecio').value = parseFloat(item.dataset.precio).toFixed(2);
+                    suggestionBox.style.display = 'none';
+                    input.classList.remove('invalid');
+                    document.getElementById('consumoProductoError')?.classList.remove('show');
+                });
+            });
+        }
+        
+        input.addEventListener('input', (e) => {
+            mostrarSugerencias(e.target.value);
+        });
+        
+        input.addEventListener('focus', () => {
+            if (input.value.length > 0) {
+                mostrarSugerencias(input.value);
+            }
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!input.contains(e.target) && !suggestionBox.contains(e.target)) {
+                suggestionBox.style.display = 'none';
+            }
+        });
+    }
+    
+    function setFechaActualConsumo() {
+        const hoy = new Date();
+        const fechaInput = document.getElementById('consumoFecha');
+        const year = hoy.getFullYear();
+        const month = String(hoy.getMonth() + 1).padStart(2, '0');
+        const day = String(hoy.getDate()).padStart(2, '0');
+        fechaInput.value = `${year}-${month}-${day}`;
+    }
+    
+    function toggleModoConsumo() {
+        const checkbox = document.getElementById('modoConsumoCheckbox');
+        const modoAgregar = document.getElementById('modoAgregarConsumo');
+        const modoHistorial = document.getElementById('modoVerHistorial');
+        
+        if (checkbox.checked) {
+            modoAgregar.style.display = 'none';
+            modoHistorial.style.display = 'block';
+            cargarConsumosParaModal();
+        } else {
+            modoAgregar.style.display = 'block';
+            modoHistorial.style.display = 'none';
+        }
+    }
+    
+    function abrirModalConsumo() {
+        const checkbox = document.getElementById('modoConsumoCheckbox');
+        checkbox.checked = false;
+        document.getElementById('modoAgregarConsumo').style.display = 'block';
+        document.getElementById('modoVerHistorial').style.display = 'none';
+        
+        document.getElementById('consumoModal').style.display = 'flex';
+        setFechaActualConsumo();
+        cargarProductosParaConsumo().then(() => {
+            initConsumoAutocomplete();
+        });
+        limpiarCamposConsumo();
+    }
+    
+    function limpiarCamposConsumo() {
+        document.getElementById('consumoProductoSearch').value = '';
+        document.getElementById('consumoProductoId').value = '';
+        document.getElementById('consumoPrecio').value = '';
+        document.getElementById('consumoCantidad').value = '1';
+        document.getElementById('consumoProductoError')?.classList.remove('show');
+        document.getElementById('consumoSuggestionBox').style.display = 'none';
+        document.getElementById('consumoSuggestionBox').innerHTML = '';
+    }
+
+    async function cargarConsumosParaModal() {
+        try {
+            const respuesta = await fetch('/api/consumos');
+            const consumos = await respuesta.json();
+            if (!respuesta.ok) throw new Error(consumos.error);
+            consumosData = consumos;
+            mostrarListaConsumosModal();
+        } catch (error) {
+            console.error("Error cargando consumos:", error);
+            const container = document.getElementById('listaConsumosModal');
+            if (container) container.innerHTML = '<div class="loading">Error al cargar historial</div>';
+        }
+    }
+
+    function mostrarListaConsumosModal() {
+        const container = document.getElementById('listaConsumosModal');
+        if (!container) return;
+        
+        if (consumosData.length === 0) {
+            container.innerHTML = '<div class="loading">No hay consumos registrados</div>';
+            return;
+        }
+
+        container.innerHTML = consumosData.map(consumo => {
+            const fecha = consumo.Fecha ? new Date(consumo.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
+            return `
+                <div class="consumo-item-modal" data-id="${consumo.Id_Consumo_Interno}">
+                    <div class="consumo-info">
+                        <strong class="consumo-nombre">${escapeHtml(consumo.Nombre_Producto || 'Producto')}</strong>
+                        <div class="consumo-detalle">
+                            <span class="consumo-cantidad">${consumo.Cantidad || 0} unidades</span>
+                            <span class="consumo-fecha">${fecha}</span>
+                        </div>
+                    </div>
+                    <div class="consumo-actions">
+                        <button class="btn-edit-consumo" onclick="abrirModalEditarConsumo(${consumo.Id_Consumo_Interno})">Editar</button>
+                        <button class="btn-delete-consumo" onclick="eliminarConsumo(${consumo.Id_Consumo_Interno})">Eliminar</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function abrirModalEditarConsumo(id) {
+        const consumo = consumosData.find(c => c.Id_Consumo_Interno === id);
+        if (!consumo) return;
+        
+        consumoEditandoId = id;
+        document.getElementById('editarConsumoProducto').value = consumo.Nombre_Producto || 'Producto';
+        document.getElementById('editarConsumoCantidad').value = consumo.Cantidad;
+        document.getElementById('editarConsumoModal').style.display = 'flex';
+    }
+
+    async function guardarEdicionConsumo() {
+        const nuevaCantidad = document.getElementById('editarConsumoCantidad').value;
+        
+        if (!nuevaCantidad || nuevaCantidad < 1) {
+            document.getElementById('editarConsumoError').innerText = 'Ingrese una cantidad valida';
+            document.getElementById('editarConsumoError').classList.add('show');
+            return;
+        }
+        
+        const consumo = consumosData.find(c => c.Id_Consumo_Interno === consumoEditandoId);
+        if (!consumo) return;
+
+        try {
+            const respuesta = await fetch(`/api/consumos/${consumoEditandoId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    Cantidad: parseInt(nuevaCantidad),
+                    Fecha: consumo.Fecha
+                })
+            });
+
+            const data = await respuesta.json();
+
+            if (!respuesta.ok) {
+                throw new Error(data.error || 'Error al editar el consumo');
+            }
+
+            mostrarMensaje('Exito', 'Consumo actualizado correctamente');
+            cerrarModal('editarConsumoModal');
+            await cargarConsumosParaModal();
+            await cargarInventario();
+
+        } catch (error) {
+            console.error("Error editando consumo:", error);
+            mostrarMensaje('Error', error.message, true);
+        }
+    }
+
+    async function guardarConsumo() {
+        limpiarErroresConsumo();
+        let isValid = true;
+
+        const idProducto = document.getElementById('consumoProductoId').value;
+        const cantidad = document.getElementById('consumoCantidad').value;
+        const fecha = document.getElementById('consumoFecha').value;
+
+        if (!idProducto) {
+            document.getElementById('consumoProductoError').innerText = 'Seleccione un producto de la lista de sugerencias';
+            document.getElementById('consumoProductoError').classList.add('show');
+            isValid = false;
+        }
+        if (!cantidad || cantidad < 1) {
+            document.getElementById('consumoCantidadError').innerText = 'Ingrese una cantidad valida';
+            document.getElementById('consumoCantidadError').classList.add('show');
+            isValid = false;
+        }
+
+        if (!isValid) return;
+
+        const producto = productosData.find(p => p.Id_Producto == idProducto);
+        const stockActual = producto?.Stock || 0;
+        
+        if (parseInt(cantidad) > stockActual) {
+            document.getElementById('consumoCantidadError').innerText = `Stock insuficiente. Stock actual: ${stockActual} unidades`;
+            document.getElementById('consumoCantidadError').classList.add('show');
+            return;
+        }
+
+        try {
+            const respuesta = await fetch('/api/consumos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    Id_Producto: idProducto,
+                    Cantidad: parseInt(cantidad),
+                    Fecha: fecha
+                })
+            });
+
+            const data = await respuesta.json();
+
+            if (!respuesta.ok) {
+                throw new Error(data.error || 'Error al registrar el consumo');
+            }
+
+            mostrarMensaje('Exito', 'Consumo registrado exitosamente');
+            
+            limpiarCamposConsumo();
+            await cargarProductosParaConsumo();
+            await cargarInventario();
+            
+            if (document.getElementById('modoConsumoCheckbox').checked) {
+                await cargarConsumosParaModal();
+            }
+
+        } catch (error) {
+            console.error("Error registrando consumo:", error);
+            mostrarMensaje('Error', error.message, true);
+        }
+    }
+
+    async function eliminarConsumo(id) {
+        mostrarConfirmacion('¿Eliminar este consumo?', async () => {
+            try {
+                const respuesta = await fetch(`/api/consumos/${id}`, { method: 'DELETE' });
+                const data = await respuesta.json();
+
+                if (!respuesta.ok) {
+                    throw new Error(data.error || 'Error al eliminar el consumo');
+                }
+
+                mostrarMensaje('Exito', 'Consumo eliminado correctamente');
+                await cargarConsumosParaModal();
+                await cargarInventario();
+
+            } catch (error) {
+                console.error("Error eliminando consumo:", error);
+                mostrarMensaje('Error', error.message, true);
+            }
+        });
+    }
+
+    function limpiarErroresConsumo() {
+        document.querySelectorAll('#consumoModal .error-msg').forEach(el => el.classList.remove('show'));
+    }
+    
+    // ================= FUNCIONES DE PERDIDAS =================
+    
+    async function cargarProductosParaPerdida() {
+        try {
+            const respuesta = await fetch('/api/productos');
+            const productos = await respuesta.json();
+            if (!respuesta.ok) throw new Error(productos.error);
+            productosData = productos.filter(p => p.Stock > 0);
+        } catch (error) {
+            console.error("Error cargando productos:", error);
+        }
+    }
+
+    function initPerdidaAutocomplete() {
+        const input = document.getElementById('perdidaProductoSearch');
+        const suggestionBox = document.getElementById('perdidaSuggestionBox');
+        
+        function mostrarSugerencias(value) {
+            if (value.length === 0) {
+                suggestionBox.style.display = 'none';
+                suggestionBox.innerHTML = '';
+                return;
+            }
+            
+            const matches = productosData.filter(p => 
+                p.Nombre.toLowerCase().includes(value.toLowerCase()) && p.Stock > 0
+            ).slice(0, 8);
+            
+            if (matches.length === 0) {
+                suggestionBox.style.display = 'none';
+                return;
+            }
+            
+            suggestionBox.innerHTML = matches.map(p => `
+                <div class="autocomplete-suggestion-item" data-id="${p.Id_Producto}" data-nombre="${escapeHtml(p.Nombre)}">
+                    <strong>${escapeHtml(p.Nombre)}</strong>
+                    <small style="display: block; font-size: 11px; color: #666;">Stock: ${p.Stock} und - Precio: C$${parseFloat(p.Precio).toFixed(2)}</small>
+                </div>
+            `).join('');
+            
+            suggestionBox.style.display = 'block';
+            
+            document.querySelectorAll('#perdidaSuggestionBox .autocomplete-suggestion-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    input.value = item.dataset.nombre;
+                    document.getElementById('perdidaProductoId').value = item.dataset.id;
+                    suggestionBox.style.display = 'none';
+                    input.classList.remove('invalid');
+                    document.getElementById('perdidaProductoError')?.classList.remove('show');
+                });
+            });
+        }
+        
+        input.addEventListener('input', (e) => {
+            mostrarSugerencias(e.target.value);
+        });
+        
+        input.addEventListener('focus', () => {
+            if (input.value.length > 0) {
+                mostrarSugerencias(input.value);
+            }
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!input.contains(e.target) && !suggestionBox.contains(e.target)) {
+                suggestionBox.style.display = 'none';
+            }
+        });
+    }
+    
+    function setFechaActualPerdida() {
+        const hoy = new Date();
+        const fechaInput = document.getElementById('perdidaFecha');
+        const year = hoy.getFullYear();
+        const month = String(hoy.getMonth() + 1).padStart(2, '0');
+        const day = String(hoy.getDate()).padStart(2, '0');
+        fechaInput.value = `${year}-${month}-${day}`;
+    }
+
+    function toggleModoPerdida() {
+        const checkbox = document.getElementById('modoPerdidaCheckbox');
+        const modoAgregar = document.getElementById('modoAgregarPerdida');
+        const modoHistorial = document.getElementById('modoVerHistorialPerdida');
+        
+        if (checkbox.checked) {
+            modoAgregar.style.display = 'none';
+            modoHistorial.style.display = 'block';
+            cargarPerdidasParaModal();
+        } else {
+            modoAgregar.style.display = 'block';
+            modoHistorial.style.display = 'none';
+        }
+    }
+
+    function abrirModalPerdida() {
+        const checkbox = document.getElementById('modoPerdidaCheckbox');
+        checkbox.checked = false;
+        document.getElementById('modoAgregarPerdida').style.display = 'block';
+        document.getElementById('modoVerHistorialPerdida').style.display = 'none';
+        
+        document.getElementById('perdidaModal').style.display = 'flex';
+        setFechaActualPerdida();
+        cargarProductosParaPerdida().then(() => {
+            initPerdidaAutocomplete();
+        });
+        limpiarCamposPerdida();
+    }
+
+    function limpiarCamposPerdida() {
+        document.getElementById('perdidaProductoSearch').value = '';
+        document.getElementById('perdidaProductoId').value = '';
+        document.getElementById('perdidaCantidad').value = '1';
+        document.getElementById('perdidaMotivo').value = '';
+        document.getElementById('perdidaProductoError')?.classList.remove('show');
+        document.getElementById('perdidaSuggestionBox').style.display = 'none';
+        document.getElementById('perdidaSuggestionBox').innerHTML = '';
+    }
+
+    async function cargarPerdidasParaModal() {
+        try {
+            const respuesta = await fetch('/api/perdidas');
+            const perdidas = await respuesta.json();
+            if (!respuesta.ok) throw new Error(perdidas.error);
+            perdidasData = perdidas;
+            mostrarListaPerdidasModal();
+        } catch (error) {
+            console.error("Error cargando perdidas:", error);
+            const container = document.getElementById('listaPerdidasModal');
+            if (container) container.innerHTML = '<div class="loading">Error al cargar historial</div>';
+        }
+    }
+
+    function mostrarListaPerdidasModal() {
+        const container = document.getElementById('listaPerdidasModal');
+        if (!container) return;
+        
+        if (perdidasData.length === 0) {
+            container.innerHTML = '<div class="loading">No hay perdidas registradas</div>';
+            return;
+        }
+
+        container.innerHTML = perdidasData.map(perdida => {
+            const fecha = perdida.Fecha ? new Date(perdida.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
+            let motivo = perdida.Motivo || 'Sin motivo';
+            
+            if (motivo.includes(' - ')) {
+                motivo = motivo.split(' - ')[0];
+            }
+            
+            return `
+                <div class="perdida-item-modal" data-id="${perdida.Id_Perdida}">
+                    <div class="perdida-info">
+                        <strong class="perdida-nombre">${escapeHtml(perdida.Nombre_Producto || 'Producto')}</strong>
+                        <div class="perdida-detalle">
+                            <span class="perdida-cantidad">${perdida.Cantidad || 0} unidades</span>
+                            <span class="perdida-fecha">${fecha}</span>
+                        </div>
+                        <div class="perdida-motivo">${escapeHtml(motivo)}</div>
+                    </div>
+                    <div class="perdida-actions">
+                        <button class="btn-edit-perdida" onclick="abrirModalEditarPerdida(${perdida.Id_Perdida})">Editar</button>
+                        <button class="btn-delete-perdida" onclick="eliminarPerdida(${perdida.Id_Perdida})">Eliminar</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function abrirModalEditarPerdida(id) {
+        const perdida = perdidasData.find(p => p.Id_Perdida === id);
+        if (!perdida) return;
+        
+        perdidaEditandoId = id;
+        document.getElementById('editarPerdidaProducto').value = perdida.Nombre_Producto || 'Producto';
+        document.getElementById('editarPerdidaCantidad').value = perdida.Cantidad;
+        
+        let motivo = perdida.Motivo || '';
+        if (motivo.includes(' - ')) {
+            motivo = motivo.split(' - ')[0];
+        }
+        document.getElementById('editarPerdidaMotivo').value = motivo;
+        
+        document.getElementById('editarPerdidaModal').style.display = 'flex';
+    }
+
+    async function guardarEdicionPerdida() {
+        const nuevaCantidad = document.getElementById('editarPerdidaCantidad').value;
+        const nuevoMotivo = document.getElementById('editarPerdidaMotivo').value;
+        
+        if (!nuevaCantidad || nuevaCantidad < 1) {
+            document.getElementById('editarPerdidaError').innerText = 'Ingrese una cantidad valida';
+            document.getElementById('editarPerdidaError').classList.add('show');
+            return;
+        }
+        
+        const perdida = perdidasData.find(p => p.Id_Perdida === perdidaEditandoId);
+        if (!perdida) return;
+
+        try {
+            const respuesta = await fetch(`/api/perdidas/${perdidaEditandoId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    Cantidad: parseInt(nuevaCantidad),
+                    Motivo: nuevoMotivo || 'Sin motivo'
+                })
+            });
+
+            const data = await respuesta.json();
+
+            if (!respuesta.ok) {
+                throw new Error(data.error || 'Error al editar la perdida');
+            }
+
+            mostrarMensaje('Exito', 'Perdida actualizada correctamente');
+            cerrarModal('editarPerdidaModal');
+            await cargarPerdidasParaModal();
+            await cargarInventario();
+
+        } catch (error) {
+            console.error("Error editando perdida:", error);
+            mostrarMensaje('Error', error.message, true);
+        }
+    }
+
+    async function guardarPerdida() {
+        limpiarErroresPerdida();
+        let isValid = true;
+
+        const idProducto = document.getElementById('perdidaProductoId').value;
+        const cantidad = document.getElementById('perdidaCantidad').value;
+        const fecha = document.getElementById('perdidaFecha').value;
+        const motivo = document.getElementById('perdidaMotivo').value;
+
+        if (!idProducto) {
+            document.getElementById('perdidaProductoError').innerText = 'Seleccione un producto de la lista de sugerencias';
+            document.getElementById('perdidaProductoError').classList.add('show');
+            isValid = false;
+        }
+        if (!cantidad || cantidad < 1) {
+            document.getElementById('perdidaCantidadError').innerText = 'Ingrese una cantidad valida';
+            document.getElementById('perdidaCantidadError').classList.add('show');
+            isValid = false;
+        }
+        if (!motivo.trim()) {
+            document.getElementById('perdidaMotivoError').innerText = 'Ingrese un motivo';
+            document.getElementById('perdidaMotivoError').classList.add('show');
+            isValid = false;
+        }
+
+        if (!isValid) return;
+
+        const producto = productosData.find(p => p.Id_Producto == idProducto);
+        const stockActual = producto?.Stock || 0;
+        
+        if (parseInt(cantidad) > stockActual) {
+            document.getElementById('perdidaCantidadError').innerText = `Stock insuficiente. Stock actual: ${stockActual} unidades`;
+            document.getElementById('perdidaCantidadError').classList.add('show');
+            return;
+        }
+
+        try {
+            const respuesta = await fetch('/api/perdidas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    Id_Producto: parseInt(idProducto),
+                    Cantidad: parseInt(cantidad),
+                    Fecha: fecha,
+                    Motivo: motivo
+                })
+            });
+
+            const data = await respuesta.json();
+
+            if (!respuesta.ok) {
+                throw new Error(data.error || 'Error al registrar la perdida');
+            }
+
+            mostrarMensaje('Exito', 'Perdida registrada exitosamente');
+            
+            limpiarCamposPerdida();
+            await cargarProductosParaPerdida();
+            await cargarInventario();
+            
+            if (document.getElementById('modoPerdidaCheckbox').checked) {
+                await cargarPerdidasParaModal();
+            }
+
+        } catch (error) {
+            console.error("Error registrando perdida:", error);
+            mostrarMensaje('Error', error.message, true);
+        }
+    }
+
+    async function eliminarPerdida(id) {
+        mostrarConfirmacion('¿Eliminar esta perdida?', async () => {
+            try {
+                const respuesta = await fetch(`/api/perdidas/${id}`, { method: 'DELETE' });
+                const data = await respuesta.json();
+
+                if (!respuesta.ok) {
+                    throw new Error(data.error || 'Error al eliminar la perdida');
+                }
+
+                mostrarMensaje('Exito', 'Perdida eliminada correctamente');
+                await cargarPerdidasParaModal();
+                await cargarInventario();
+
+            } catch (error) {
+                console.error("Error eliminando perdida:", error);
+                mostrarMensaje('Error', error.message, true);
+            }
+        });
+    }
+
+    function limpiarErroresPerdida() {
+        document.querySelectorAll('#perdidaModal .error-msg').forEach(el => el.classList.remove('show'));
+    }
+    
+    window.onload = () => {
+        cargarInventario();
+        initProveedorBuscador();
+    };
+</script>
+</body>
+</html>

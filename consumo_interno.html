@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consumo Interno - Variedades Chepita</title>
+    <link rel="stylesheet" href="consumo_interno.css">
+</head>
+<body>
+
+<div class="consumo-page">
+    <div class="consumo-header">
+        <h2>📦 Registrar Consumo Interno</h2>
+    </div>
+
+    <div class="consumo-body">
+        <button class="btn-volver" onclick="window.location.href='inventario.html'">← Volver al inventario</button>
+
+        <div class="form-seccion">
+            <h3>Información del consumo</h3>
+
+            <div class="form-group">
+                <label>Producto</label>
+                <select id="productoConsumo" onchange="mostrarPrecioProducto()">
+                    <option value="">Seleccione un producto</option>
+                </select>
+                <div id="productoError" class="error-msg"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Cantidad a consumir</label>
+                <input type="number" id="cantidadConsumo" min="1" value="1" step="1">
+                <div id="cantidadError" class="error-msg"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Fecha</label>
+                <input type="date" id="fechaConsumo">
+                <div id="fechaError" class="error-msg"></div>
+            </div>
+
+            <div class="precio-box" id="precioInfo" style="display: none;">
+                💰 Precio de venta: <span id="precioProducto">C$ 0.00</span>
+            </div>
+
+            <button class="btn-registrar" onclick="registrarConsumo()">Registrar Consumo</button>
+        </div>
+
+        <div class="historial-seccion">
+            <h3>📋 Historial de consumos</h3>
+            <div id="listaConsumos" class="lista-consumos">
+                <div class="loading">Cargando historial...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let productosData = [];
+    let consumosData = [];
+
+    function limpiarErrores() {
+        document.querySelectorAll('.error-msg').forEach(el => el.classList.remove('show'));
+    }
+
+    function mostrarPrecioProducto() {
+        const select = document.getElementById('productoConsumo');
+        const selectedId = select.value;
+        const precioInfo = document.getElementById('precioInfo');
+        
+        if (selectedId) {
+            const producto = productosData.find(p => p.Id_Producto == selectedId);
+            if (producto) {
+                document.getElementById('precioProducto').innerHTML = `C$ ${parseFloat(producto.Precio).toFixed(2)}`;
+                precioInfo.style.display = 'block';
+            }
+        } else {
+            precioInfo.style.display = 'none';
+        }
+    }
+
+    async function cargarProductos() {
+        try {
+            const respuesta = await fetch('/api/productos');
+            const productos = await respuesta.json();
+
+            if (!respuesta.ok) throw new Error(productos.error);
+
+            productosData = productos;
+            const select = document.getElementById('productoConsumo');
+            select.innerHTML = '<option value="">Seleccione un producto</option>';
+            productos.forEach(producto => {
+                const stock = producto.Stock || 0;
+                select.innerHTML += `<option value="${producto.Id_Producto}" data-stock="${stock}">${producto.Nombre} - Stock: ${stock} und - C$${parseFloat(producto.Precio).toFixed(2)}</option>`;
+            });
+        } catch (error) {
+            console.error("Error cargando productos:", error);
+            document.getElementById('listaConsumos').innerHTML = '<div class="no-consumos">Error al cargar productos</div>';
+        }
+    }
+
+    async function cargarConsumos() {
+        try {
+            const respuesta = await fetch('/api/consumos');
+            const consumos = await respuesta.json();
+
+            if (!respuesta.ok) throw new Error(consumos.error);
+
+            consumosData = consumos;
+            mostrarListaConsumos();
+        } catch (error) {
+            console.error("Error cargando consumos:", error);
+            document.getElementById('listaConsumos').innerHTML = '<div class="no-consumos">Error al cargar historial</div>';
+        }
+    }
+
+    function mostrarListaConsumos() {
+        const container = document.getElementById('listaConsumos');
+        
+        if (consumosData.length === 0) {
+            container.innerHTML = '<div class="no-consumos">No hay consumos registrados</div>';
+            return;
+        }
+
+        container.innerHTML = consumosData.map(consumo => {
+            const fecha = consumo.Fecha ? new Date(consumo.Fecha).toLocaleDateString() : 'Sin fecha';
+            const precio = consumo.Precio_Unitario || 0;
+            return `
+                <div class="consumo-item">
+                    <div class="consumo-producto">${consumo.Nombre_Producto || 'Producto'}</div>
+                    <div class="consumo-cantidad">${consumo.Cantidad || 0} und</div>
+                    <div class="consumo-precio">C$ ${parseFloat(precio).toFixed(2)}</div>
+                    <div class="consumo-fecha">${fecha}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function registrarConsumo() {
+        limpiarErrores();
+        let isValid = true;
+
+        const idProducto = document.getElementById('productoConsumo').value;
+        const cantidad = document.getElementById('cantidadConsumo').value;
+        const fecha = document.getElementById('fechaConsumo').value;
+
+        if (!idProducto) {
+            document.getElementById('productoError').innerText = 'Seleccione un producto';
+            document.getElementById('productoError').classList.add('show');
+            isValid = false;
+        }
+        if (!cantidad || cantidad < 1) {
+            document.getElementById('cantidadError').innerText = 'Ingrese una cantidad válida';
+            document.getElementById('cantidadError').classList.add('show');
+            isValid = false;
+        }
+        if (!fecha) {
+            document.getElementById('fechaError').innerText = 'Seleccione una fecha';
+            document.getElementById('fechaError').classList.add('show');
+            isValid = false;
+        }
+
+        if (!isValid) return;
+
+        const producto = productosData.find(p => p.Id_Producto == idProducto);
+        const stockActual = producto?.Stock || 0;
+        
+        if (parseInt(cantidad) > stockActual) {
+            document.getElementById('cantidadError').innerText = `Stock insuficiente. Stock actual: ${stockActual} unidades`;
+            document.getElementById('cantidadError').classList.add('show');
+            return;
+        }
+
+        try {
+            const respuesta = await fetch('/api/consumos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    Id_Producto: idProducto,
+                    Cantidad: parseInt(cantidad),
+                    Fecha: fecha
+                })
+            });
+
+            const data = await respuesta.json();
+
+            if (!respuesta.ok) {
+                throw new Error(data.error || 'Error al registrar el consumo');
+            }
+
+            alert('Consumo registrado exitosamente');
+            
+            document.getElementById('productoConsumo').value = '';
+            document.getElementById('cantidadConsumo').value = '1';
+            document.getElementById('precioInfo').style.display = 'none';
+            
+            await cargarProductos();
+            await cargarConsumos();
+
+        } catch (error) {
+            console.error("Error registrando consumo:", error);
+            alert(`Error: ${error.message}`);
+        }
+    }
+
+    function setFechaActual() {
+        const hoy = new Date().toISOString().split('T')[0];
+        document.getElementById('fechaConsumo').value = hoy;
+    }
+
+    window.onload = () => {
+        setFechaActual();
+        cargarProductos();
+        cargarConsumos();
+    };
+</script>
+</body>
+</html>

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Compras - Tienda Chepita</title>
+    <link rel="stylesheet" href="historial.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="top-nav">
+        <h2>📋 Historial de Compras</h2>
+        <button class="btn-volver-top" onclick="window.location.href='menu_admin.html'">
+            Volver al menu
+        </button>
+    </div>
+
+    <div class="filtros">
+        <input type="text" id="busqueda" placeholder="Buscar por factura, cliente o fecha..." onkeyup="buscarEnTiempoReal()">
+
+        <select id="canalSelect" onchange="filtrarEnTiempoReal()">
+            <option value="">Todos los canales</option>
+        </select>
+
+        <select id="metodoSelect" onchange="filtrarEnTiempoReal()">
+            <option value="">Todos los métodos</option>
+        </select>
+
+        <button class="btn-admin btn-delete-mode" onclick="limpiarFiltros()">
+            Limpiar
+        </button>
+    </div>
+
+    <div class="table-container">
+        <table id="tablaHistorial">
+            <thead>
+                <tr>
+                    <th>Factura</th>
+                    <th>Cliente</th>
+                    <th>Fecha</th>
+                    <th>Canal</th>
+                    <th>Método de Pago</th>
+                    <th>Monto Total</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="resultadosCompras">
+                <tr><td colspan="7" class="loading">Cargando compras...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="custom-modal-overlay" id="modalDetalles">
+    <div class="custom-modal">
+
+        <div id="detallesContent">
+            <div class="loading">Cargando detalles...</div>
+        </div>
+
+        <div class="custom-modal-buttons">
+            <button class="custom-modal-btn cancel" onclick="cerrarModal()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = "/api";
+    let canales = [];
+    let metodos = [];
+
+    async function cargarDatos() {
+        try {
+            console.log('Cargando datos...');
+            
+            const [canalesRes, metodosRes] = await Promise.all([
+                fetch(`${API}/canales`),
+                fetch(`${API}/metodos-pago`)
+            ]);
+            
+            if (canalesRes.ok) canales = await canalesRes.json();
+            if (metodosRes.ok) metodos = await metodosRes.json();
+            
+            const canalSelect = document.getElementById('canalSelect');
+            const metodoSelect = document.getElementById('metodoSelect');
+            
+            canalSelect.innerHTML = '<option value="">Todos los canales</option>';
+            if (canales && canales.length) {
+                canales.forEach(canal => {
+                    canalSelect.innerHTML += `<option value="${canal.Id_Canal}">${canal.Nombre_Canal}</option>`;
+                });
+            }
+            
+            metodoSelect.innerHTML = '<option value="">Todos los métodos</option>';
+            if (metodos && metodos.length) {
+                metodos.forEach(metodo => {
+                    metodoSelect.innerHTML += `<option value="${metodo.Id_Metodo}">${metodo.Nombre_Metodo}</option>`;
+                });
+            }
+            
+            await cargarCompras();
+        } catch (error) {
+            console.error('Error en cargarDatos:', error);
+            document.getElementById('resultadosCompras').innerHTML = '<div class="hc-error">❌ Error al cargar los datos</div>';
+        }
+    }
+
+    async function cargarCompras() {
+        const resultadosDiv = document.getElementById('resultadosCompras');
+        resultadosDiv.innerHTML = '<div class="hc-loading">Cargando compras...</div>';
+        
+        try {
+            const respuesta = await fetch(`${API}/ventas`);
+            
+            if (!respuesta.ok) {
+                throw new Error(`Error HTTP: ${respuesta.status}`);
+            }
+            
+            const compras = await respuesta.json();
+            console.log('Ventas recibidas:', compras.length);
+            
+            if (!compras || compras.length === 0) {
+                resultadosDiv.innerHTML = '<div class="hc-no-results">📭 No hay compras registradas</div>';
+                return;
+            }
+            
+            // Agrupar por factura
+            const facturas = {};
+            compras.forEach(venta => {
+                const numFactura = venta.NumFactura;
+                if (!numFactura) return;
+                
+                if (!facturas[numFactura]) {
+                    facturas[numFactura] = {
+                        NumFactura: numFactura,
+                        Fecha: venta.Fecha,
+                        Cliente: `${venta.Nombre_Cliente || ''} ${venta.Apellido || ''}`.trim(),
+                        Canal: venta.Nombre_Canal,
+                        Metodo: venta.Nombre_Metodo,
+                        Monto: parseFloat(venta.Monto) || 0,
+                        productos: []
+                    };
+                }
+                if (venta.Producto) {
+                    facturas[numFactura].productos.push({
+                        Nombre: venta.Producto,
+                        Cantidad: venta.CantidadVendida,
+                        Precio: parseFloat(venta.PrecioUnitario) || 0,
+                        Subtotal: parseFloat(venta.Subtotal) || 0
+                    });
+                }
+            });
+            
+            // Aplicar filtros
+            const busqueda = document.getElementById('busqueda').value.toLowerCase();
+            const canalFiltro = document.getElementById('canalSelect').value;
+            const metodoFiltro = document.getElementById('metodoSelect').value;
+            
+            let facturasArray = Object.values(facturas);
+            
+            if (busqueda) {
+                facturasArray = facturasArray.filter(f => 
+                    f.NumFactura.toString().includes(busqueda) ||
+                    f.Cliente.toLowerCase().includes(busqueda) ||
+                    (f.Fecha && f.Fecha.includes(busqueda))
+                );
+            }
+            
+            if (canalFiltro) {
+                const canalNombre = canales.find(c => c.Id_Canal == canalFiltro)?.Nombre_Canal;
+                facturasArray = facturasArray.filter(f => f.Canal === canalNombre);
+            }
+            
+            if (metodoFiltro) {
+                const metodoNombre = metodos.find(m => m.Id_Metodo == metodoFiltro)?.Nombre_Metodo;
+                facturasArray = facturasArray.filter(f => f.Metodo === metodoNombre);
+            }
+            
+            if (facturasArray.length === 0) {
+                resultadosDiv.innerHTML = '<div class="hc-no-results">📭 No se encontraron compras</div>';
+                return;
+            }
+            
+
+            let html = "";
+            
+            facturasArray.forEach(compra => {
+    const fecha = compra.Fecha ? new Date(compra.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
+    const clienteNombre = compra.Cliente || 'Cliente no especificado';
+
+    html += `<tr>
+        <td>#${compra.NumFactura}</td>
+        <td>${escapeHtml(clienteNombre)}</td>
+        <td>${fecha}</td>
+        <td><span class="hc-badge hc-badge-canal">${compra.Canal || 'N/A'}</span></td>
+        <td><span class="hc-badge hc-badge-metodo">${compra.Metodo || 'N/A'}</span></td>
+        <td>C$ ${compra.Monto.toFixed(2)}</td>
+        <td>
+            <button class="btn-detalles" onclick="verDetalles(${compra.NumFactura})">
+                Ver Detalles
+            </button>
+        </td>
+    </tr>`;
+});
+            
+            resultadosDiv.innerHTML = html;
+            
+        } catch (error) {
+            console.error('Error cargando compras:', error);
+            resultadosDiv.innerHTML = '<div class="hc-error">❌ Error al cargar los datos</div>';
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function buscarEnTiempoReal() {
+        clearTimeout(window.busquedaTimeout);
+        window.busquedaTimeout = setTimeout(() => cargarCompras(), 500);
+    }
+
+    function filtrarEnTiempoReal() {
+        cargarCompras();
+    }
+
+    function limpiarFiltros() {
+        document.getElementById('busqueda').value = '';
+        document.getElementById('canalSelect').value = '';
+        document.getElementById('metodoSelect').value = '';
+        cargarCompras();
+    }
+
+    async function verDetalles(numFactura) {
+        const modal = document.getElementById('modalDetalles');
+        const content = document.getElementById('detallesContent');
+        
+        modal.style.display = 'flex';
+        content.innerHTML = '<div class="hc-loading">Cargando detalles...</div>';
+        
+        try {
+            const respuesta = await fetch(`${API}/ventas`);
+            const compras = await respuesta.json();
+            const compraFiltrada = compras.filter(c => c.NumFactura == numFactura);
+            
+            if (compraFiltrada.length > 0) {
+                const primera = compraFiltrada[0];
+                const fecha = primera.Fecha ? new Date(primera.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
+                const cliente = `${primera.Nombre_Cliente || ''} ${primera.Apellido || ''}`.trim() || 'Cliente no especificado';
+                
+let html = `
+
+    <div class="modal-header">
+        <h3>📋 Detalles de la Compra</h3>
+    </div>
+
+    <div class="modal-body">
+
+        <div class="hc-detalle-header">
+            <p><strong>Factura:</strong> #${primera.NumFactura}</p>
+            <p><strong>Cliente:</strong> ${escapeHtml(cliente)}</p>
+            <p><strong>Fecha:</strong> ${fecha}</p>
+            <p><strong>Canal:</strong> 
+                <span class="hc-badge hc-badge-canal">${primera.Nombre_Canal || 'N/A'}</span>
+            </p>
+            <p><strong>Método:</strong> 
+                <span class="hc-badge hc-badge-metodo">${primera.Nombre_Metodo || 'N/A'}</span>
+            </p>
+        </div>
+
+        <h3 class="hc-subtitle">📦 Productos</h3>
+
+        <table class="hc-detalle-table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+`;
+                
+                compraFiltrada.forEach(p => {
+                    if (p.Producto) {
+                        html += `<tr><td>${escapeHtml(p.Producto)}</td><td>${p.CantidadVendida || 0}</td><td>C$${parseFloat(p.PrecioUnitario || 0).toFixed(2)}</td><td>C$${parseFloat(p.Subtotal || 0).toFixed(2)}</td></tr>`;
+                    }
+                });
+                
+                html += `
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3"><strong>Total</strong></td>
+            <td>
+                <span class="hc-total">
+                    C$${parseFloat(primera.Monto).toFixed(2)}
+                </span>
+            </td>
+        </tr>
+    </tfoot>
+</table>
+`;
+                content.innerHTML = html;
+            } else {
+                content.innerHTML = '<div class="hc-error">No se encontraron detalles</div>';
+            }
+        } catch (error) {
+            content.innerHTML = '<div class="hc-error">Error al cargar detalles</div>';
+        }
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalDetalles').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('modalDetalles');
+        if (event.target === modal) cerrarModal();
+    }
+
+    document.addEventListener('DOMContentLoaded', cargarDatos);
+</script>
+</body>
+</html>

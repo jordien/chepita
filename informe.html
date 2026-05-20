@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe de Estadísticas - Tienda Chepita</title>
+    <link rel="stylesheet" href="informe.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="nc-container">
+        <button class="nc-back-btn" onclick="window.location.href='inventario.html'">
+            <i class="fas fa-arrow-left"></i> Volver al Inventario
+        </button>
+
+        <h1><i class="fas fa-chart-line"></i> Informe de Estadísticas</h1>
+
+        <!-- Selector de secciones -->
+        <div class="seccion-selector">
+            <button class="seccion-btn active" data-seccion="estadisticas">
+                <i class="fas fa-chart-line"></i> Estadísticas
+            </button>
+            <button class="seccion-btn" data-seccion="inventario">
+                <i class="fas fa-boxes"></i> Inventario
+            </button>
+            <button class="seccion-btn" data-seccion="perdidas">
+                <i class="fas fa-exclamation-triangle"></i> Pérdidas
+            </button>
+        </div>
+
+        <!-- Sección Estadísticas -->
+        <div id="seccionEstadisticas" class="seccion-contenido">
+            <div class="stats-header">
+                <div class="periodo-selector">
+                    <button class="periodo-btn active" data-periodo="dia">Día</button>
+                    <button class="periodo-btn" data-periodo="semana">Semana</button>
+                    <button class="periodo-btn" data-periodo="mes">Mes</button>
+                    <button class="periodo-btn" data-periodo="año">Año</button>
+                </div>
+                <div class="fecha-info">
+                    <span style="color: #A63C89; font-weight: 600;">
+                        <i class="fas fa-filter"></i> Período: <span id="periodoActual">Último día</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="time-stats">
+                <div class="time-stat">
+                    <h4><i class="fas fa-sun"></i> Hoy</h4>
+                    <div class="time-value" id="totalHoy">C$0.00</div>
+                    <p id="ventasHoy" class="stat-sub">0 ventas</p>
+                </div>
+                <div class="time-stat">
+                    <h4><i class="fas fa-calendar-alt"></i> Este Mes</h4>
+                    <div class="time-value" id="totalMes">C$0.00</div>
+                    <p id="ventasMes" class="stat-sub">0 ventas</p>
+                </div>
+                <div class="time-stat">
+                    <h4><i class="fas fa-calendar"></i> Este Año</h4>
+                    <div class="time-value" id="totalAnio">C$0.00</div>
+                    <p id="ventasAnio" class="stat-sub">0 ventas</p>
+                </div>
+            </div>
+
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-icon icon-sales"><i class="fas fa-chart-bar"></i></div>
+                    <h3>Ventas Totales</h3>
+                    <div class="stat-value" id="totalVentas">C$0.00</div>
+                    <div class="stat-label">Total acumulado en el período</div>
+                    <div class="stat-trend positive" id="cantidadVentas">0 transacciones</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-products"><i class="fas fa-box"></i></div>
+                    <h3>Producto Destacado</h3>
+                    <div class="stat-value" id="productoMasVendido">Sin ventas</div>
+                    <div class="stat-label">Más vendido en el período</div>
+                    <div class="stat-trend positive" id="cantidadMasVendido">0 unidades</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-clients"><i class="fas fa-users"></i></div>
+                    <h3>Mejor Cliente</h3>
+                    <div class="stat-value" id="mejorCliente">Sin cliente</div>
+                    <div class="stat-label">Mayor consumo en el período</div>
+                    <div class="stat-trend positive" id="totalCliente">C$0.00</div>
+                </div>
+            </div>
+
+            <div class="product-stats">
+                <div class="product-stat">
+                    <h4><i class="fas fa-trophy"></i> PRODUCTO MÁS VENDIDO</h4>
+                    <div class="product-name" id="prodMasVendido">Sin ventas</div>
+                    <div class="product-quantity" id="prodMasVendidoCant">0 unidades</div>
+                </div>
+                <div class="product-stat">
+                    <h4><i class="fas fa-chart-line"></i> PRODUCTO MENOS VENDIDO</h4>
+                    <div class="product-name" id="prodMenosVendido">Sin ventas</div>
+                    <div class="product-quantity" id="prodMenosVendidoCant">0 unidades</div>
+                </div>
+            </div>
+
+            <div class="charts-container">
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-bar"></i> Ventas Diarias</h3>
+                    <div class="chart-container">
+                        <canvas id="ventasChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-pie"></i> Ventas por Categoría</h3>
+                    <div class="chart-container">
+                        <canvas id="categoriasChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección Inventario -->
+        <div id="seccionInventario" class="seccion-contenido" style="display: none;">
+            <h2><i class="fas fa-boxes"></i> Control de Inventario</h2>
+            <div class="inventario-resumen" id="resumenInventario"></div>
+            <button class="mostrar-todas-btn" id="mostrarTodasTablasBtn" style="display: none;">
+                <i class="fas fa-list"></i> Mostrar Todas las Tablas
+            </button>
+            <div id="tablasInventario"></div>
+        </div>
+
+        <!-- Sección Pérdidas -->
+        <div id="seccionPerdidas" class="seccion-contenido" style="display: none;">
+            <h2><i class="fas fa-exclamation-triangle"></i> Control de Pérdidas y Consumo Propio</h2>
+            <div class="perdidas-periodo-selector">
+                <button class="perdidas-periodo-btn active" data-perdidas-periodo="dia">Día</button>
+                <button class="perdidas-periodo-btn" data-perdidas-periodo="semana">Semana</button>
+                <button class="perdidas-periodo-btn" data-perdidas-periodo="mes">Mes</button>
+                <button class="perdidas-periodo-btn" data-perdidas-periodo="año">Año</button>
+            </div>
+            <div class="perdidas-resumen" id="perdidasResumen"></div>
+            <div class="analisis-comparativo" id="analisisComparativo"></div>
+            <div class="perdidas-charts-container">
+                <div class="perdida-chart-card">
+                    <h3><i class="fas fa-chart-pie"></i> Distribución por Categoría</h3>
+                    <div class="perdida-chart-container">
+                        <canvas id="categoriaChart"></canvas>
+                    </div>
+                </div>
+                <div class="perdida-chart-card">
+                    <h3><i class="fas fa-chart-bar"></i> Comparación Mensual</h3>
+                    <div class="perdida-chart-container">
+                        <canvas id="mensualChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="inventario-resumen" id="resumenPerdidas"></div>
+            <div id="tablasPerdidas"></div>
+        </div>
+    </div>
+
+    <script>
+        let estadisticasData = {};
+        let inventarioData = {};
+        let perdidasData = {};
+        let periodoActual = 'dia';
+        let perdidasPeriodoActual = 'dia';
+        let seccionActual = 'estadisticas';
+        let tablaSeleccionada = 'todas';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            inicializarEventos();
+            cargarEstadisticas('dia');
+            cargarInventario();
+            cargarPerdidas('dia');
+        });
+
+        function inicializarEventos() {
+            document.querySelectorAll('.seccion-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const seccion = btn.dataset.seccion;
+                    cambiarSeccion(seccion);
+                });
+            });
+
+            document.querySelectorAll('#seccionEstadisticas .periodo-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#seccionEstadisticas .periodo-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    periodoActual = btn.dataset.periodo;
+                    const nombres = { dia: 'Último día', semana: 'Última semana', mes: 'Último mes', año: 'Último año' };
+                    document.getElementById('periodoActual').textContent = nombres[periodoActual];
+                    cargarEstadisticas(periodoActual);
+                });
+            });
+
+            document.querySelectorAll('#seccionPerdidas .perdidas-periodo-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#seccionPerdidas .perdidas-periodo-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    perdidasPeriodoActual = btn.dataset.perdidasPeriodo;
+                    cargarPerdidas(perdidasPeriodoActual);
+                });
+            });
+
+            document.getElementById('mostrarTodasTablasBtn')?.addEventListener('click', () => {
+                tablaSeleccionada = 'todas';
+                mostrarTablasInventario();
+            });
+        }
+
+        function cambiarSeccion(seccion) {
+            seccionActual = seccion;
+            document.querySelectorAll('.seccion-contenido').forEach(sec => sec.style.display = 'none');
+            document.querySelectorAll('.seccion-btn').forEach(btn => btn.classList.remove('active'));
+            
+            if (seccion === 'estadisticas') {
+                document.getElementById('seccionEstadisticas').style.display = 'block';
+                document.querySelector('.seccion-btn[data-seccion="estadisticas"]').classList.add('active');
+                cargarEstadisticas(periodoActual);
+            } else if (seccion === 'inventario') {
+                document.getElementById('seccionInventario').style.display = 'block';
+                document.querySelector('.seccion-btn[data-seccion="inventario"]').classList.add('active');
+                cargarInventario();
+            } else if (seccion === 'perdidas') {
+                document.getElementById('seccionPerdidas').style.display = 'block';
+                document.querySelector('.seccion-btn[data-seccion="perdidas"]').classList.add('active');
+                cargarPerdidas(perdidasPeriodoActual);
+            }
+        }
+
+        async function cargarEstadisticas(periodo) {
+            try {
+                const response = await fetch(`http://localhost:3000/api/estadisticas-ventas?periodo=${periodo}`);
+                const data = await response.json();
+                estadisticasData = data;
+                actualizarEstadisticas();
+                renderizarGraficos();
+            } catch (error) {
+                console.error('Error cargando estadísticas:', error);
+                document.getElementById('statsGrid').innerHTML = '<div class="no-data">Error al cargar datos. Verifique que el servidor esté corriendo.</div>';
+            }
+        }
+
+        function actualizarEstadisticas() {
+            document.getElementById('totalHoy').innerHTML = `C$${(estadisticasData.total_hoy || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}`;
+            document.getElementById('ventasHoy').innerHTML = `${estadisticasData.ventas_hoy || 0} ventas`;
+            document.getElementById('totalMes').innerHTML = `C$${(estadisticasData.total_mes || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}`;
+            document.getElementById('ventasMes').innerHTML = `${estadisticasData.ventas_mes || 0} ventas`;
+            document.getElementById('totalAnio').innerHTML = `C$${(estadisticasData.total_año || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}`;
+            document.getElementById('ventasAnio').innerHTML = `${estadisticasData.ventas_año || 0} ventas`;
+            document.getElementById('totalVentas').innerHTML = `C$${(estadisticasData.total_ventas || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}`;
+            document.getElementById('productoMasVendido').innerHTML = estadisticasData.producto_mas_vendido || 'Sin ventas';
+            document.getElementById('cantidadMasVendido').innerHTML = `<i class="fas fa-fire"></i> ${estadisticasData.cantidad_mas_vendido || 0} unidades`;
+            document.getElementById('mejorCliente').innerHTML = estadisticasData.mejor_cliente || 'Sin cliente';
+            document.getElementById('totalCliente').innerHTML = `<i class="fas fa-star"></i> C$${(estadisticasData.total_cliente || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}`;
+            document.getElementById('cantidadVentas').innerHTML = `<i class="fas fa-arrow-up"></i> ${estadisticasData.cantidad_ventas || 0} transacciones`;
+            document.getElementById('prodMasVendido').innerHTML = estadisticasData.producto_mas_vendido || 'Sin ventas';
+            document.getElementById('prodMasVendidoCant').innerHTML = `${estadisticasData.cantidad_mas_vendido || 0} unidades`;
+            document.getElementById('prodMenosVendido').innerHTML = estadisticasData.producto_menos_vendido || 'Sin ventas';
+            document.getElementById('prodMenosVendidoCant').innerHTML = `${estadisticasData.cantidad_menos_vendido || 0} unidades`;
+        }
+
+        function renderizarGraficos() {
+            if (estadisticasData.labels_dias && estadisticasData.labels_dias.length > 0) {
+                const ctx = document.getElementById('ventasChart').getContext('2d');
+                if (window.ventasChart) window.ventasChart.destroy();
+                window.ventasChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: estadisticasData.labels_dias,
+                        datasets: [{
+                            label: 'Ventas (C$)',
+                            data: estadisticasData.data_dias || [],
+                            backgroundColor: 'rgba(166, 60, 137, 0.1)',
+                            borderColor: '#A63C89',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { tooltip: { callbacks: { label: (ctx) => `Ventas: C$${ctx.parsed.y.toLocaleString('es-ES', {minimumFractionDigits: 2})}` } } },
+                        scales: { y: { beginAtZero: true, ticks: { callback: (v) => 'C$' + v.toLocaleString('es-ES') } } }
+                    }
+                });
+            }
+            if (estadisticasData.categorias && estadisticasData.categorias.length > 0) {
+                const ctx = document.getElementById('categoriasChart').getContext('2d');
+                if (window.categoriasChart) window.categoriasChart.destroy();
+                window.categoriasChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: { labels: estadisticasData.categorias, datasets: [{ data: estadisticasData.totales_categorias || [], backgroundColor: ['#A63C89', '#FF6B6B', '#4ECDC4', '#FFD166', '#06D6A0', '#118AB2', '#EF476F'] }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                });
+            }
+        }
+
+        async function cargarInventario() {
+            try {
+                const response = await fetch('http://localhost:3000/api/inventario-detalle');
+                const data = await response.json();
+                inventarioData = data;
+                mostrarResumenInventario();
+                mostrarTablasInventario();
+            } catch (error) {
+                console.error('Error cargando inventario:', error);
+                document.getElementById('resumenInventario').innerHTML = '<div class="no-data">Error al cargar datos</div>';
+            }
+        }
+
+        function mostrarResumenInventario() {
+            const container = document.getElementById('resumenInventario');
+            if (!container) return;
+            container.innerHTML = `
+                <div class="resumen-card resumen-disponible" onclick="seleccionarTablaInventario('disponibles')">
+                    <h4><i class="fas fa-check-circle"></i> Disponibles</h4>
+                    <div class="resumen-value">${inventarioData.total_disponibles || 0}</div>
+                    <p class="stat-sub">En stock</p>
+                </div>
+                <div class="resumen-card resumen-agotado" onclick="seleccionarTablaInventario('agotados')">
+                    <h4><i class="fas fa-times-circle"></i> Agotados</h4>
+                    <div class="resumen-value">${inventarioData.total_agotados || 0}</div>
+                    <p class="stat-sub">Sin stock</p>
+                </div>
+                <div class="resumen-card resumen-bajo-stock" onclick="seleccionarTablaInventario('bajo_stock')">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Bajo Stock</h4>
+                    <div class="resumen-value">${inventarioData.total_bajo_stock || 0}</div>
+                    <p class="stat-sub">≤ 10 unidades</p>
+                </div>
+                <div class="resumen-card resumen-descontinuado" onclick="seleccionarTablaInventario('descontinuados')">
+                    <h4><i class="fas fa-ban"></i> Descontinuados</h4>
+                    <div class="resumen-value">${inventarioData.total_descontinuados || 0}</div>
+                    <p class="stat-sub">No disponibles</p>
+                </div>
+                <div class="resumen-card resumen-sin-ventas" onclick="seleccionarTablaInventario('sin_ventas')">
+                    <h4><i class="fas fa-chart-line"></i> Sin Ventas</h4>
+                    <div class="resumen-value">${inventarioData.productos_sin_ventas?.length || 0}</div>
+                    <p class="stat-sub">Sin movimientos</p>
+                </div>
+            `;
+        }
+
+        function seleccionarTablaInventario(tabla) {
+            tablaSeleccionada = tabla;
+            const btn = document.getElementById('mostrarTodasTablasBtn');
+            if (btn) btn.style.display = 'inline-flex';
+            mostrarTablasInventario();
+        }
+
+        function mostrarTablasInventario() {
+            const container = document.getElementById('tablasInventario');
+            if (!container) return;
+            let html = '';
+            if (tablaSeleccionada === 'todas' || tablaSeleccionada === 'disponibles') {
+                html += generarTablaProductos(inventarioData.productos_disponibles || [], 'Productos Disponibles', 'disponible');
+            }
+            if (tablaSeleccionada === 'todas' || tablaSeleccionada === 'agotados') {
+                html += generarTablaProductos(inventarioData.productos_agotados || [], 'Productos Agotados', 'agotado');
+            }
+            if (tablaSeleccionada === 'todas' || tablaSeleccionada === 'bajo_stock') {
+                html += generarTablaProductos(inventarioData.productos_bajo_stock || [], 'Productos con Bajo Stock', 'bajo-stock');
+            }
+            if (tablaSeleccionada === 'todas' || tablaSeleccionada === 'descontinuados') {
+                html += generarTablaProductos(inventarioData.productos_descontinuados || [], 'Productos Descontinuados', 'descontinuado');
+            }
+            if (tablaSeleccionada === 'todas' || tablaSeleccionada === 'sin_ventas') {
+                html += generarTablaProductos(inventarioData.productos_sin_ventas || [], 'Productos Sin Ventas', 'sin-ventas');
+            }
+            container.innerHTML = html || '<div class="no-data">No hay productos en esta categoría</div>';
+        }
+
+        function generarTablaProductos(productos, titulo, tipo) {
+            if (!productos || productos.length === 0) return '';
+            let estadoClass = '';
+            let badgeText = '';
+            if (tipo === 'disponible') { estadoClass = 'estado-disponible'; badgeText = 'Disponible'; }
+            else if (tipo === 'agotado') { estadoClass = 'estado-agotado'; badgeText = 'Agotado'; }
+            else if (tipo === 'bajo-stock') { estadoClass = 'estado-bajo-stock'; badgeText = 'Bajo Stock'; }
+            else if (tipo === 'descontinuado') { estadoClass = 'estado-descontinuado'; badgeText = 'Descontinuado'; }
+            else { estadoClass = 'estado-disponible'; badgeText = 'Disponible'; }
+            
+            return `
+                <div class="tabla-container">
+                    <h3 class="seccion-titulo"><i class="fas fa-box"></i> ${titulo}</h3>
+                    <div class="inventario-tabla-container">
+                        <table class="inventario-tabla">
+                            <thead><tr><th>Producto</th><th>Categoría</th><th>Marca</th><th>Estado</th><th>Stock</th><th>Precio</th><th>Ventas Totales</th></tr></thead>
+                            <tbody>
+                                ${productos.map(p => {
+                                    let cantidadClass = p.cantidad > 20 ? 'cantidad-alta' : (p.cantidad > 0 ? 'cantidad-media' : 'cantidad-baja');
+                                    return `
+                                    <tr>
+                                        <td><strong>${escapeHtml(p.nombre)}</strong></td>
+                                        <td>${escapeHtml(p.categoria || '-')}</td>
+                                        <td>${escapeHtml(p.marca || '-')}</td>
+                                        <td><span class="estado-badge ${estadoClass}">${badgeText}</span></td>
+                                        <td><span class="cantidad-badge ${cantidadClass}">${p.cantidad || 0} und</span></td>
+                                        <td class="precio">C$${(p.precio || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
+                                        <td class="ventas-info">${p.total_vendido || 0} und<br>C$${(p.total_ventas || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
+                                    </tr>
+                                `}).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function cargarPerdidas(periodo) {
+            try {
+                const response = await fetch(`http://localhost:3000/api/perdidas-estadisticas?periodo=${periodo}`);
+                const data = await response.json();
+                perdidasData = data;
+                mostrarResumenPerdidas();
+                mostrarAnalisisComparativo();
+                mostrarGraficosPerdidas();
+                mostrarTablasPerdidas();
+            } catch (error) {
+                console.error('Error cargando pérdidas:', error);
+                document.getElementById('perdidasResumen').innerHTML = '<div class="no-data">Error al cargar datos</div>';
+            }
+        }
+
+        function mostrarResumenPerdidas() {
+            const container = document.getElementById('perdidasResumen');
+            if (!container) return;
+            container.innerHTML = `
+                <div class="perdida-stat-card perdida">
+                    <div class="stat-icon icon-perdidas"><i class="fas fa-exclamation-circle"></i></div>
+                    <h3>Pérdidas Totales</h3>
+                    <div class="stat-value valor-negativo">C$${(perdidasData.total_perdidas || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}</div>
+                    <div class="stat-trend negative"><i class="fas fa-arrow-down"></i> ${perdidasData.total_unidades_perdidas || 0} unidades perdidas</div>
+                </div>
+                <div class="perdida-stat-card consumo">
+                    <div class="stat-icon icon-consumo"><i class="fas fa-home"></i></div>
+                    <h3>Consumo Propio</h3>
+                    <div class="stat-value valor-consumo">C$${(perdidasData.total_consumo_propio || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}</div>
+                    <div class="stat-trend positive"><i class="fas fa-utensils"></i> ${perdidasData.total_unidades_consumo || 0} unidades consumidas</div>
+                </div>
+                <div class="perdida-stat-card total">
+                    <div class="stat-icon icon-money"><i class="fas fa-money-bill-wave"></i></div>
+                    <h3>Total General</h3>
+                    <div class="stat-value">C$${((perdidasData.total_perdidas || 0) + (perdidasData.total_consumo_propio || 0)).toLocaleString('es-ES', {minimumFractionDigits: 2})}</div>
+                    <div class="stat-trend negative"><i class="fas fa-calculator"></i> ${(perdidasData.total_unidades_perdidas || 0) + (perdidasData.total_unidades_consumo || 0)} unidades totales</div>
+                </div>
+            `;
+        }
+
+        function mostrarAnalisisComparativo() {
+            const container = document.getElementById('analisisComparativo');
+            if (!container) return;
+            const ventas = estadisticasData.total_ventas || 1;
+            const ratio = ((perdidasData.total_perdidas || 0) / ventas) * 100;
+            container.innerHTML = `
+                <div class="analisis-card">
+                    <h3><i class="fas fa-balance-scale"></i> Análisis Comparativo</h3>
+                    <div class="analisis-valor">${ratio.toFixed(2)}%</div>
+                    <div class="stat-label">Las pérdidas representan el ${ratio.toFixed(2)}% de las ventas</div>
+                </div>
+                <div class="analisis-card">
+                    <h3><i class="fas fa-percentage"></i> Stock vs Pérdidas</h3>
+                    <div class="analisis-valor">${((perdidasData.total_perdidas || 0) / (inventarioData.total_disponibles || 1) * 10).toFixed(2)}%</div>
+                    <div class="stat-label">Relación pérdidas vs inventario disponible</div>
+                </div>
+            `;
+        }
+
+        function mostrarGraficosPerdidas() {
+            if (perdidasData.perdidas_por_categoria && perdidasData.perdidas_por_categoria.length > 0) {
+                const ctx = document.getElementById('categoriaChart').getContext('2d');
+                const categorias = perdidasData.perdidas_por_categoria.map(p => p.categoria);
+                const valores = perdidasData.perdidas_por_categoria.map(p => p.total_perdida);
+                if (window.categoriaChart) window.categoriaChart.destroy();
+                window.categoriaChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: categorias, datasets: [{ label: 'Pérdidas por Categoría', data: valores, backgroundColor: 'rgba(232,62,140,0.7)' }] },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: v => 'C$' + v.toLocaleString('es-ES') } } } }
+                });
+            }
+        }
+
+        function mostrarTablasPerdidas() {
+            const container = document.getElementById('tablasPerdidas');
+            if (!container) return;
+            let html = '';
+            if (perdidasData.productos_con_perdidas && perdidasData.productos_con_perdidas.length > 0) {
+                html += generarTablaPerdidas(perdidasData.productos_con_perdidas, 'Productos con Pérdidas', 'perdida');
+            }
+            if (perdidasData.productos_consumo_propio && perdidasData.productos_consumo_propio.length > 0) {
+                html += generarTablaPerdidas(perdidasData.productos_consumo_propio, 'Productos de Consumo Propio', 'consumo');
+            }
+            container.innerHTML = html || '<div class="no-data">No hay datos de pérdidas o consumo</div>';
+        }
+
+        function generarTablaPerdidas(productos, titulo, tipo) {
+            if (!productos || productos.length === 0) return '';
+            const badgeClass = tipo === 'perdida' ? 'estado-perdida' : 'estado-consumo';
+            const badgeIcon = tipo === 'perdida' ? '<i class="fas fa-exclamation-triangle"></i> Pérdida' : '<i class="fas fa-home"></i> Consumo';
+            return `
+                <div class="tabla-container">
+                    <h3 class="seccion-titulo"><i class="fas ${tipo === 'perdida' ? 'fa-exclamation-triangle' : 'fa-home'}"></i> ${titulo}</h3>
+                    <div class="inventario-tabla-container">
+                        <table class="inventario-tabla">
+                            <thead><tr><th>Producto</th><th>Categoría</th><th>Marca</th><th>Tipo</th><th>Cantidad</th><th>Valor Unitario</th><th>Valor Total</th></tr></thead>
+                            <tbody>
+                                ${productos.map(p => `
+                                    <tr>
+                                        <td><strong>${escapeHtml(p.nombre)}</strong></td>
+                                        <td>${escapeHtml(p.categoria || '-')}</td>
+                                        <td>${escapeHtml(p.marca || '-')}</td>
+                                        <td><span class="estado-badge ${badgeClass}">${badgeIcon}</span></td>
+                                        <td><span class="cantidad-badge ${tipo === 'perdida' ? 'cantidad-perdida' : 'cantidad-consumo'}">${p.cantidad || 0} und</span></td>
+                                        <td class="precio">C$${(p.precio || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
+                                        <td class="${tipo === 'perdida' ? 'valor-negativo' : 'valor-consumo'}">C$${(p.valor_total || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+    </script>
+</body>
+</html>

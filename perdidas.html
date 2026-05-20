@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pérdidas - Sistema Chepita</title>
+    <link rel="stylesheet" href="perdidas.css">
+</head>
+<body>
+
+<div class="nc-container">
+    <h1>Pérdidas de Productos</h1>
+    <button class="nc-add-btn" onclick="abrirModal()">Agregar Pérdida</button>
+    <button class="nc-back-btn" onclick="window.location.href='menu_admin.html'">Volver a Principal</button>
+
+    <table class="perdidas-table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad Perdida</th>
+                <th>Fecha</th>
+                <th>Motivo</th>
+                <th>Observaciones</th>
+            </tr>
+        </thead>
+        <tbody id="detallePerdidas"></tbody>
+    </table>
+</div>
+
+<div class="nc-modal-overlay" id="modalPerdida" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+    <div class="nc-modal" style="background:white; padding:20px; border-radius:8px; width:400px;">
+        <h2>Nueva Pérdida</h2>
+        <div class="nc-group">
+            <label>Producto *</label>
+            <select id="productoPerdida"><option value="">Seleccione...</option></select>
+        </div>
+        <div class="nc-group">
+            <label>Cantidad *</label>
+            <input type="number" id="cantidadPerdida" value="1" min="1">
+        </div>
+        <div class="nc-group">
+            <label>Fecha *</label>
+            <input type="date" id="fechaPerdida">
+        </div>
+        <div class="nc-group">
+            <label>Motivo *</label>
+            <input type="text" id="motivoPerdida" placeholder="Ej. Dañado, caducado, rotura, etc.">
+        </div>
+        <div class="nc-group">
+            <label>Observaciones</label>
+            <textarea id="observacionesPerdida" rows="3" placeholder="Ej. Producto vencido en estante 3, empaque roto, etc.">Sin observaciones registradas</textarea>
+            <small style="color: #666; font-size: 12px;">Puede editar este texto si desea agregar más detalles</small>
+        </div>
+        <button class="nc-modal-save" onclick="guardarPerdida()">Registrar Pérdida</button>
+        <button class="nc-modal-cancel" onclick="cerrarModal()">Cancelar</button>
+    </div>
+</div>
+
+<script>
+    const API = "http://localhost:3000/api";
+
+    document.addEventListener('DOMContentLoaded', () => {
+        cargarCombo();
+        cargarTabla();
+        setFechaActual();
+    });
+
+    function setFechaActual() {
+        const hoy = new Date().toISOString().split('T')[0];
+        document.getElementById('fechaPerdida').value = hoy;
+    }
+
+    function abrirModal() { 
+        document.getElementById("modalPerdida").style.display = "flex";
+        setFechaActual();
+        // Limpiar campos pero mantener el texto predeterminado en observaciones
+        document.getElementById('productoPerdida').value = '';
+        document.getElementById('cantidadPerdida').value = '1';
+        document.getElementById('motivoPerdida').value = '';
+        document.getElementById('observacionesPerdida').value = 'Sin observaciones registradas';
+    }
+    
+    function cerrarModal() { 
+        document.getElementById("modalPerdida").style.display = "none";
+    }
+
+    function cargarCombo() {
+        fetch(`${API}/productos`)
+            .then(r => r.json())
+            .then(data => {
+                const select = document.getElementById('productoPerdida');
+                select.innerHTML = '<option value="">Seleccione...</option>';
+                data.forEach(p => {
+                    let opt = document.createElement('option');
+                    opt.value = p.Id_Producto;
+                    opt.textContent = p.Nombre;
+                    select.appendChild(opt);
+                });
+            })
+            .catch(err => console.error('Error cargando productos:', err));
+    }
+
+    function cargarTabla() {
+        fetch(`${API}/perdidas`)
+            .then(r => r.json())
+            .then(data => {
+                const tbody = document.getElementById('detallePerdidas');
+                tbody.innerHTML = '';
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay pérdidas registradas</td></tr>';
+                    return;
+                }
+                data.forEach(item => {
+                    // Separar motivo y observaciones si están combinados
+                    let motivo = item.Motivo || '';
+                    let observaciones = '';
+                    
+                    if (motivo.includes(' - ')) {
+                        const partes = motivo.split(' - ');
+                        motivo = partes[0];
+                        observaciones = partes.slice(1).join(' - ');
+                    } else {
+                        observaciones = 'Sin observaciones registradas';
+                    }
+                    
+                    const fecha = item.Fecha ? new Date(item.Fecha).toLocaleDateString() : 'Sin fecha';
+                    
+                    tbody.innerHTML += `<tr>
+                        <td>${escapeHtml(item.Nombre_Producto || 'N/A')}</td>
+                        <td>${item.Cantidad || 0}</td>
+                        <td>${fecha}</td>
+                        <td>${escapeHtml(motivo)}</td>
+                        <td>${escapeHtml(observaciones)}</td>
+                    </tr>`;
+                });
+            })
+            .catch(err => {
+                console.error('Error cargando pérdidas:', err);
+                document.getElementById('detallePerdidas').innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Error al cargar los datos</td></tr>';
+            });
+    }
+
+    function guardarPerdida() {
+        const idProducto = document.getElementById('productoPerdida').value;
+        const cantidad = document.getElementById('cantidadPerdida').value;
+        const fecha = document.getElementById('fechaPerdida').value;
+        const motivo = document.getElementById('motivoPerdida').value;
+        let observaciones = document.getElementById('observacionesPerdida').value;
+
+        if(!idProducto) {
+            alert("Por favor seleccione un producto");
+            return;
+        }
+        if(!cantidad || cantidad < 1) {
+            alert("Por favor ingrese una cantidad válida");
+            return;
+        }
+        if(!fecha) {
+            alert("Por favor seleccione una fecha");
+            return;
+        }
+        if(!motivo.trim()) {
+            alert("Por favor ingrese un motivo");
+            return;
+        }
+
+        // Si las observaciones están vacías o son solo espacios, usar el texto predeterminado
+        if (!observaciones || observaciones.trim() === '') {
+            observaciones = 'Sin observaciones registradas';
+        }
+
+        // Combinar motivo y observaciones
+        let motivoCompleto = `${motivo} - ${observaciones}`;
+
+        const datos = {
+            Id_Producto: parseInt(idProducto),
+            Cantidad: parseInt(cantidad),
+            Fecha: fecha,
+            Motivo: motivoCompleto
+        };
+
+        fetch(`${API}/perdidas`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(datos)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.error) {
+                alert("❌ Error: " + data.error);
+            } else {
+                alert("✅ Pérdida registrada con éxito");
+                cerrarModal();
+                cargarTabla();
+            }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+            alert("❌ Error al conectar con el servidor");
+        });
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
+</body>
+</html>

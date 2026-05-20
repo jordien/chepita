@@ -1,0 +1,84 @@
+<link rel="stylesheet" href="regalias.css">
+
+<div class="nc-container">
+    <h1>Regalías</h1>
+
+    <!-- Botones -->
+    <button class="nc-add-btn" onclick="abrirModal()">Agregar Regalia</button>
+    <button class="nc-back-btn" onclick="window.location.href='PAG.html'">Volver a Principal</button>
+
+    <!-- Tabla de regalías -->
+    <table class="regalias-table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Tipo de Regalia</th>
+                <th>Cantidad / Descuento</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Observaciones</th>
+            </tr>
+        </thead>
+        <tbody id="detalleRegalias">
+            <!-- Filas dinámicas -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal para agregar regalia -->
+<div class="nc-modal-overlay" id="modalRegalia">
+    <div class="nc-modal">
+        <h2>Nueva Regalia</h2>
+
+        <div class="nc-group">
+            <label>Producto</label>
+            <select id="productoRegalia">
+                <option value="">Seleccione un producto</option>
+            </select>
+        </div>
+
+        <div class="nc-group">
+            <label>Tipo de Regalia</label>
+            <select id="tipoRegalia">
+                <option value="">Seleccione tipo</option>
+                <option value="Producto gratis por compra mínima">Producto gratis por compra mínima</option>
+                <option value="Descuento en la siguiente compra">Descuento en la siguiente compra</option>
+                <option value="Obsequio por producto comprado">Obsequio por producto comprado</option>
+                <option value="Promoción 2x1 o 3x2">Promoción 2x1 o 3x2</option>
+                <option value="Obsequio por Evento">Obsequio por Evento</option>
+            </select>
+        </div>
+
+        <div class="nc-group">
+            <label>Cantidad / Descuento</label>
+            <input type="text" id="cantidadRegalia" placeholder="Ej. 1 unidad o 10%">
+        </div>
+
+        <div class="nc-group">
+            <label>Fecha Inicio</label>
+            <input type="date" id="fechaInicioRegalia">
+        </div>
+
+        <div class="nc-group">
+            <label>Fecha Fin</label>
+            <input type="date" id="fechaFinRegalia">
+        </div>
+
+        <div class="nc-group">
+            <label>Observaciones</label>
+            <textarea id="observacionesRegalia" rows="3" placeholder="Comentarios adicionales"></textarea>
+        </div>
+
+        <button class="nc-modal-save">Guardar Regalia</button>
+        <button class="nc-modal-cancel" onclick="cerrarModal()">Cancelar</button>
+    </div>
+</div>
+
+<script>
+function abrirModal() {
+    document.getElementById("modalRegalia").style.display = "flex";
+}
+function cerrarModal() {
+    document.getElementById("modalRegalia").style.display = "none";
+}
+</script>

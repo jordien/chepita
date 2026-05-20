@@ -1,0 +1,192 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    padding: 20px;
+
+    background: url('imagenes/FONDO.png') no-repeat center center fixed;
+    background-size: cover;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    background: linear-gradient(135deg, #e7b6d4, #caa0d8);
+    color: white;
+}
+
+.top-nav h2 {
+    font-size: 24px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-volver-top {
+    background: white;
+    color: #A63C89;
+    border: 2px solid #A63C89;
+    padding: 10px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-volver-top:hover {
+    background: #A63C89;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(166, 60, 137, 0.3);
+}
+
+.filtros {
+    display: flex;
+    gap: 15px;
+    padding: 20px 30px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+}
+
+.filtros input, .filtros select {
+    padding: 10px 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    flex: 1;
+    min-width: 180px;
+}
+
+.filtros input:focus, .filtros select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.table-container {
+    padding: 20px 30px 30px;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background: #f1f5f9;
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 13px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 14px;
+}
+
+tbody tr:hover {
+    background: #f8fafc;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #64748b;
+}
+
+/* Estilos para stock */
+.stock-normal {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.stock-bajo {
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+.stock-cero {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+/* Badges de estado */
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-Disponible {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-Agotado {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-Descontinuado {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    body {
+        padding: 15px;
+    }
+    
+    .top-nav {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .filtros {
+        flex-direction: column;
+        padding: 20px;
+    }
+    
+    .filtros input, .filtros select {
+        width: 100%;
+    }
+    
+    .table-container {
+        padding: 15px;
+    }
+    
+    th, td {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+}

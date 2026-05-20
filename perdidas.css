@@ -1,0 +1,215 @@
+/* Estilos para el modal de pérdidas */
+.perdida-switch-container {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f1f5f9;
+    padding: 10px 15px;
+    border-radius: 10px;
+}
+
+.perdida-switch-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary-color, #2c3e50);
+}
+
+.perdida-switch {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.switch-agregar-perdida {
+    color: #3b82f6;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.switch-tabla-perdida {
+    color: #64748b;
+    font-weight: normal;
+    font-size: 12px;
+}
+
+.perdida-switch:has(input:checked) .switch-agregar-perdida {
+    color: #64748b;
+    font-weight: normal;
+}
+
+.perdida-switch:has(input:checked) .switch-tabla-perdida {
+    color: #ef4444;
+    font-weight: 500;
+}
+
+.modo-agregar-perdida {
+    display: block;
+}
+
+.modo-ver-historial-perdida {
+    display: none;
+}
+
+.perdida-form-group {
+    margin-bottom: 15px;
+}
+
+.perdida-form-group label {
+    display: block;
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--primary-color, #2c3e50);
+    margin-bottom: 5px;
+}
+
+.perdida-form-group input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    transition: border-color 0.2s;
+}
+
+.perdida-form-group input:focus {
+    outline: none;
+    border-color: var(--accent-color, #3498db);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.perdida-fecha-readonly {
+    background: #f0f0f0 !important;
+    color: #666 !important;
+    cursor: default;
+}
+
+.perdida-lista-container {
+    margin-top: 5px;
+}
+
+.perdida-item-modal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.2s;
+}
+
+.perdida-item-modal:hover {
+    background: #f9f9f9;
+}
+
+.perdida-info {
+    flex: 3;
+}
+
+.perdida-nombre {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary-color, #2c3e50);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.perdida-detalle {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+}
+
+.perdida-cantidad {
+    background: #fee2e2;
+    padding: 2px 8px;
+    border-radius: 12px;
+    color: #dc2626;
+}
+
+.perdida-fecha {
+    color: #888;
+}
+
+.perdida-motivo {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.perdida-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-edit-perdida {
+    background: #f59e0b;
+    color: white;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-delete-perdida {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-edit-perdida:hover, .btn-delete-perdida:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+}
+
+.error-msg {
+    color: #dc3545;
+    font-size: 11px;
+    margin-top: 3px;
+    display: none;
+}
+
+.error-msg.show {
+    display: block;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-size: 13px;
+}
+
+@media (max-width: 480px) {
+    .perdida-switch-container {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+        text-align: center;
+    }
+    
+    .perdida-switch {
+        justify-content: center;
+    }
+    
+    .perdida-item-modal {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .perdida-info {
+        flex: auto;
+    }
+    
+    .perdida-actions {
+        justify-content: center;
+    }
+}

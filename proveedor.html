@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proveedores</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="proveedor.css">
+</head>
+<body>
+    <div class="prov-container">
+        <div class="prov-header">
+            <h1>Proveedores</h1>
+            <button class="prov-back-btn-top" onclick="mostrarConfirmacionVolver()">← Volver al Menú</button>
+        </div>
+
+        <div class="prov-actions">
+            <button class="prov-add-btn" onclick="abrirModalProveedorParaAgregar()">Agregar Proveedor</button>
+            <div class="prov-search-group">
+                <input type="text" placeholder="Buscar por nombre, empresa o estado..." id="buscarProveedor" onkeyup="filtrarProveedores()">
+            </div>
+       </div>
+
+        <div class="table-container">
+            <table class="prov-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Empresa</th>
+                        <th>Teléfono</th>
+                        <th>Operador</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaProveedores">
+                    <tr>
+                        <td colspan="6" class="loading">Cargando proveedores...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+                <div class="prov-modal-overlay" id="modalProveedor">
+            <div class="prov-modal">
+                <h2 id="modalTitle">Agregar Proveedor</h2>
+                
+                <input type="hidden" id="editIdProveedor" value="">
+
+                <div class="prov-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="provNombre" placeholder="Ej: Karina del Rosario Lopez Aguilar" onkeypress="soloLetrasYEspacios(event)" oninput="validarNombreCompleto(this)">
+                    <small>Cada palabra máximo 12 caracteres. Total máximo 70 caracteres. Solo letras y espacios</small>
+                </div>
+
+                <div class="prov-group">
+                    <label>Empresa</label>
+                    <input type="text" id="provEmpresa" placeholder="Ej: Distribuidora XYZ">
+                </div>
+
+                <div class="prov-group">
+                    <label>Teléfono (8 dígitos válidos)</label>
+                    <input type="tel" id="provTelefono" placeholder="Ej: 87654321" maxlength="8" onkeypress="soloNumeros(event)" oninput="validarTelefonoYOperador(this)">
+                    <small>Debe tener al menos 3 dígitos diferentes. No se permiten patrones como 22223333 o 19191919</small>
+                </div>
+
+                <div class="prov-group">
+                    <label>Operador de Telefonía</label>
+                    <select id="tipoOperador">
+                        <option value="">Seleccione un operador</option>
+                        <option value="Claro">Claro</option>
+                        <option value="Tigo">Tigo</option>
+                    </select>
+                </div>
+
+                <div class="prov-group" id="estadoGroup" style="display: none;">
+                    <label>Estado del Proveedor</label>
+                    <select id="estadoProveedor">
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
+                    </select>
+                </div>
+
+                <button class="prov-modal-save" onclick="guardarProveedor()">Guardar Proveedor</button>
+                <button class="prov-modal-cancel" onclick="cerrarModalProveedor()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-modal-overlay" id="confirmModal">
+        <div class="custom-modal">
+            <h3>Confirmar acción</h3>
+            <p id="confirmMessage">¿Estás seguro de que deseas realizar esta acción?</p>
+            <div class="custom-modal-buttons">
+                <button class="custom-modal-btn confirm" id="confirmYes">Sí, continuar</button>
+                <button class="custom-modal-btn cancel" id="confirmNo">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="success-modal-overlay" id="successModal">
+        <div class="success-modal">
+            <h3>✅ Éxito</h3>
+            <p id="successMessage">Operación realizada exitosamente</p>
+            <button class="success-modal-btn" onclick="cerrarSuccessModal()">Aceptar</button>
+        </div>
+    </div>
+
+    <div class="error-modal-overlay" id="errorModal">
+        <div class="error-modal">
+            <h3>❌ Error</h3>
+            <p id="errorMessage">Ha ocurrido un error</p>
+            <button class="error-modal-btn" onclick="cerrarErrorModal()">Aceptar</button>
+        </div>
+    </div>
+
+
+
+    <script>
+        // Datos principales
+        let proveedoresData = [];
+        let estadosData = {};
+        let nombresCompletosData = {};
+
+        // Función para detectar operador por número de teléfono (solo para sugerencia)
+        function detectarOperadorPorNumero(telefono) {
+            if (!telefono || telefono.length < 8) return '';
+            const primerosDigitos = telefono.substring(0, 2);
+            // Números que empiezan con 8 son Claro (en Nicaragua)
+            if (primerosDigitos === '89' || primerosDigitos === '88' || primerosDigitos === '87' || 
+                primerosDigitos === '86' || primerosDigitos === '85' || primerosDigitos === '84' ||
+                primerosDigitos === '83' || primerosDigitos === '82' || primerosDigitos === '81') {
+                return 'Claro';
+            }
+            return '';
+        }
+
+        // Validar teléfono y sugerir operador automáticamente
+        function validarTelefonoYOperador(input) {
+            let valor = input.value;
+            valor = valor.replace(/[^0-9]/g, '');
+            input.value = valor;
+            
+            if (valor.length === 8) {
+                if (!esNumeroValido(valor)) {
+                    input.classList.add('error-border');
+                    input.classList.remove('valid-border');
+                    input.title = 'Número inválido: debe tener al menos 3 dígitos diferentes. No se permiten patrones como 22223333 o 19191919';
+                } else {
+                    input.classList.remove('error-border');
+                    input.classList.add('valid-border');
+                    input.title = '';
+                    
+                    // Sugerir operador automáticamente si no está seleccionado
+                    const operadorDetectado = detectarOperadorPorNumero(valor);
+                    const selectOperador = document.getElementById('tipoOperador');
+                    if (operadorDetectado && !selectOperador.value) {
+                        selectOperador.value = operadorDetectado;
+                    }
+                }
+            } else {
+                input.classList.remove('error-border');
+                input.classList.remove('valid-border');
+                input.title = '';
+            }
+        }
+
+        function soloLetrasYEspacios(event) {
+            const key = event.key;
+            const regex = /^[a-zA-ZáéíóúñÁÉÍÓÚÑ\s]$/;
+            if (!regex.test(key) && key !== 'Backspace' && key !== 'Tab' && key !== 'Enter' && key !== 'Delete' && key !== 'ArrowLeft' && key !== 'ArrowRight') {
+                event.preventDefault();
+            }
+        }
+
+        function soloNumeros(event) {
+            const key = event.key;
+            if (key !== 'Backspace' && key !== 'Tab' && key !== 'Enter' && key !== 'Delete' && key !== 'ArrowLeft' && key !== 'ArrowRight' && (key < '0' || key > '9')) {
+                event.preventDefault();
+            }
+        }
+
+        function validarNombreCompleto(input) {
+            let valor = input.value;
+            valor = valor.replace(/\s+/g, ' ');
+            input.value = valor;
+            
+            const palabras = valor.trim().split(/\s+/);
+            
+            for (let i = 0; i < palabras.length; i++) {
+                if (palabras[i].length > 12) {
+                    input.classList.add('error-border');
+                    input.classList.remove('valid-border');
+                    input.title = `La palabra "${palabras[i]}" excede los 12 caracteres`;
+                    return false;
+                }
+            }
+            
+            if (valor.length > 70) {
+                input.classList.add('error-border');
+                input.classList.remove('valid-border');
+                input.title = 'El nombre completo no puede exceder 70 caracteres';
+                return false;
+            }
+            
+            input.classList.remove('error-border');
+            input.classList.add('valid-border');
+            input.title = '';
+            return true;
+        }
+
+        function esNumeroValido(telefono) {
+            if (!telefono || telefono.length !== 8) return false;
+            if (!/^\d+$/.test(telefono)) return false;
+            
+            const digitosUnicos = new Set(telefono.split(''));
+            if (digitosUnicos.size < 3) return false;
+            
+            let esPatronRepetitivo = true;
+            const primerPar = telefono.substring(0, 2);
+            for (let i = 0; i < telefono.length; i += 2) {
+                if (telefono.substring(i, i + 2) !== primerPar) {
+                    esPatronRepetitivo = false;
+                    break;
+                }
+            }
+            if (esPatronRepetitivo && primerPar[0] !== primerPar[1]) return false;
+            
+            if (digitosUnicos.size === 2) {
+                const primerDigito = telefono[0];
+                let primerGrupo = true;
+                let primerGrupoCompleto = true;
+                for (let i = 0; i < telefono.length; i++) {
+                    if (primerGrupo && telefono[i] !== primerDigito) {
+                        primerGrupo = false;
+                    }
+                    if (!primerGrupo && telefono[i] === primerDigito) {
+                        primerGrupoCompleto = false;
+                        break;
+                    }
+                }
+                if (primerGrupoCompleto) return false;
+            }
+            
+            const frecuencia = {};
+            for (let i = 0; i < telefono.length; i++) {
+                const digito = telefono[i];
+                frecuencia[digito] = (frecuencia[digito] || 0) + 1;
+                if (frecuencia[digito] > 4) return false;
+            }
+            
+            return true;
+        }
+
+        function mostrarConfirmacion(mensaje, accionSi) {
+            document.getElementById('confirmMessage').innerText = mensaje;
+            const modal = document.getElementById('confirmModal');
+            modal.style.display = 'flex';
+            
+            const btnSi = document.getElementById('confirmYes');
+            const btnNo = document.getElementById('confirmNo');
+            
+            const newBtnSi = btnSi.cloneNode(true);
+            const newBtnNo = btnNo.cloneNode(true);
+            btnSi.parentNode.replaceChild(newBtnSi, btnSi);
+            btnNo.parentNode.replaceChild(newBtnNo, btnNo);
+            
+            newBtnSi.onclick = () => {
+                modal.style.display = 'none';
+                accionSi();
+            };
+            newBtnNo.onclick = () => {
+                modal.style.display = 'none';
+            };
+        }
+        
+        function mostrarExito(mensaje, callback) {
+            document.getElementById('successMessage').innerText = mensaje;
+            const modal = document.getElementById('successModal');
+            modal.style.display = 'flex';
+            
+            const btn = document.querySelector('#successModal .success-modal-btn');
+            btn.onclick = () => {
+                modal.style.display = 'none';
+                if (callback) callback();
+            };
+        }
+        
+        function mostrarError(mensaje) {
+            document.getElementById('errorMessage').innerText = mensaje;
+            document.getElementById('errorModal').style.display = 'flex';
+        }
+        
+        function cerrarErrorModal() {
+            document.getElementById('errorModal').style.display = 'none';
+        }
+        
+        function cerrarSuccessModal() {
+            document.getElementById('successModal').style.display = 'none';
+        }
+
+        function volverAlMenuAdmin() {
+            window.location.href = 'menu_admin.html';
+        }
+        
+        function mostrarConfirmacionVolver() {
+            mostrarConfirmacion('¿Estás seguro de que deseas volver al menú?', volverAlMenuAdmin);
+        }
+
+        async function cargarProveedores() {
+            const tabla = document.getElementById('tablaProveedores');
+            
+            try {
+                const respuesta = await fetch('/api/proveedores');
+                const proveedores = await respuesta.json();
+
+                if (!respuesta.ok) {
+                    throw new Error(proveedores.error || "Error al conectar con la base de datos");
+                }
+
+                proveedoresData = proveedores;
+                
+                const estadosGuardados = localStorage.getItem('estadosProveedores');
+                estadosData = estadosGuardados ? JSON.parse(estadosGuardados) : {};
+                
+                const nombresGuardados = localStorage.getItem('nombresCompletosProveedores');
+                nombresCompletosData = nombresGuardados ? JSON.parse(nombresGuardados) : {};
+                
+                proveedoresData.forEach(prov => {
+                    if (!estadosData[prov.Id_Proveedor]) {
+                        estadosData[prov.Id_Proveedor] = 'Activo';
+                    }
+                    if (!nombresCompletosData[prov.Id_Proveedor]) {
+                        nombresCompletosData[prov.Id_Proveedor] = prov.Nombre || '';
+                    }
+                });
+                
+                localStorage.setItem('estadosProveedores', JSON.stringify(estadosData));
+                localStorage.setItem('nombresCompletosProveedores', JSON.stringify(nombresCompletosData));
+                
+                mostrarProveedores();
+
+            } catch (error) {
+                console.error("Error cargando proveedores:", error);
+                tabla.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #c00;">Error al cargar los datos. Asegúrate que el servidor esté funcionando.<\/td><\/tr>`;
+            }
+        }
+
+        function mostrarProveedores() {
+            const tabla = document.getElementById('tablaProveedores');
+            const busqueda = document.getElementById('buscarProveedor').value.toLowerCase();
+            
+            const filteredData = proveedoresData.filter(prov => {
+                const nombreCompleto = nombresCompletosData[prov.Id_Proveedor] || prov.Nombre || '';
+                const estado = estadosData[prov.Id_Proveedor] || 'Activo';
+                const empresa = prov.Empresa || '';
+                const operador = prov.Operador || ''; // AHORA LEE DE LA BASE DE DATOS
+                
+                return nombreCompleto.toLowerCase().includes(busqueda) ||
+                       empresa.toLowerCase().includes(busqueda) ||
+                       estado.toLowerCase().includes(busqueda) ||
+                       operador.toLowerCase().includes(busqueda);
+            });
+
+            if (filteredData.length === 0) {
+                tabla.innerHTML = '<tr><td colspan="6" style="text-align: center;">No se encontraron proveedores.</td></tr>';
+                return;
+            }
+
+            tabla.innerHTML = "";
+            filteredData.forEach(prov => {
+                const telefono = prov.Num_celular || 'Sin teléfono';
+                const nombreCompleto = nombresCompletosData[prov.Id_Proveedor] || prov.Nombre || 'Sin nombre';
+                // TOMAR EL OPERADOR DIRECTAMENTE DE LA BASE DE DATOS
+                const operador = prov.Operador || 'No especificado';
+                const estado = estadosData[prov.Id_Proveedor] || 'Activo';
+                
+                let operadorClass = '';
+                if (operador === 'Claro') {
+                    operadorClass = 'style="color: #1976d2; font-weight: bold;"';
+                } else if (operador === 'Tigo') {
+                    operadorClass = 'style="color: #e65100; font-weight: bold;"';
+                }
+                
+                let estadoClass = estado === 'Activo' ? 'estado-activo' : 'estado-inactivo';
+                
+                const fila = `
+                    <tr>
+                        <td style="white-space: normal; word-break: break-word;">${escapeHtml(nombreCompleto)}<\/td>
+                        <td>${escapeHtml(prov.Empresa || 'Sin empresa')}<\/td>
+                        <td>${telefono}<\/td>
+                        <td ${operadorClass}>${operador}<\/td>
+                        <td class="${estadoClass}">${estado}<\/td>
+                        <td><button class="edit-btn" onclick="editarProveedor(${prov.Id_Proveedor})">✏️ Editar<\/button><\/td>
+                    <\/tr>
+                `;
+                tabla.innerHTML += fila;
+            });
+        }
+
+        // Función para escapar caracteres especiales y evitar XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function filtrarProveedores() {
+            mostrarProveedores();
+        }
+
+        function editarProveedor(idProveedor) {
+            const proveedor = proveedoresData.find(p => p.Id_Proveedor === idProveedor);
+            if (!proveedor) return;
+            
+            document.getElementById('modalTitle').textContent = 'Editar Proveedor';
+            document.getElementById('editIdProveedor').value = proveedor.Id_Proveedor;
+            document.getElementById('provNombre').value = nombresCompletosData[proveedor.Id_Proveedor] || proveedor.Nombre || '';
+            document.getElementById('provEmpresa').value = proveedor.Empresa || '';
+            document.getElementById('provTelefono').value = proveedor.Num_celular || '';
+            // CARGAR OPERADOR DESDE LA BASE DE DATOS
+            document.getElementById('tipoOperador').value = proveedor.Operador || '';
+            document.getElementById('estadoProveedor').value = estadosData[proveedor.Id_Proveedor] || 'Activo';
+            
+            validarNombreCompleto(document.getElementById('provNombre'));
+            validarTelefonoYOperador(document.getElementById('provTelefono'));
+            
+            document.getElementById('estadoGroup').style.display = 'block';
+            abrirModalProveedor();
+        }
+
+        function abrirModalProveedorParaAgregar() {
+            document.getElementById('modalTitle').textContent = 'Agregar Proveedor';
+            document.getElementById('editIdProveedor').value = '';
+            document.getElementById('provNombre').value = '';
+            document.getElementById('provEmpresa').value = '';
+            document.getElementById('provTelefono').value = '';
+            document.getElementById('tipoOperador').value = '';
+            document.getElementById('estadoGroup').style.display = 'none';
+            
+            document.getElementById('provNombre').classList.remove('error-border', 'valid-border');
+            document.getElementById('provTelefono').classList.remove('error-border', 'valid-border');
+            
+            abrirModalProveedor();
+        }
+
+        async function verificarNumeroDuplicado(telefono, idExcluir = null) {
+            for (const prov of proveedoresData) {
+                if (idExcluir && prov.Id_Proveedor === parseInt(idExcluir)) continue;
+                if (prov.Num_celular === telefono) return true;
+            }
+            return false;
+        }
+
+        async function guardarProveedor() {
+            const nombreCompleto = document.getElementById('provNombre').value.trim();
+            const empresa = document.getElementById('provEmpresa').value.trim();
+            const telefono = document.getElementById('provTelefono').value.trim();
+            const operador = document.getElementById('tipoOperador').value;
+            const editId = document.getElementById('editIdProveedor').value;
+            const estado = editId ? document.getElementById('estadoProveedor').value : 'Activo';
+
+            if (!nombreCompleto) {
+                mostrarError('Por favor, ingrese el nombre completo del proveedor');
+                return;
+            }
+            
+            if (nombreCompleto !== nombreCompleto.trim()) {
+                mostrarError('El nombre no puede tener espacios al inicio o final');
+                return;
+            }
+            
+            if (/\s{2,}/.test(nombreCompleto)) {
+                mostrarError('El nombre no puede tener múltiples espacios seguidos');
+                return;
+            }
+            
+            const palabras = nombreCompleto.split(/\s+/);
+            for (let palabra of palabras) {
+                if (palabra.length > 12) {
+                    mostrarError(`La palabra "${palabra}" excede los 12 caracteres permitidos`);
+                    return;
+                }
+            }
+            
+            if (nombreCompleto.length > 70) {
+                mostrarError('El nombre completo no puede exceder 70 caracteres');
+                return;
+            }
+            
+            const soloLetrasEspaciosRegex = /^[a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+$/;
+            if (!soloLetrasEspaciosRegex.test(nombreCompleto)) {
+                mostrarError('El nombre solo puede contener letras y espacios');
+                return;
+            }
+            
+            if (!empresa) {
+                mostrarError('Por favor, ingrese la empresa del proveedor');
+                return;
+            }
+            
+            if (!telefono) {
+                mostrarError('Por favor, ingrese el número de teléfono');
+                return;
+            }
+            
+            if (telefono.length !== 8) {
+                mostrarError('El número de teléfono debe tener exactamente 8 dígitos');
+                return;
+            }
+            
+            if (!esNumeroValido(telefono)) {
+                mostrarError('Número de teléfono inválido. Debe tener al menos 3 dígitos diferentes. No se permiten patrones como 22223333 o 19191919');
+                return;
+            }
+            
+            if (!operador) {
+                mostrarError('Por favor, seleccione el operador de telefonía (Claro o Tigo)');
+                return;
+            }
+            
+            const esDuplicado = await verificarNumeroDuplicado(telefono, editId);
+            if (esDuplicado) {
+                mostrarError('Este número de teléfono ya está registrado para otro proveedor');
+                return;
+            }
+            
+            if (editId) {
+                await ejecutarActualizacionProveedor(nombreCompleto, empresa, telefono, operador, estado, editId);
+            } else {
+                await ejecutarCreacionProveedor(nombreCompleto, empresa, telefono, operador, estado);
+            }
+        }
+        
+        async function ejecutarCreacionProveedor(nombreCompleto, empresa, telefono, operador, estado) {
+            try {
+                const respuesta = await fetch('/api/proveedores', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        Nombre: nombreCompleto.substring(0, 45),
+                        Empresa: empresa,
+                        Num_celular: telefono,
+                        Operador: operador  // ENVIAR OPERADOR A LA BD
+                    })
+                });
+                
+                const resultado = await respuesta.json();
+                
+                if (!respuesta.ok) {
+                    throw new Error(resultado.error || 'Error al guardar el proveedor');
+                }
+                
+                nombresCompletosData[resultado.Id_Proveedor] = nombreCompleto;
+                estadosData[resultado.Id_Proveedor] = estado;
+                
+                localStorage.setItem('nombresCompletosProveedores', JSON.stringify(nombresCompletosData));
+                localStorage.setItem('estadosProveedores', JSON.stringify(estadosData));
+                
+                mostrarExito('Proveedor agregado exitosamente', () => {
+                    cerrarModalProveedor();
+                    cargarProveedores();
+                });
+                
+                limpiarModalProveedor();
+                
+            } catch (error) {
+                mostrarError(error.message || 'Error al guardar el proveedor');
+            }
+        }
+        
+        async function ejecutarActualizacionProveedor(nombreCompleto, empresa, telefono, operador, estado, editId) {
+            try {
+                const respuesta = await fetch(`/api/proveedores/${editId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        Nombre: nombreCompleto.substring(0, 45),
+                        Empresa: empresa,
+                        Num_celular: telefono,
+                        Operador: operador  // ENVIAR OPERADOR A LA BD
+                    })
+                });
+                
+                const resultado = await respuesta.json();
+                
+                if (!respuesta.ok) {
+                    throw new Error(resultado.error || 'Error al actualizar el proveedor');
+                }
+                
+                nombresCompletosData[editId] = nombreCompleto;
+                estadosData[editId] = estado;
+                
+                localStorage.setItem('nombresCompletosProveedores', JSON.stringify(nombresCompletosData));
+                localStorage.setItem('estadosProveedores', JSON.stringify(estadosData));
+                
+                mostrarExito('Proveedor actualizado exitosamente', () => {
+                    cerrarModalProveedor();
+                    cargarProveedores();
+                });
+                
+                limpiarModalProveedor();
+                
+            } catch (error) {
+                mostrarError(error.message || 'Error al actualizar el proveedor');
+            }
+        }
+        
+        function limpiarModalProveedor() {
+            document.getElementById('provNombre').value = '';
+            document.getElementById('provNombre').classList.remove('error-border', 'valid-border');
+            document.getElementById('provEmpresa').value = '';
+            document.getElementById('provTelefono').value = '';
+            document.getElementById('provTelefono').classList.remove('error-border', 'valid-border');
+            document.getElementById('tipoOperador').value = '';
+            document.getElementById('editIdProveedor').value = '';
+            document.getElementById('estadoProveedor').value = 'Activo';
+            document.getElementById('estadoGroup').style.display = 'none';
+            document.getElementById('modalTitle').textContent = 'Agregar Proveedor';
+        }
+        
+        function abrirModalProveedor() { 
+            document.getElementById("modalProveedor").style.display = "flex"; 
+            document.body.classList.add("modal-open"); // 🔥 BLOQUEA SCROLL
+        }
+        
+        function cerrarModalProveedor() { 
+            document.getElementById("modalProveedor").style.display = "none"; 
+            document.body.classList.remove("modal-open");
+            limpiarModalProveedor();
+        }
+
+        window.onload = cargarProveedores;
+    </script>
+</body>
+</html>
