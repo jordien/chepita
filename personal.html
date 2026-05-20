@@ -30,6 +30,12 @@
                 </div>
 
                 <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> Correo Electrónico:</label>
+                    <input type="email" id="email" placeholder="Ej: trabajador@correo.com" required>
+                    <small>Se enviará un enlace para que configure su contraseña</small>
+                </div>
+
+                <div class="form-group">
                     <label><i class="fas fa-phone"></i> Número de Celular:</label>
                     <input type="tel" id="celular" placeholder="Ej: 88901234" maxlength="8" required>
                     <small>8 dígitos, solo números</small>
@@ -59,7 +65,7 @@
             <h2><i class="fas fa-list"></i> Lista de Trabajadores</h2>
             <div class="search-box">
                 <i class="fas fa-search"></i>
-                <input type="text" id="buscarTrabajador" placeholder="Buscar por nombre o celular..." onkeyup="filtrarTrabajadores()">
+                <input type="text" id="buscarTrabajador" placeholder="Buscar por nombre, celular o email..." onkeyup="filtrarTrabajadores()">
             </div>
             <div class="table-container">
                 <table class="personal-table">
@@ -67,6 +73,8 @@
                         <tr>
                             <th>ID</th>
                             <th>Nombre Completo</th>
+                            <th>Email</th>
+                            <th>Usuario</th>
                             <th>Celular</th>
                             <th>Salario</th>
                             <th>Estado</th>
@@ -74,7 +82,7 @@
                         </tr>
                     </thead>
                     <tbody id="tablaTrabajadores">
-                        <tr><td colspan="6" style="text-align: center;">Cargando trabajadores...<\/td><\/tr>
+                        <tr><td colspan="8" style="text-align: center;">Cargando trabajadores...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -121,6 +129,15 @@
                 <input type="text" id="editNombre" placeholder="Nombre completo">
             </div>
             <div class="form-group">
+                <label>Correo Electrónico:</label>
+                <input type="email" id="editEmail" placeholder="correo@ejemplo.com">
+            </div>
+            <div class="form-group">
+                <label>Usuario:</label>
+                <input type="text" id="editUsuario" placeholder="nombre.usuario" readonly style="background: #f5f5f5;">
+                <small>El usuario se genera automáticamente y no se puede editar</small>
+            </div>
+            <div class="form-group">
                 <label>Número de Celular:</label>
                 <input type="tel" id="editCelular" maxlength="8" placeholder="8 dígitos">
             </div>
@@ -134,6 +151,13 @@
                     <option value="1">Activo</option>
                     <option value="0">Inactivo</option>
                 </select>
+            </div>
+            <div class="form-group">
+                <label>Contraseña Temporal:</label>
+                <div class="password-info" style="background: #f0f0f0; padding: 10px; border-radius: 8px; font-size: 14px;">
+                    <i class="fas fa-info-circle"></i> 
+                    <span id="editPasswordStatus">Contraseña pendiente de configuración</span>
+                </div>
             </div>
             <div class="edit-modal-buttons">
                 <button class="edit-modal-save" onclick="actualizarTrabajador()">Guardar Cambios</button>
@@ -199,9 +223,22 @@
         function abrirEditModal(trabajador) {
             document.getElementById('editId').value = trabajador.Id_Trabajador;
             document.getElementById('editNombre').value = trabajador.NombreCompleto;
+            document.getElementById('editEmail').value = trabajador.email || '';
+            document.getElementById('editUsuario').value = trabajador.nombre_usuario || 'No asignado';
             document.getElementById('editCelular').value = trabajador.Celular || '';
             document.getElementById('editSalario').value = trabajador.Salario || '';
             document.getElementById('editActivo').value = trabajador.Activo;
+            
+            // Mostrar estado de la contraseña
+            const passwordStatus = document.getElementById('editPasswordStatus');
+            if (trabajador.debe_cambiar_password === 1 || trabajador.debe_cambiar_password === true) {
+                passwordStatus.innerHTML = '<i class="fas fa-clock"></i> Contraseña temporal - Pendiente de configuración';
+                passwordStatus.style.color = '#e67e22';
+            } else {
+                passwordStatus.innerHTML = '<i class="fas fa-check-circle"></i> Contraseña ya configurada';
+                passwordStatus.style.color = '#27ae60';
+            }
+            
             document.getElementById('editModal').style.display = 'flex';
         }
 
@@ -221,7 +258,7 @@
 
             } catch (error) {
                 console.error("Error cargando trabajadores:", error);
-                tabla.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #c00;">❌ Error al cargar los datos. Asegúrate que el servidor esté funcionando.<\/td><\/tr>`;
+                tabla.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #c00;">❌ Error al cargar los datos. Asegúrate que el servidor esté funcionando.</td></tr>`;
             }
         }
 
@@ -231,11 +268,12 @@
 
             const filteredData = trabajadoresData.filter(trabajador => {
                 return trabajador.NombreCompleto.toLowerCase().includes(busqueda) ||
-                       (trabajador.Celular && trabajador.Celular.includes(busqueda));
+                       (trabajador.Celular && trabajador.Celular.includes(busqueda)) ||
+                       (trabajador.email && trabajador.email.toLowerCase().includes(busqueda));
             });
 
             if (filteredData.length === 0) {
-                tabla.innerHTML = '<tr><td colspan="6" style="text-align: center;">📭 No se encontraron trabajadores.<\/td><\/tr>';
+                tabla.innerHTML = '<tr><td colspan="8" style="text-align: center;">📭 No se encontraron trabajadores.</td></tr>';
                 return;
             }
 
@@ -244,11 +282,19 @@
                 const estadoClass = trabajador.Activo == 1 ? 'estado-activo' : 'estado-inactivo';
                 const estadoTexto = trabajador.Activo == 1 ? 'Activo' : 'Inactivo';
                 const salario = trabajador.Salario ? `C$ ${parseFloat(trabajador.Salario).toFixed(2)}` : 'N/A';
+                const email = trabajador.email || 'No registrado';
+                const usuario = trabajador.nombre_usuario || 'No asignado';
+                
+                // Indicador de contraseña pendiente
+                const passwordPending = (trabajador.debe_cambiar_password === 1 || trabajador.debe_cambiar_password === true);
+                const passwordIcon = passwordPending ? '<i class="fas fa-clock" style="color: #e67e22;" title="Contraseña pendiente"></i>' : '<i class="fas fa-check-circle" style="color: #27ae60;" title="Contraseña configurada"></i>';
                 
                 const fila = `
                     <tr>
                         <td>${trabajador.Id_Trabajador}</td>
-                        <td>${trabajador.NombreCompleto}</td>
+                        <td>${trabajador.NombreCompleto} ${passwordIcon}</td>
+                        <td><small>${email}</small></td>
+                        <td><small>${usuario}</small></td>
                         <td>${trabajador.Celular || 'N/A'}</td>
                         <td>${salario}</td>
                         <td><span class="${estadoClass}">${estadoTexto}</span></td>
@@ -280,12 +326,18 @@
         async function actualizarTrabajador() {
             const id = document.getElementById('editId').value;
             const nombre = document.getElementById('editNombre').value.trim();
+            const email = document.getElementById('editEmail').value.trim();
             const celular = document.getElementById('editCelular').value.trim();
             const salario = document.getElementById('editSalario').value;
             const activo = document.getElementById('editActivo').value;
 
             if (!nombre) {
                 mostrarError('El nombre completo es requerido');
+                return;
+            }
+
+            if (!email) {
+                mostrarError('El correo electrónico es requerido');
                 return;
             }
 
@@ -299,6 +351,13 @@
                 return;
             }
 
+            // Validar formato de email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                mostrarError('Ingrese un correo electrónico válido');
+                return;
+            }
+
             try {
                 const respuesta = await fetch(`/api/trabajadores/${id}`, {
                     method: 'PUT',
@@ -306,6 +365,7 @@
                     body: JSON.stringify({
                         NombreCompleto: nombre,
                         Celular: celular,
+                        Email: email,
                         Salario: salario,
                         Activo: activo
                     })
@@ -360,12 +420,25 @@
             e.preventDefault();
             
             const nombre = document.getElementById('nombreCompleto').value.trim();
+            const email = document.getElementById('email').value.trim();
             const celular = document.getElementById('celular').value.trim();
             const salario = document.getElementById('salario').value;
             const activo = document.getElementById('activo').value;
 
             if (!nombre) {
                 mostrarError('Por favor, ingrese el nombre completo');
+                return;
+            }
+
+            if (!email) {
+                mostrarError('Por favor, ingrese el correo electrónico');
+                return;
+            }
+
+            // Validar formato de email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                mostrarError('Ingrese un correo electrónico válido');
                 return;
             }
 
@@ -384,6 +457,12 @@
                 return;
             }
 
+            // Mostrar mensaje de carga
+            const submitBtn = document.querySelector('#formTrabajador .btn-save');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando y enviando email...';
+            submitBtn.disabled = true;
+
             try {
                 const respuesta = await fetch('/api/trabajadores', {
                     method: 'POST',
@@ -391,6 +470,7 @@
                     body: JSON.stringify({
                         NombreCompleto: nombre,
                         Celular: celular,
+                        Email: email,
                         Salario: salario,
                         Activo: activo
                     })
@@ -402,15 +482,43 @@
                     throw new Error(resultado.error || 'Error al guardar el trabajador');
                 }
 
-                mostrarExito('Trabajador agregado exitosamente', () => {
+                let mensajeExito = 'Trabajador agregado exitosamente';
+                if (resultado.message && resultado.message.includes('email')) {
+                    mensajeExito = resultado.message;
+                } else {
+                    mensajeExito = 'Trabajador agregado. Se ha enviado un email para que configure su contraseña.';
+                }
+
+                mostrarExito(mensajeExito, () => {
                     document.getElementById('formTrabajador').reset();
                     cargarTrabajadores();
                 });
 
             } catch (error) {
                 mostrarError(error.message || 'Error al guardar el trabajador');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
             }
         });
+
+        // Función para reenviar email de registro (opcional)
+        async function reenviarEmailRegistro(id) {
+            try {
+                const respuesta = await fetch(`/api/trabajadores/${id}/reenviar-email`, {
+                    method: 'POST'
+                });
+                const resultado = await respuesta.json();
+                
+                if (respuesta.ok) {
+                    mostrarExito('Se ha reenviado el email de registro al trabajador');
+                } else {
+                    mostrarError(resultado.error || 'Error al reenviar el email');
+                }
+            } catch (error) {
+                mostrarError('Error al reenviar el email');
+            }
+        }
 
         cargarTrabajadores();
     </script>

@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tienda Chepita - Acceso</title>
-    <!-- METAS ANTI-CACHÉ -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -121,6 +120,96 @@
             text-decoration: underline;
         }
 
+        .login-caja-form {
+            margin-top: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a4a4a;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+
+        .input-icon {
+            position: relative;
+        }
+
+        .input-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #caa0d8;
+            font-size: 16px;
+        }
+
+        .input-icon input {
+            width: 100%;
+            padding: 12px 12px 12px 45px;
+            border: 2px solid #f3d1e6;
+            border-radius: 14px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .input-icon input:focus {
+            border-color: #caa0d8;
+            box-shadow: 0 0 0 3px rgba(202,160,216,0.2);
+            outline: none;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #e7b6d4, #caa0d8);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #d9468f, #caa0d8);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(202,160,216,0.4);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 12px;
+            text-align: center;
+            display: none;
+        }
+
+        .subtitle-login {
+            font-size: 13px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .login-header h3 {
+            color: #b57acb;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
         .busqueda-trabajador-container {
             position: relative;
         }
@@ -207,18 +296,18 @@
     <header class="top-bar">
         <div class="brands-container">
             <div class="brands-track">
-            <img src="imagenes/marcas/logo1.png">
-            <img src="imagenes/marcas/logo2.png">
-            <img src="imagenes/marcas/logo3.png">
-            <img src="imagenes/marcas/logo4.png">
-            <img src="imagenes/marcas/logo5.png">
-            <img src="imagenes/marcas/logo6.png">
-            <img src="imagenes/marcas/logo1.png">
-            <img src="imagenes/marcas/logo2.png">
-            <img src="imagenes/marcas/logo3.png">
-            <img src="imagenes/marcas/logo4.png">
-            <img src="imagenes/marcas/logo5.png">
-            <img src="imagenes/marcas/logo6.png">
+                <img src="imagenes/marcas/logo1.png" alt="Logo 1">
+                <img src="imagenes/marcas/logo2.png" alt="Logo 2">
+                <img src="imagenes/marcas/logo3.png" alt="Logo 3">
+                <img src="imagenes/marcas/logo4.png" alt="Logo 4">
+                <img src="imagenes/marcas/logo5.png" alt="Logo 5">
+                <img src="imagenes/marcas/logo6.png" alt="Logo 6">
+                <img src="imagenes/marcas/logo1.png" alt="Logo 1">
+                <img src="imagenes/marcas/logo2.png" alt="Logo 2">
+                <img src="imagenes/marcas/logo3.png" alt="Logo 3">
+                <img src="imagenes/marcas/logo4.png" alt="Logo 4">
+                <img src="imagenes/marcas/logo5.png" alt="Logo 5">
+                <img src="imagenes/marcas/logo6.png" alt="Logo 6">
             </div>
         </div>
         <div class="clock-box">
@@ -227,83 +316,87 @@
         </div>
     </header>
 
-<div class="main-layout">
-    <div class="left-side">
-        <img src="imagenes/Izquierda.png" class="logo-grande">
-    </div>
-    <div class="right-side">
-        <div class="container">
-            <div id="stepProfile" class="step active">
-                <div class="login-selection vertical">
-                    <button class="btn-login caja" onclick="selectProfile('caja')">
-                        <i class="fa-solid fa-cash-register"></i>
-                        <strong>CAJA</strong>
-                    </button>
-                    <button class="btn-login admin" onclick="selectProfile('admin')">
-                        <i class="fa-solid fa-user-shield"></i>
-                        <strong>ADMINISTRADOR</strong>
-                    </button>
+    <div class="main-layout">
+        <div class="left-side">
+            <img src="imagenes/Izquierda.png" class="logo-grande" alt="Logo Chepita">
+        </div>
+        <div class="right-side">
+            <div class="container">
+                <div id="stepProfile" class="step active">
+                    <div class="login-selection vertical">
+                        <button class="btn-login caja" onclick="selectProfile('caja')">
+                            <i class="fa-solid fa-cash-register"></i>
+                            <strong>CAJA</strong>
+                        </button>
+                        <button class="btn-login admin" onclick="selectProfile('admin')">
+                            <i class="fa-solid fa-user-shield"></i>
+                            <strong>ADMINISTRADOR</strong>
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <div id="stepLoginAdmin" class="step">
-                <button class="back-btn" onclick="goBackToProfile()">← Volver</button>
-                <div class="login-header">
-                    <div class="login-icon"></div>
-                    <h3>Acceso Administrador</h3>
-                </div>
-                <form id="loginAdminForm" onsubmit="return validateAdminLogin(event)">
-                    <div class="input-group">
-                        <label>USUARIO</label>
-                        <div class="input-icon">
-                            <input type="text" id="adminUser" placeholder="Ingrese su usuario">
-                        </div>
+                <div id="stepLoginAdmin" class="step">
+                    <button class="back-btn" onclick="goBackToProfile()">← Volver</button>
+                    <div class="login-header">
+                        <div class="login-icon"></div>
+                        <h3>Acceso Administrador</h3>
                     </div>
-                    <div class="input-group">
-                        <label>CONTRASEÑA</label>
-                        <div class="input-icon">
-                            <input type="password" id="adminPass" placeholder="Ingrese su contraseña">
+                    <form id="loginAdminForm" onsubmit="return validateAdminLogin(event)">
+                        <div class="input-group">
+                            <label>USUARIO</label>
+                            <div class="input-icon">
+                                <i class="fa-solid fa-user"></i>
+                                <input type="text" id="adminUser" placeholder="Ingrese su usuario">
+                            </div>
                         </div>
+                        <div class="input-group">
+                            <label>CONTRASEÑA</label>
+                            <div class="input-icon">
+                                <i class="fa-solid fa-lock"></i>
+                                <input type="password" id="adminPass" placeholder="Ingrese su contraseña">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit">Ingresar</button>
+                        <div id="adminError" class="error-message"></div>
+                    </form>
+                    <div class="forgot-password">
+                        <a onclick="mostrarModalRecuperar()">¿Olvidaste tu contraseña?</a>
                     </div>
-                    <button type="submit" class="btn-submit">Ingresar</button>
-                    <div id="adminError" class="error-message"></div>
-                </form>
-                <div class="forgot-password">
-                    <a onclick="mostrarModalRecuperar()">¿Olvidaste tu contraseña?</a>
                 </div>
-            </div>
 
-            <div id="stepLoginCaja" class="step">
-                <button class="back-btn" onclick="goBackToProfile()">← Volver</button>
-                <div class="login-header">
-                    <div class="login-icon">
-                        <i class="fa-solid fa-cash-register" style="font-size: 40px; color: #b57acb;"></i>
+                <!-- Login CAJA - SIN mostrar el trabajador seleccionado -->
+                <div id="stepLoginCaja" class="step">
+                    <button class="back-btn" onclick="goBackToProfile()">← Volver</button>
+                    <div class="login-header">
+                        <div class="login-icon">
+                            <i class="fa-solid fa-cash-register" style="font-size: 40px; color: #b57acb;"></i>
+                        </div>
+                        <h3>Acceso Caja</h3>
+                        <p class="subtitle-login">Seleccione su nombre e ingrese su contraseña</p>
                     </div>
-                    <h3>Acceso Caja</h3>
-                    <p class="subtitle-login">Escriba su nombre para buscarse</p>
+                    <form id="loginCajaForm" class="login-caja-form" onsubmit="return validateCajaLogin(event)">
+                        <div class="input-group">
+                            <label>BUSCAR TRABAJADOR</label>
+                            <div class="busqueda-trabajador-container">
+                                <i class="fa-solid fa-search"></i>
+                                <input type="text" id="busquedaTrabajador" placeholder="Escriba su nombre..." autocomplete="off">
+                                <div class="sugerencias-container" id="sugerenciasContainer"></div>
+                            </div>
+                            <input type="hidden" id="cajaTrabajadorId" value="">
+                            <input type="hidden" id="cajaTrabajadorNombre" value="">
+                        </div>
+
+                        <div class="input-group">
+                            <label>CONTRASEÑA</label>
+                            <div class="input-icon">
+                                <i class="fa-solid fa-lock"></i>
+                                <input type="password" id="cajaPassword" placeholder="Ingrese su contraseña">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit">Iniciar Sesión</button>
+                        <div id="cajaError" class="error-message"></div>
+                    </form>
                 </div>
-                <form id="loginCajaForm" onsubmit="return validateCajaLogin(event)">
-                    <div class="input-group">
-                        <label>BUSCAR TRABAJADOR</label>
-                        <div class="busqueda-trabajador-container">
-                            <i class="fa-solid fa-search"></i>
-                            <input type="text" id="busquedaTrabajador" placeholder="Escriba su nombre..." autocomplete="off">
-                            <div class="sugerencias-container" id="sugerenciasContainer"></div>
-                        </div>
-                        <input type="hidden" id="cajaTrabajador" value="">
-                        <input type="hidden" id="cajaTrabajadorCelular" value="">
-                        <input type="hidden" id="cajaTrabajadorNombre" value="">
-                    </div>
-                    <div class="input-group">
-                        <label>CODIGO DE SEGURIDAD</label>
-                        <div class="input-icon">
-                            <input type="password" id="cajaCodigo" placeholder="Ingrese su codigo de seguridad">
-                        </div>
-                        <small class="input-help">Su codigo es su numero de celular registrado</small>
-                    </div>
-                    <button type="submit" class="btn-submit">Iniciar Jornada</button>
-                    <div id="cajaError" class="error-message"></div>
-                </form>
             </div>
         </div>
     </div>
@@ -312,10 +405,10 @@
         <div class="modal-contenido">
             <h3>Recuperar Contraseña</h3>
             <div id="paso1Recuperacion">
-                <p>Seleccione el metodo de recuperacion:</p>
+                <p>Seleccione el método de recuperación:</p>
                 <div class="modal-buttons" style="flex-direction: column; gap: 10px;">
                     <button class="modal-btn" onclick="mostrarRecuperarPregunta()">Responder pregunta de seguridad</button>
-                    <button class="modal-btn" onclick="mostrarRecuperarEmail()">Recibir por correo electronico</button>
+                    <button class="modal-btn" onclick="mostrarRecuperarEmail()">Recibir por correo electrónico</button>
                     <button class="modal-btn cancelar" onclick="cerrarModalRecuperar()">Cancelar</button>
                 </div>
             </div>
@@ -326,7 +419,7 @@
                 </div>
                 <div class="input-group">
                     <label>RESPUESTA DE SEGURIDAD</label>
-                    <input type="text" id="recuperarRespuesta" placeholder="Cual es el nombre de tu primera mascota?">
+                    <input type="text" id="recuperarRespuesta" placeholder="¿Cuál es el nombre de tu primera mascota?">
                 </div>
                 <div class="modal-buttons">
                     <button class="modal-btn" onclick="recuperarPorPregunta()">Verificar</button>
@@ -335,7 +428,7 @@
             </div>
             <div id="pasoEmail" style="display:none;">
                 <div class="input-group">
-                    <label>CORREO ELECTRONICO</label>
+                    <label>CORREO ELECTRÓNICO</label>
                     <input type="email" id="recuperarEmail" placeholder="Ingrese su correo registrado">
                 </div>
                 <div class="modal-buttons">
@@ -357,8 +450,8 @@
         let trabajadoresData = [];
         let sugerenciaActiva = -1;
 
-        // LIMPIAR CUALQUIER SESION RESIDUAL AL CARGAR LOGIN
         (function limpiarSesionAnterior() {
+            localStorage.clear();
             sessionStorage.clear();
         })();
 
@@ -372,6 +465,7 @@
             } else {
                 document.getElementById('stepLoginCaja').classList.add('active');
                 cargarTrabajadores();
+                document.getElementById('busquedaTrabajador').focus();
             }
             
             document.getElementById('adminError').style.display = 'none';
@@ -383,69 +477,15 @@
             document.getElementById('stepLoginAdmin').classList.remove('active');
             document.getElementById('stepLoginCaja').classList.remove('active');
             document.getElementById('stepProfile').classList.add('active');
+            
             document.getElementById('adminUser').value = '';
             document.getElementById('adminPass').value = '';
             document.getElementById('busquedaTrabajador').value = '';
-            document.getElementById('cajaCodigo').value = '';
-            document.getElementById('cajaTrabajador').value = '';
-            document.getElementById('cajaTrabajadorCelular').value = '';
+            document.getElementById('cajaPassword').value = '';
+            document.getElementById('cajaTrabajadorId').value = '';
             document.getElementById('cajaTrabajadorNombre').value = '';
             document.getElementById('sugerenciasContainer').classList.remove('mostrar');
             sugerenciaActiva = -1;
-        }
-
-        async function validateAdminLogin(event) {
-            event.preventDefault();
-            
-            const usuario = document.getElementById('adminUser').value.trim();
-            const password = document.getElementById('adminPass').value;
-            const errorDiv = document.getElementById('adminError');
-            
-            if (!usuario || !password) {
-                errorDiv.textContent = 'Por favor, complete todos los campos';
-                errorDiv.style.display = 'block';
-                setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
-                return false;
-            }
-            
-            try {
-                const response = await fetch('/api/admin/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ usuario, password })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    sessionStorage.clear();
-                    sessionStorage.setItem('esAdmin', 'true');
-                    sessionStorage.setItem('tipoUsuario', 'admin');
-                    sessionStorage.setItem('adminUser', data.user);
-                    sessionStorage.setItem('sesionIniciada', 'true');
-                    sessionStorage.setItem('fechaLogin', new Date().toISOString());
-                    
-                    console.log('Admin login exitoso:', data.user);
-                    // USAR replace() EN VEZ DE href - ESTO EVITA EL BOTON ATRAS
-                    window.location.replace("menu_admin.html");
-                    return true;
-                } else {
-                    errorDiv.textContent = data.message || 'Usuario o contraseña incorrectos';
-                    errorDiv.style.display = 'block';
-                    document.getElementById('adminPass').value = '';
-                    document.getElementById('adminPass').focus();
-                    setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
-                    return false;
-                }
-            } catch (error) {
-                console.error('Error en login:', error);
-                errorDiv.textContent = 'Error de conexion con el servidor';
-                errorDiv.style.display = 'block';
-                setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
-                return false;
-            }
         }
 
         async function cargarTrabajadores() {
@@ -458,7 +498,6 @@
                 
                 trabajadoresData = await response.json();
                 
-                // Configurar el campo de busqueda con autocompletado
                 const inputBusqueda = document.getElementById('busquedaTrabajador');
                 
                 inputBusqueda.addEventListener('input', function() {
@@ -469,7 +508,6 @@
                     manejarTecladoSugerencias(e);
                 });
                 
-                // Cerrar sugerencias al hacer clic fuera
                 document.addEventListener('click', function(e) {
                     const container = document.getElementById('sugerenciasContainer');
                     const input = document.getElementById('busquedaTrabajador');
@@ -488,18 +526,11 @@
             const container = document.getElementById('sugerenciasContainer');
             const busqueda = texto.toLowerCase().trim();
             
-            // Limpiar seleccion anterior
-            document.getElementById('cajaTrabajador').value = '';
-            document.getElementById('cajaTrabajadorCelular').value = '';
-            document.getElementById('cajaTrabajadorNombre').value = '';
-            sugerenciaActiva = -1;
-            
             if (busqueda === '') {
                 container.classList.remove('mostrar');
                 return;
             }
             
-            // Filtrar trabajadores que coincidan
             const coincidencias = trabajadoresData.filter(trabajador => 
                 trabajador.NombreCompleto.toLowerCase().includes(busqueda)
             );
@@ -510,16 +541,14 @@
                 return;
             }
             
-            // Mostrar sugerencias
             let html = '';
             coincidencias.forEach((trabajador, index) => {
-                html += `<div class="sugerencia-item" data-index="${index}" data-id="${trabajador.Id_Trabajador}" data-celular="${trabajador.Celular}" data-nombre="${trabajador.NombreCompleto.replace(/"/g, '&quot;')}">${trabajador.NombreCompleto}</div>`;
+                html += `<div class="sugerencia-item" data-index="${index}" data-id="${trabajador.Id_Trabajador}" data-nombre="${trabajador.NombreCompleto.replace(/"/g, '&quot;')}">${trabajador.NombreCompleto}</div>`;
             });
             
             container.innerHTML = html;
             container.classList.add('mostrar');
             
-            // Agregar eventos a las sugerencias
             const items = container.querySelectorAll('.sugerencia-item[data-id]');
             items.forEach(item => {
                 item.addEventListener('click', function() {
@@ -570,63 +599,131 @@
 
         function seleccionarTrabajador(elemento) {
             const id = elemento.getAttribute('data-id');
-            const celular = elemento.getAttribute('data-celular');
             const nombre = elemento.getAttribute('data-nombre');
             
-            document.getElementById('cajaTrabajador').value = id;
-            document.getElementById('cajaTrabajadorCelular').value = celular;
+            document.getElementById('cajaTrabajadorId').value = id;
             document.getElementById('cajaTrabajadorNombre').value = nombre;
             document.getElementById('busquedaTrabajador').value = nombre;
             
             document.getElementById('sugerenciasContainer').classList.remove('mostrar');
             sugerenciaActiva = -1;
+            document.getElementById('cajaPassword').focus();
+        }
+
+        async function validateAdminLogin(event) {
+            event.preventDefault();
             
-            // Enfocar el campo de codigo
-            document.getElementById('cajaCodigo').focus();
+            const usuario = document.getElementById('adminUser').value.trim();
+            const password = document.getElementById('adminPass').value;
+            const errorDiv = document.getElementById('adminError');
+            
+            if (!usuario || !password) {
+                errorDiv.textContent = 'Por favor, complete todos los campos';
+                errorDiv.style.display = 'block';
+                setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
+                return false;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('tipoUsuario', 'admin');
+                    localStorage.setItem('adminUser', data.user);
+                    localStorage.setItem('sesionIniciada', 'true');
+                    window.location.replace("menu_admin.html");
+                    return true;
+                } else {
+                    errorDiv.textContent = data.message || 'Usuario o contraseña incorrectos';
+                    errorDiv.style.display = 'block';
+                    document.getElementById('adminPass').value = '';
+                    document.getElementById('adminPass').focus();
+                    setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error en login:', error);
+                errorDiv.textContent = 'Error de conexión con el servidor';
+                errorDiv.style.display = 'block';
+                setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
+                return false;
+            }
         }
 
         async function validateCajaLogin(event) {
             event.preventDefault();
             
-            const idTrabajador = document.getElementById('cajaTrabajador').value;
-            const nombreTrabajador = document.getElementById('cajaTrabajadorNombre').value;
-            const celularRegistrado = document.getElementById('cajaTrabajadorCelular').value;
-            const codigoIngresado = document.getElementById('cajaCodigo').value.trim();
+            const trabajadorId = document.getElementById('cajaTrabajadorId').value;
+            const trabajadorNombre = document.getElementById('cajaTrabajadorNombre').value;
+            const password = document.getElementById('cajaPassword').value;
             const errorDiv = document.getElementById('cajaError');
             
-            if (!idTrabajador) {
-                errorDiv.textContent = 'Por favor, seleccione un trabajador de la lista de sugerencias.';
+            if (!trabajadorId) {
+                errorDiv.textContent = 'Por favor, seleccione un trabajador de la lista';
                 errorDiv.style.display = 'block';
                 setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
                 return false;
             }
             
-            if (!codigoIngresado) {
-                errorDiv.textContent = 'Por favor, ingrese su codigo de seguridad';
+            if (!password) {
+                errorDiv.textContent = 'Por favor, ingrese su contraseña';
                 errorDiv.style.display = 'block';
                 setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
                 return false;
             }
             
-            if (String(codigoIngresado).trim() === String(celularRegistrado).trim()) {
-                sessionStorage.clear();
+            const submitBtn = document.querySelector('#stepLoginCaja .btn-submit');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verificando...';
+            submitBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/trabajadores/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre_usuario: trabajadorNombre, password: password })
+                });
                 
-                sessionStorage.setItem('cajeroActual', nombreTrabajador);
-                sessionStorage.setItem('cajeroId', idTrabajador);
-                sessionStorage.setItem('fechaInicioJornada', new Date().toISOString());
-                sessionStorage.setItem('tipoUsuario', 'caja');
-                sessionStorage.setItem('sesionIniciada', 'true');
+                const data = await response.json();
                 
-                console.log('Login exitoso:', nombreTrabajador);
-                
-                window.location.replace("menu_caja.html");
-                return true;
-            } else {
-                errorDiv.textContent = 'Codigo incorrecto. Intente nuevamente.';
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('trabajador', JSON.stringify(data.trabajador));
+                    localStorage.setItem('tipoUsuario', 'caja');
+                    localStorage.setItem('sesionIniciada', 'true');
+                    
+                    if (data.trabajador.debe_cambiar_password) {
+                        window.location.replace("cambiar-password-obligatorio.html");
+                    } else {
+                        window.location.replace("menu_caja.html");
+                    }
+                    return true;
+                } else {
+                    errorDiv.textContent = 'Contraseña incorrecta';
+                    errorDiv.style.display = 'block';
+                    document.getElementById('cajaPassword').value = '';
+                    document.getElementById('cajaPassword').focus();
+                    setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
+                    
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error en login de caja:', error);
+                errorDiv.textContent = 'Error de conexión con el servidor';
                 errorDiv.style.display = 'block';
-                document.getElementById('cajaCodigo').value = '';
-                document.getElementById('cajaCodigo').focus();
                 setTimeout(() => { errorDiv.style.display = 'none'; }, 4000);
+                
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
                 return false;
             }
         }
@@ -685,7 +782,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    resultadoTexto.innerHTML = `Su contraseña es: <strong>${data.password}</strong><br><br>Guardela en un lugar seguro.`;
+                    resultadoTexto.innerHTML = `Su contraseña es: <strong>${data.password}</strong><br><br>Guárdela en un lugar seguro.`;
                     resultadoDiv.style.display = 'block';
                     document.getElementById('pasoPregunta').style.display = 'none';
                 } else {
@@ -694,7 +791,7 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                resultadoTexto.innerHTML = 'Error de conexion con el servidor';
+                resultadoTexto.innerHTML = 'Error de conexión con el servidor';
                 resultadoDiv.style.display = 'block';
             }
         }
@@ -705,7 +802,7 @@
             const resultadoTexto = document.getElementById('resultadoTexto');
             
             if (!email) {
-                resultadoTexto.innerHTML = 'Por favor, ingrese su correo electronico.';
+                resultadoTexto.innerHTML = 'Por favor, ingrese su correo electrónico.';
                 resultadoDiv.style.display = 'block';
                 return;
             }
@@ -729,10 +826,23 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                resultadoTexto.innerHTML = 'Error de conexion con el servidor';
+                resultadoTexto.innerHTML = 'Error de conexión con el servidor';
                 resultadoDiv.style.display = 'block';
             }
         }
+        
+        function actualizarFechaHora() {
+            const ahora = new Date();
+            const opcionesFecha = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            const fechaStr = ahora.toLocaleDateString('es-ES', opcionesFecha);
+            const horaStr = ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            
+            document.getElementById('fecha').textContent = fechaStr;
+            document.getElementById('hora').textContent = horaStr;
+        }
+        
+        actualizarFechaHora();
+        setInterval(actualizarFechaHora, 60000);
         
         window.onclick = function(event) {
             const modal = document.getElementById('modalRecuperar');
