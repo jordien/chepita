@@ -506,23 +506,87 @@ app.get('/api/verificar-sesion-trabajador', verificarTokenTrabajador, (req, res)
     res.json({ autenticado: true, usuario: req.usuario });
 });
 
-// ================= ADMINISTRADOR Y SEGURIDAD =================
+// ================= ADMINISTRADOR Y SEGURIDAD (MEJORADO) =================
 
-app.post('/api/admin/login', (req, res) => {
+// Login de ADMINISTRADOR con control de intentos y bcrypt
+app.post('/api/admin/login', async (req, res) => {
     const { usuario, password } = req.body;
-    const sql = 'SELECT * FROM usuarios_admin WHERE usuario = ? AND password = MD5(?)';
     
-    db.query(sql, [usuario, password], (err, results) => {
+    db.query(`SELECT * FROM usuarios_admin WHERE usuario = ?`, [usuario], async (err, results) => {
         if (err) return res.status(500).json({ error: err.sqlMessage });
-        if (results.length > 0) {
+        if (results.length === 0) {
+            return res.status(401).json({ success: false, message: "Usuario o contraseña incorrectos" });
+        }
+        
+        const admin = results[0];
+        
+        // Verificar bloqueo
+        if (admin.bloqueado_hasta && new Date(admin.bloqueado_hasta) > new Date()) {
+            const minutosRestantes = Math.ceil((new Date(admin.bloqueado_hasta) - new Date()) / 60000);
+            return res.status(401).json({ 
+                success: false, 
+                message: `Cuenta bloqueada por ${minutosRestantes} minutos. Demasiados intentos fallidos.` 
+            });
+        }
+        
+        let passwordValida = false;
+        
+        // Verificar con bcrypt primero
+        if (admin.password && admin.password.startsWith('$2b$')) {
+            passwordValida = await bcrypt.compare(password, admin.password);
+        }
+        // Si es MD5 (migración)
+        else if (admin.password && admin.password.length === 32) {
+            const md5pass = crypto.createHash('md5').update(password).digest('hex');
+            if (admin.password === md5pass) {
+                passwordValida = true;
+                // Migrar a bcrypt automáticamente
+                const bcryptHash = await bcrypt.hash(password, 10);
+                db.query(`UPDATE usuarios_admin SET password = ? WHERE id = ?`, [bcryptHash, admin.id]);
+                console.log(`✅ Contraseña de ${admin.usuario} migrada a bcrypt`);
+            }
+        }
+        
+        if (passwordValida) {
+            // Resetear intentos y actualizar último login
+            db.query(`UPDATE usuarios_admin SET 
+                intentos_fallidos = 0, 
+                bloqueado_hasta = NULL,
+                ultimo_login = NOW() 
+                WHERE id = ?`, [admin.id]);
+            
             const token = jwt.sign(
-                { usuario: results[0].usuario, rol: 'admin' },
+                { id: admin.id, usuario: admin.usuario, rol: 'admin' },
                 SECRET_KEY,
-                { expiresIn: '8h' }
+                { expiresIn: '4h' }
             );
-            res.json({ success: true, token: token, user: results[0].usuario });
+            
+            return res.json({ success: true, token: token, user: admin.usuario });
+        }
+        
+        // Contraseña incorrecta - incrementar intentos
+        const nuevosIntentos = (admin.intentos_fallidos || 0) + 1;
+        
+        if (nuevosIntentos >= 5) {
+            const bloqueadoHasta = new Date();
+            bloqueadoHasta.setMinutes(bloqueadoHasta.getMinutes() + 30);
+            
+            db.query(`UPDATE usuarios_admin SET intentos_fallidos = ?, bloqueado_hasta = ? WHERE id = ?`, 
+                [nuevosIntentos, bloqueadoHasta, admin.id]);
+                
+            return res.status(401).json({ 
+                success: false, 
+                message: "Demasiados intentos fallidos. Cuenta bloqueada por 30 minutos." 
+            });
         } else {
-            res.status(401).json({ success: false, message: "Usuario o contraseña incorrectos" });
+            db.query(`UPDATE usuarios_admin SET intentos_fallidos = ? WHERE id = ?`, 
+                [nuevosIntentos, admin.id]);
+                
+            const intentosRestantes = 5 - nuevosIntentos;
+            return res.status(401).json({ 
+                success: false, 
+                message: `Contraseña incorrecta. Le quedan ${intentosRestantes} intento(s).` 
+            });
         }
     });
 });
@@ -587,7 +651,7 @@ app.post('/api/admin/recuperar-email', (req, res) => {
     });
 });
 
-// ========== ENDPOINT PARA VERIFICAR TOKEN DE ADMIN ==========
+// Endpoint para verificar token de ADMIN
 app.get('/api/admin/verificar-token-recuperacion/:token', (req, res) => {
     const { token } = req.params;
     
@@ -604,8 +668,8 @@ app.get('/api/admin/verificar-token-recuperacion/:token', (req, res) => {
 app.post('/api/admin/reset-password', (req, res) => {
     const { token, nuevaPassword } = req.body;
 
-    if (!nuevaPassword || nuevaPassword.length < 4) {
-        return res.status(400).json({ success: false, message: "La nueva contraseña debe tener al menos 4 caracteres." });
+    if (!nuevaPassword || nuevaPassword.length < 8) {
+        return res.status(400).json({ success: false, message: "La nueva contraseña debe tener al menos 8 caracteres." });
     }
 
     const tokenData = resetTokens[token];
@@ -615,8 +679,11 @@ app.post('/api/admin/reset-password', (req, res) => {
 
     const { email } = tokenData;
 
-    const sqlActualizar = 'UPDATE usuarios_admin SET password = MD5(?), password_plain = ? WHERE email = ?';
-    db.query(sqlActualizar, [nuevaPassword, nuevaPassword, email], (err, result) => {
+    // Hashear nueva contraseña con bcrypt
+    const hashedPassword = bcrypt.hashSync(nuevaPassword, 10);
+    
+    const sqlActualizar = 'UPDATE usuarios_admin SET password = ? WHERE email = ?';
+    db.query(sqlActualizar, [hashedPassword, email], (err, result) => {
         if (err) {
             console.error('Error al actualizar:', err);
             return res.status(500).json({ success: false, message: "Error interno del servidor." });
@@ -632,23 +699,74 @@ app.post('/api/admin/reset-password', (req, res) => {
     });
 });
 
-app.post('/api/admin/cambiar-password', (req, res) => {
+// CAMBIAR CONTRASEÑA DE ADMIN (mejorado)
+app.post('/api/admin/cambiar-password', async (req, res) => {
     const { usuario, passwordActual, nuevaPassword } = req.body;
     
-    if (!nuevaPassword || nuevaPassword.length < 4) {
-        return res.status(400).json({ success: false, message: "La nueva contraseña debe tener al menos 4 caracteres" });
+    // Validaciones más estrictas
+    if (!nuevaPassword || nuevaPassword.length < 8) {
+        return res.status(400).json({ 
+            success: false, 
+            message: "La contraseña debe tener al menos 8 caracteres" 
+        });
     }
     
-    const sqlVerificar = 'SELECT * FROM usuarios_admin WHERE usuario = ? AND password = MD5(?)';
+    // Validar mayúscula
+    if (!/[A-Z]/.test(nuevaPassword)) {
+        return res.status(400).json({ 
+            success: false, 
+            message: "La contraseña debe contener al menos una mayúscula" 
+        });
+    }
     
-    db.query(sqlVerificar, [usuario, passwordActual], (err, results) => {
+    // Validar número
+    if (!/[0-9]/.test(nuevaPassword)) {
+        return res.status(400).json({ 
+            success: false, 
+            message: "La contraseña debe contener al menos un número" 
+        });
+    }
+    
+    db.query(`SELECT * FROM usuarios_admin WHERE usuario = ?`, [usuario], async (err, results) => {
         if (err) return res.status(500).json({ success: false, message: "Error en el servidor" });
         if (results.length === 0) {
+            return res.status(401).json({ success: false, message: "Usuario no encontrado" });
+        }
+        
+        const admin = results[0];
+        let passwordActualValida = false;
+        
+        // Verificar contraseña actual
+        if (admin.password && admin.password.startsWith('$2b$')) {
+            passwordActualValida = await bcrypt.compare(passwordActual, admin.password);
+        } else {
+            const md5pass = crypto.createHash('md5').update(passwordActual).digest('hex');
+            passwordActualValida = (admin.password === md5pass);
+        }
+        
+        if (!passwordActualValida) {
             return res.status(401).json({ success: false, message: "Contraseña actual incorrecta" });
         }
         
-        const sqlActualizar = 'UPDATE usuarios_admin SET password = MD5(?), password_plain = ? WHERE usuario = ?';
-        db.query(sqlActualizar, [nuevaPassword, nuevaPassword, usuario], (err, result) => {
+        // Verificar que la nueva contraseña no sea igual a la actual
+        let esIgual = false;
+        if (admin.password && admin.password.startsWith('$2b$')) {
+            esIgual = await bcrypt.compare(nuevaPassword, admin.password);
+        } else {
+            const md5pass = crypto.createHash('md5').update(nuevaPassword).digest('hex');
+            esIgual = (admin.password === md5pass);
+        }
+        
+        if (esIgual) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "La nueva contraseña no puede ser igual a la anterior" 
+            });
+        }
+        
+        const hashedPassword = await bcrypt.hash(nuevaPassword, 10);
+        
+        db.query(`UPDATE usuarios_admin SET password = ? WHERE usuario = ?`, [hashedPassword, usuario], (err, result) => {
             if (err) return res.status(500).json({ success: false, message: "Error al actualizar" });
             res.json({ success: true, message: "Contraseña actualizada correctamente" });
         });
@@ -2052,6 +2170,8 @@ app.listen(PORT, () => {
     ║  🔐 Autenticación de trabajadores activada (MD5 + bcrypt)
     ║  🔐 Recuperación de contraseña por email activada        
     ║  🔒 5 intentos de login - Bloqueo 15 minutos             
+    ║  🔒 Admin: bcrypt + control de intentos                  
+    ║  🔒 Admin: contraseña mínima 8 caracteres                
     ╚══════════════════════════════════════════════════════════╝
     `);
 });
