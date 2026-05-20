@@ -135,7 +135,7 @@
                 <i class="fas fa-user-shield"></i>
                 <span>Administrador</span>
             </div>
-            <div class="header-date" id="currentDate"></div>
+            <div class="header-date" id="headerDate"></div>
         </div>
 
         <div class="main-title">
@@ -148,7 +148,7 @@
                 <i class="fas fa-store"></i>
             </div>
             <div class="welcome-text">
-                <h3>¡Bienvenido, Administrador!</h3>
+                <h3 id="bienvenidaAdmin">¡Bienvenido, Administrador!</h3>
                 <p>Seleccione una opción para gestionar el sistema</p>
             </div>
         </div>
@@ -246,28 +246,55 @@
     <script>
         let accionConfirmar = null;
 
-        // ========== VERIFICACIÓN DE SESIÓN AL CARGAR ==========
+        // ========== VERIFICACIÓN DE SESIÓN CON TOKEN ==========
         (function verificarSesionAlInicio() {
-            const esAdmin = sessionStorage.getItem('esAdmin');
+            const token = localStorage.getItem('token');
+            const tipoUsuario = localStorage.getItem('tipoUsuario');
             
-            // Si no hay sesión de admin, redirigir al login
-            if (!esAdmin || esAdmin !== 'true') {
+            // Si no hay token o no es admin, redirigir al login
+            if (!token || tipoUsuario !== 'admin') {
+                localStorage.clear();
                 sessionStorage.clear();
                 window.location.replace('PAG.html');
                 return;
             }
+            
+            // Verificar token con el servidor
+            fetch('/api/verificar-sesion', {
+                method: 'GET',
+                headers: {
+                    'x-auth-token': token,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.autenticado) {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.replace('PAG.html');
+                } else {
+                    // Mostrar nombre del admin si está disponible
+                    const adminUser = localStorage.getItem('adminUser');
+                    if (adminUser) {
+                        document.getElementById('bienvenidaAdmin').innerHTML = `¡Bienvenido, ${adminUser}!`;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error verificando sesión:', error);
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.replace('PAG.html');
+            });
         })();
 
         // ========== BLOQUEAR BOTÓN ATRÁS DEL NAVEGADOR ==========
         (function bloquearBotonAtras() {
-            // Agregar un estado al historial
             history.pushState(null, null, location.href);
             
-            // Escuchar el evento de popstate (cuando presionan ← o →)
             window.addEventListener('popstate', function() {
-                // Volver a empujar el estado actual
                 history.pushState(null, null, location.href);
-                // Redirigir al mismo menú (evita que salga)
                 window.location.replace('menu_admin.html');
             });
         })();
@@ -299,7 +326,7 @@
             textoElem.textContent = texto;
             
             botonesDiv.innerHTML = `
-                <button class="modal-btn" id="btnConfirmarSi">Aceptar</button>
+                <button class="modal-btn" id="btnConfirmarSi">Sí, continuar</button>
                 <button class="modal-btn cancelar" id="btnConfirmarNo">Cancelar</button>
             `;
             
@@ -329,16 +356,18 @@
                 weekday: 'long'
             };
             const fechaFormateada = fecha.toLocaleDateString('es-ES', options);
-            const dateElement = document.getElementById('currentDate');
-            if (dateElement) {
-                dateElement.innerHTML = `<i class="fas fa-calendar-alt"></i> ${fechaFormateada}`;
-            }
+            const dateElements = document.querySelectorAll('#currentDate, #headerDate');
+            dateElements.forEach(element => {
+                if (element) {
+                    element.innerHTML = `<i class="fas fa-calendar-alt"></i> ${fechaFormateada}`;
+                }
+            });
         }
         
         function mostrarModalCerrarSesion() {
             mostrarModalConfirmacion('Cerrar Sesión', '¿Está seguro que desea cerrar sesión?', function() {
+                localStorage.clear();
                 sessionStorage.clear();
-                // Usar replace para no dejar rastro en el historial
                 window.location.replace('PAG.html');
             });
         }

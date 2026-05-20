@@ -31,7 +31,7 @@
 
                 <div class="form-group">
                     <label><i class="fas fa-envelope"></i> Correo Electrónico:</label>
-                    <input type="email" id="email" placeholder="Ej: trabajador@correo.com" required>
+                    <input type="email" id="email" placeholder="Ej: jordymartinez68@gmail.com" required>
                     <small>Se enviará un enlace para que configure su contraseña</small>
                 </div>
 
@@ -365,7 +365,7 @@
                     body: JSON.stringify({
                         NombreCompleto: nombre,
                         Celular: celular,
-                        Email: email,
+                        email: email,  // CORREGIDO: 'email' minúscula
                         Salario: salario,
                         Activo: activo
                     })
@@ -438,7 +438,7 @@
             // Validar formato de email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                mostrarError('Ingrese un correo electrónico válido');
+                mostrarError('Ingrese un correo electrónico válido (ejemplo: usuario@gmail.com)');
                 return;
             }
 
@@ -470,7 +470,7 @@
                     body: JSON.stringify({
                         NombreCompleto: nombre,
                         Celular: celular,
-                        Email: email,
+                        email: email,  // CORREGIDO: 'email' minúscula
                         Salario: salario,
                         Activo: activo
                     })

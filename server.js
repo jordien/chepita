@@ -42,8 +42,10 @@ db.connect(err => {
     if (err) return console.error('Error de conexion:', err.message);
     console.log('✅ Conexion exitosa a la base de datos chepita7');
     
-    // Crear tabla de tokens si no existe
+    // Crear tablas necesarias
     crearTablaTokens();
+    crearTablaRecuperacionTokens();
+    agregarColumnasIntentos(); // NUEVA FUNCIÓN
 });
 
 // ================= CONFIGURACIÓN DE GMAIL =================
@@ -57,7 +59,6 @@ const transporter = nodemailer.createTransport({
 
 // Almacenamiento temporal de tokens
 const resetTokens = {};
-const trabajadorTokens = {};
 
 // Clave secreta para JWT
 const SECRET_KEY = 'chepita_secret_key_2025';
@@ -67,7 +68,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'PAG.html'));
 });
 
-// ================= FUNCIONES AUXILIARES NUEVAS =================
+// ================= FUNCIONES AUXILIARES =================
 
 function crearTablaTokens() {
     const sql = `
@@ -86,7 +87,55 @@ function crearTablaTokens() {
     });
 }
 
-// ================= LOGIN DE TRABAJADORES (MODIFICADO CON MD5) =================
+function crearTablaRecuperacionTokens() {
+    const sql = `
+        CREATE TABLE IF NOT EXISTS trabajador_recuperacion_tokens (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            id_trabajador INT NOT NULL,
+            token VARCHAR(255) NOT NULL,
+            expira_en DATETIME NOT NULL,
+            usado TINYINT DEFAULT 0,
+            FOREIGN KEY (id_trabajador) REFERENCES trabajadores(Id_Trabajador)
+        )
+    `;
+    db.query(sql, (err) => {
+        if (err) console.error('Error creando tabla de recuperación:', err);
+        else console.log('✅ Tabla trabajador_recuperacion_tokens verificada');
+    });
+}
+
+// NUEVA FUNCIÓN: Agregar columnas de intentos fallidos si no existen
+function agregarColumnasIntentos() {
+    db.query(`SHOW COLUMNS FROM trabajadores LIKE 'intentos_fallidos'`, (err, results) => {
+        if (err) {
+            console.error('Error verificando columna intentos_fallidos:', err);
+            return;
+        }
+        if (results.length === 0) {
+            console.log('📌 Agregando columna intentos_fallidos...');
+            db.query(`ALTER TABLE trabajadores ADD COLUMN intentos_fallidos INT DEFAULT 0`, (err) => {
+                if (err) console.error('Error agregando intentos_fallidos:', err);
+                else console.log('✅ Columna intentos_fallidos agregada');
+            });
+        }
+    });
+    
+    db.query(`SHOW COLUMNS FROM trabajadores LIKE 'bloqueado_hasta'`, (err, results) => {
+        if (err) {
+            console.error('Error verificando columna bloqueado_hasta:', err);
+            return;
+        }
+        if (results.length === 0) {
+            console.log('📌 Agregando columna bloqueado_hasta...');
+            db.query(`ALTER TABLE trabajadores ADD COLUMN bloqueado_hasta DATETIME DEFAULT NULL`, (err) => {
+                if (err) console.error('Error agregando bloqueado_hasta:', err);
+                else console.log('✅ Columna bloqueado_hasta agregada');
+            });
+        }
+    });
+}
+
+// ================= LOGIN DE TRABAJADORES CON INTENTOS Y BLOQUEO =================
 
 app.post('/api/trabajadores/login', async (req, res) => {
     const { nombre_usuario, password } = req.body;
@@ -101,9 +150,19 @@ app.post('/api/trabajadores/login', async (req, res) => {
         }
         
         const trabajador = results[0];
+        
+        // ========== VERIFICAR BLOQUEO TEMPORAL ==========
+        if (trabajador.bloqueado_hasta && new Date(trabajador.bloqueado_hasta) > new Date()) {
+            const minutosRestantes = Math.ceil((new Date(trabajador.bloqueado_hasta) - new Date()) / 60000);
+            return res.status(401).json({ 
+                success: false, 
+                message: `⚠️ Demasiados intentos fallidos. Cuenta bloqueada por ${minutosRestantes} minutos.` 
+            });
+        }
+        
         let passwordValida = false;
         
-        // MÉTODO 1: Verificar con MD5 (para contraseñas como '1234')
+        // MÉTODO 1: Verificar con MD5
         const md5pass = crypto.createHash('md5').update(password).digest('hex');
         
         if (trabajador.password_hash === md5pass) {
@@ -111,7 +170,7 @@ app.post('/api/trabajadores/login', async (req, res) => {
             console.log(`✅ Login MD5 exitoso para: ${trabajador.NombreCompleto}`);
         }
         
-        // MÉTODO 2: Si no es MD5, probar con bcrypt
+        // MÉTODO 2: Verificar con bcrypt
         if (!passwordValida && trabajador.password_hash && trabajador.password_hash.startsWith('$2b$')) {
             try {
                 passwordValida = await bcrypt.compare(password, trabajador.password_hash);
@@ -121,38 +180,88 @@ app.post('/api/trabajadores/login', async (req, res) => {
             }
         }
         
-        // MÉTODO 3: Último recurso - contraseña temporal '1234' en texto plano
+        // MÉTODO 3: Contraseña temporal '1234'
         if (!passwordValida && password === '1234') {
             passwordValida = true;
             console.log(`⚠️ Login con contraseña temporal 1234 para: ${trabajador.NombreCompleto}`);
         }
         
-        if (!passwordValida) {
-            return res.status(401).json({ success: false, message: "Contraseña incorrecta" });
+        // ========== SI LA CONTRASEÑA ES CORRECTA ==========
+        if (passwordValida) {
+            // Reiniciar intentos fallidos
+            db.query(`UPDATE trabajadores SET intentos_fallidos = 0, bloqueado_hasta = NULL WHERE Id_Trabajador = ?`, 
+                [trabajador.Id_Trabajador]);
+            
+            // Generar token JWT
+            const token = jwt.sign(
+                { id: trabajador.Id_Trabajador, nombre: trabajador.NombreCompleto, rol: 'trabajador' },
+                SECRET_KEY,
+                { expiresIn: '8h' }
+            );
+            
+            return res.json({
+                success: true,
+                token: token,
+                trabajador: {
+                    id: trabajador.Id_Trabajador,
+                    nombre: trabajador.NombreCompleto,
+                    debe_cambiar_password: (trabajador.debe_cambiar_password === 1),
+                    email: trabajador.email,
+                    usuario: trabajador.nombre_usuario
+                }
+            });
         }
         
-        // Generar token JWT
-        const token = jwt.sign(
-            { id: trabajador.Id_Trabajador, nombre: trabajador.NombreCompleto, rol: 'trabajador' },
-            SECRET_KEY,
-            { expiresIn: '8h' }
-        );
+        // ========== CONTRASEÑA INCORRECTA: AUMENTAR INTENTOS ==========
+        const nuevosIntentos = (trabajador.intentos_fallidos || 0) + 1;
+        
+        if (nuevosIntentos >= 5) {
+            // Bloquear por 15 minutos después de 5 intentos fallidos
+            const bloqueadoHasta = new Date();
+            bloqueadoHasta.setMinutes(bloqueadoHasta.getMinutes() + 15);
+            
+            db.query(`UPDATE trabajadores SET intentos_fallidos = ?, bloqueado_hasta = ? WHERE Id_Trabajador = ?`, 
+                [nuevosIntentos, bloqueadoHasta, trabajador.Id_Trabajador]);
+                
+            return res.status(401).json({ 
+                success: false, 
+                message: "❌ Demasiados intentos fallidos. Cuenta bloqueada por 15 minutos." 
+            });
+        } else {
+            db.query(`UPDATE trabajadores SET intentos_fallidos = ? WHERE Id_Trabajador = ?`, 
+                [nuevosIntentos, trabajador.Id_Trabajador]);
+                
+            const intentosRestantes = 5 - nuevosIntentos;
+            return res.status(401).json({ 
+                success: false, 
+                message: `❌ Contraseña incorrecta. Le quedan ${intentosRestantes} intento${intentosRestantes !== 1 ? 's' : ''}.` 
+            });
+        }
+    });
+});
+
+// Endpoint para verificar estado de cuenta (intentos restantes)
+app.get('/api/trabajadores/estado-cuenta/:id', (req, res) => {
+    const { id } = req.params;
+    
+    db.query(`SELECT intentos_fallidos, bloqueado_hasta FROM trabajadores WHERE Id_Trabajador = ?`, [id], (err, results) => {
+        if (err) return res.status(500).json({ error: err.sqlMessage });
+        if (results.length === 0) return res.status(404).json({ error: "Trabajador no encontrado" });
+        
+        const trabajador = results[0];
+        const estaBloqueado = trabajador.bloqueado_hasta && new Date(trabajador.bloqueado_hasta) > new Date();
+        const intentosRestantes = Math.max(0, 5 - (trabajador.intentos_fallidos || 0));
         
         res.json({
-            success: true,
-            token: token,
-            trabajador: {
-                id: trabajador.Id_Trabajador,
-                nombre: trabajador.NombreCompleto,
-                debe_cambiar_password: (trabajador.debe_cambiar_password === 1),
-                email: trabajador.email,
-                usuario: trabajador.nombre_usuario
-            }
+            intentos_fallidos: trabajador.intentos_fallidos || 0,
+            intentos_restantes: intentosRestantes,
+            bloqueado: estaBloqueado,
+            bloqueado_hasta: trabajador.bloqueado_hasta
         });
     });
 });
 
-// ================= CAMBIAR CONTRASEÑA DE TRABAJADOR (NUEVO) =================
+// ================= CAMBIAR CONTRASEÑA DE TRABAJADOR =================
 
 app.post('/api/trabajadores/cambiar-password', async (req, res) => {
     const { id_trabajador, nueva_password } = req.body;
@@ -170,7 +279,7 @@ app.post('/api/trabajadores/cambiar-password', async (req, res) => {
     });
 });
 
-// ================= AGREGAR TRABAJADOR CON EMAIL (MODIFICADO) =================
+// ================= AGREGAR TRABAJADOR =================
 
 app.post('/api/trabajadores', async (req, res) => {
     const { NombreCompleto, Celular, Salario, Activo, email } = req.body;
@@ -209,7 +318,7 @@ app.post('/api/trabajadores', async (req, res) => {
         verificarUsuario(nombreUsuario, async (err, usuarioFinal) => {
             if (err) return res.status(500).json({ error: err.sqlMessage });
             
-            // Usar MD5 para la contraseña temporal (más simple)
+            // Usar MD5 para la contraseña temporal
             const md5pass = crypto.createHash('md5').update('1234').digest('hex');
             
             const sql = `INSERT INTO trabajadores (NombreCompleto, Celular, Salario, Activo, email, nombre_usuario, password_hash, debe_cambiar_password) 
@@ -262,7 +371,7 @@ app.post('/api/trabajadores', async (req, res) => {
     });
 });
 
-// ================= VERIFICAR TOKEN DE REGISTRO (NUEVO) =================
+// ================= VERIFICAR TOKEN DE REGISTRO =================
 
 app.get('/api/verificar-token-registro/:token', (req, res) => {
     const { token } = req.params;
@@ -290,7 +399,7 @@ app.get('/api/verificar-token-registro/:token', (req, res) => {
     });
 });
 
-// ================= COMPLETAR REGISTRO DE TRABAJADOR (NUEVO) =================
+// ================= COMPLETAR REGISTRO =================
 
 app.post('/api/completar-registro-trabajador', async (req, res) => {
     const { token, nueva_password } = req.body;
@@ -337,7 +446,7 @@ app.post('/api/completar-registro-trabajador', async (req, res) => {
     });
 });
 
-// ================= ACTUALIZAR TRABAJADOR (MODIFICADO para incluir email) =================
+// ================= ACTUALIZAR TRABAJADOR =================
 
 app.put('/api/trabajadores/:id', (req, res) => {
     const { id } = req.params;
@@ -351,12 +460,41 @@ app.put('/api/trabajadores/:id', (req, res) => {
     });
 });
 
-// ================= OBTENER TRABAJADORES (MODIFICADO) =================
+// ================= OBTENER TRABAJADORES =================
 
 app.get('/api/trabajadores', (req, res) => {
     db.query(`SELECT Id_Trabajador, NombreCompleto, Celular, Salario, Activo, email, nombre_usuario, debe_cambiar_password FROM trabajadores ORDER BY NombreCompleto`, (err, results) => {
         if (err) return res.status(500).json({ error: err.sqlMessage });
         res.json(results);
+    });
+});
+
+app.get('/api/trabajadores/activos', (req, res) => {
+    db.query(`SELECT Id_Trabajador, NombreCompleto, Celular, nombre_usuario FROM trabajadores WHERE Activo = 1 ORDER BY NombreCompleto`, (err, results) => {
+        if (err) return res.status(500).json({ error: err.sqlMessage });
+        res.json(results);
+    });
+});
+
+app.post('/api/trabajadores/verificar', (req, res) => {
+    const { Id_Trabajador, Codigo } = req.body;
+    
+    db.query(`SELECT * FROM trabajadores WHERE Id_Trabajador = ? AND Celular = ? AND Activo = 1`, [Id_Trabajador, Codigo], (err, results) => {
+        if (err) return res.status(500).json({ error: err.sqlMessage });
+        if (results.length > 0) {
+            res.json({ success: true, trabajador: results[0] });
+        } else {
+            res.json({ success: false, message: 'Código incorrecto o trabajador inactivo' });
+        }
+    });
+});
+
+app.delete('/api/trabajadores/:id', (req, res) => {
+    const { id } = req.params;
+    db.query(`UPDATE trabajadores SET Activo = 0 WHERE Id_Trabajador = ?`, [id], (err, result) => {
+        if (err) return res.status(500).json({ error: err.sqlMessage });
+        if (result.affectedRows === 0) return res.status(404).json({ error: "Trabajador no encontrado" });
+        res.json({ message: "Trabajador desactivado" });
     });
 });
 
@@ -385,7 +523,6 @@ app.get('/api/verificar-sesion-trabajador', verificarTokenTrabajador, (req, res)
 
 // ================= ADMINISTRADOR Y SEGURIDAD =================
 
-// Login de Administrador (con JWT)
 app.post('/api/admin/login', (req, res) => {
     const { usuario, password } = req.body;
     const sql = 'SELECT * FROM usuarios_admin WHERE usuario = ? AND password = MD5(?)';
@@ -405,7 +542,6 @@ app.post('/api/admin/login', (req, res) => {
     });
 });
 
-// Recuperación por Pregunta de Seguridad
 app.post('/api/admin/recuperar-pregunta', (req, res) => {
     const { usuario, respuesta } = req.body;
     const sql = 'SELECT password FROM usuarios_admin WHERE usuario = ? AND respuesta_seguridad = MD5(?)';
@@ -420,7 +556,6 @@ app.post('/api/admin/recuperar-pregunta', (req, res) => {
     });
 });
 
-// RECUPERACIÓN POR EMAIL (ENLACE MÁGICO)
 app.post('/api/admin/recuperar-email', (req, res) => {
     const { email } = req.body;
     const sql = 'SELECT usuario FROM usuarios_admin WHERE email = ?';
@@ -467,7 +602,6 @@ app.post('/api/admin/recuperar-email', (req, res) => {
     });
 });
 
-// RESTABLECER CONTRASEÑA ADMIN
 app.post('/api/admin/reset-password', (req, res) => {
     const { token, nuevaPassword } = req.body;
 
@@ -499,7 +633,6 @@ app.post('/api/admin/reset-password', (req, res) => {
     });
 });
 
-// Cambiar contraseña estando logueado
 app.post('/api/admin/cambiar-password', (req, res) => {
     const { usuario, passwordActual, nuevaPassword } = req.body;
     
@@ -523,9 +656,8 @@ app.post('/api/admin/cambiar-password', (req, res) => {
     });
 });
 
-// ================= CATEGORIAS (CON PROCEDIMIENTO ALMACENADO) =================
+// ================= CATEGORIAS =================
 
-// 📌 [PROCEDIMIENTO ALMACENADO] sp_listar_categorias
 app.get('/api/categorias', (req, res) => {
     console.log('📁 [PROCEDIMIENTO] sp_listar_categorias - Ejecutando consulta...');
     db.query(`CALL sp_listar_categorias()`, (err, results) => {
@@ -739,7 +871,7 @@ app.delete('/api/productos/:id', (req, res) => {
         });
 });
 
-// ================= PRODUCTOS CON BAJO STOCK (PROCEDIMIENTO ALMACENADO) =================
+// ================= PRODUCTOS CON BAJO STOCK =================
 
 app.get('/api/productos/bajo-stock', (req, res) => {
     console.log('⚠️ [PROCEDIMIENTO] sp_productos_bajo_stock - Ejecutando consulta...');
@@ -879,7 +1011,7 @@ app.delete('/api/proveedores/:id', (req, res) => {
     });
 });
 
-// ================= CONSUMOS INTERNOS (CON PROCEDIMIENTO ALMACENADO) =================
+// ================= CONSUMOS INTERNOS =================
 
 app.get('/api/consumos', (req, res) => {
     console.log(' [PROCEDIMIENTO] sp_listar_consumos - Ejecutando consulta...');
@@ -1144,38 +1276,155 @@ app.delete('/api/perdidas/:id', (req, res) => {
     });
 });
 
-// ================= TRABAJADORES (ENDPOINTS ORIGINALES MANTENIDOS) =================
+// ================= RECUPERACIÓN DE CONTRASEÑA PARA TRABAJADORES =================
 
-app.get('/api/trabajadores/activos', (req, res) => {
-    db.query(`SELECT Id_Trabajador, NombreCompleto, Celular, nombre_usuario FROM trabajadores WHERE Activo = 1 ORDER BY NombreCompleto`, (err, results) => {
-        if (err) return res.status(500).json({ error: err.sqlMessage });
-        res.json(results);
-    });
-});
-
-app.post('/api/trabajadores/verificar', (req, res) => {
-    const { Id_Trabajador, Codigo } = req.body;
+app.post('/api/trabajadores/recuperar-password', (req, res) => {
+    const { email } = req.body;
     
-    db.query(`SELECT * FROM trabajadores WHERE Id_Trabajador = ? AND Celular = ? AND Activo = 1`, [Id_Trabajador, Codigo], (err, results) => {
-        if (err) return res.status(500).json({ error: err.sqlMessage });
-        if (results.length > 0) {
-            res.json({ success: true, trabajador: results[0] });
-        } else {
-            res.json({ success: false, message: 'Código incorrecto o trabajador inactivo' });
+    if (!email || email.trim() === '') {
+        return res.status(400).json({ success: false, message: 'Por favor, ingrese su correo electrónico' });
+    }
+    
+    db.query(`SELECT Id_Trabajador, NombreCompleto, email FROM trabajadores WHERE email = ? AND Activo = 1`, [email], (err, results) => {
+        if (err) {
+            console.error('Error en recuperación:', err);
+            return res.status(500).json({ success: false, message: 'Error en el servidor' });
         }
+        
+        if (results.length === 0) {
+            return res.json({ success: true, message: 'Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.' });
+        }
+        
+        const trabajador = results[0];
+        const token = crypto.randomBytes(32).toString('hex');
+        const expiraEn = new Date();
+        expiraEn.setHours(expiraEn.getHours() + 1);
+        
+        db.query(`INSERT INTO trabajador_recuperacion_tokens (id_trabajador, token, expira_en) VALUES (?, ?, ?)`, 
+            [trabajador.Id_Trabajador, token, expiraEn], (err) => {
+            if (err) {
+                console.error('Error guardando token:', err);
+                return res.status(500).json({ success: false, message: 'Error en el servidor' });
+            }
+            
+            const resetLink = `http://localhost:3000/trabajador-reset-password.html?token=${token}`;
+            
+            const mailOptions = {
+                from: 'Tienda Chepita <isabelchepita678@gmail.com>',
+                to: trabajador.email,
+                subject: '🔐 Recuperación de Contraseña - Tienda Chepita',
+                html: `
+                    <div style="font-family: Arial, sans-serif; border: 2px solid #A63C89; padding: 20px; border-radius: 10px;">
+                        <h2 style="color: #A63C89;">🔐 Recuperación de Contraseña</h2>
+                        <p>Hola <strong>${trabajador.NombreCompleto}</strong>,</p>
+                        <p>Hemos recibido una solicitud para restablecer tu contraseña.</p>
+                        <p>Para crear una nueva contraseña, haz clic en el siguiente botón:</p>
+                        <div style="text-align: center; margin: 25px 0;">
+                            <a href="${resetLink}" style="background-color: #A63C89; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Restablecer Contraseña</a>
+                        </div>
+                        <p style="color: #666; font-size: 12px;">Este enlace es válido por 1 hora.</p>
+                        <hr>
+                        <p style="color: #999; font-size: 11px;">Tienda Chepita - Sistema de Gestión Comercial</p>
+                    </div>
+                `
+            };
+            
+            transporter.sendMail(mailOptions, (error) => {
+                if (error) {
+                    console.error('Error al enviar email:', error);
+                    return res.status(500).json({ success: false, message: 'Error al enviar el correo.' });
+                }
+                res.json({ success: true, message: 'Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.' });
+            });
+        });
     });
 });
 
-app.delete('/api/trabajadores/:id', (req, res) => {
-    const { id } = req.params;
-    db.query(`UPDATE trabajadores SET Activo = 0 WHERE Id_Trabajador = ?`, [id], (err, result) => {
-        if (err) return res.status(500).json({ error: err.sqlMessage });
-        if (result.affectedRows === 0) return res.status(404).json({ error: "Trabajador no encontrado" });
-        res.json({ message: "Trabajador desactivado" });
+app.get('/api/trabajadores/verificar-token-recuperacion/:token', (req, res) => {
+    const { token } = req.params;
+    
+    const sql = `
+        SELECT tr.id_trabajador, t.NombreCompleto, t.email
+        FROM trabajador_recuperacion_tokens tr
+        JOIN trabajadores t ON tr.id_trabajador = t.Id_Trabajador
+        WHERE tr.token = ? AND tr.usado = 0 AND tr.expira_en > NOW()
+    `;
+    
+    db.query(sql, [token], (err, results) => {
+        if (err) {
+            console.error('Error verificando token:', err);
+            return res.status(500).json({ error: err.sqlMessage });
+        }
+        if (results.length === 0) {
+            return res.status(400).json({ valido: false, message: 'El enlace ha expirado o ya fue usado' });
+        }
+        
+        res.json({
+            valido: true,
+            id_trabajador: results[0].id_trabajador,
+            nombre: results[0].NombreCompleto,
+            email: results[0].email
+        });
     });
 });
 
-// ================= VENTAS/COMPRAS (CON ID_VENDEDOR) =================
+app.post('/api/trabajadores/restablecer-password', async (req, res) => {
+    const { token, nueva_password } = req.body;
+    
+    if (!nueva_password || nueva_password.length < 4) {
+        return res.status(400).json({ success: false, message: 'La contraseña debe tener al menos 4 caracteres' });
+    }
+    
+    const sqlVerificar = `
+        SELECT id_trabajador FROM trabajador_recuperacion_tokens
+        WHERE token = ? AND usado = 0 AND expira_en > NOW()
+    `;
+    
+    db.query(sqlVerificar, [token], async (err, results) => {
+        if (err) {
+            console.error('Error verificando token:', err);
+            return res.status(500).json({ success: false, message: 'Error en el servidor' });
+        }
+        if (results.length === 0) {
+            return res.status(400).json({ success: false, message: 'El enlace ha expirado o ya fue usado' });
+        }
+        
+        const idTrabajador = results[0].id_trabajador;
+        const hashedPassword = await bcrypt.hash(nueva_password, 10);
+        
+        db.beginTransaction((err) => {
+            if (err) {
+                console.error('Error iniciando transacción:', err);
+                return res.status(500).json({ success: false, message: 'Error en el servidor' });
+            }
+            
+            db.query(`UPDATE trabajadores SET password_hash = ?, debe_cambiar_password = 0 WHERE Id_Trabajador = ?`,
+                [hashedPassword, idTrabajador], (err) => {
+                if (err) {
+                    console.error('Error actualizando contraseña:', err);
+                    return db.rollback(() => res.status(500).json({ success: false, message: 'Error actualizando contraseña' }));
+                }
+                
+                db.query(`UPDATE trabajador_recuperacion_tokens SET usado = 1 WHERE token = ?`, [token], (err) => {
+                    if (err) {
+                        console.error('Error actualizando token:', err);
+                        return db.rollback(() => res.status(500).json({ success: false, message: 'Error actualizando token' }));
+                    }
+                    
+                    db.commit((err) => {
+                        if (err) {
+                            console.error('Error commit:', err);
+                            return res.status(500).json({ success: false, message: 'Error completando operación' });
+                        }
+                        res.json({ success: true, message: '¡Contraseña restablecida correctamente! Ahora puedes iniciar sesión.' });
+                    });
+                });
+            });
+        });
+    });
+});
+
+// ================= VENTAS/COMPRAS =================
 
 app.get('/api/ventas', (req, res) => {
     const sql = `
@@ -1254,7 +1503,7 @@ app.post('/api/ordenes', (req, res) => {
     });
 });
 
-// ================= ENDPOINT PARA REPORTE DE PUNTOS POR VENDEDOR =================
+// ================= ESTADÍSTICAS =================
 
 app.get('/api/puntos-vendedores', (req, res) => {
     const { year, month } = req.query;
@@ -1313,8 +1562,6 @@ app.get('/api/puntos-vendedores', (req, res) => {
         res.json(formattedResults);
     });
 });
-
-// ================= ESTADÍSTICAS PARA GRÁFICOS =================
 
 app.get('/api/estadisticas-ventas', (req, res) => {
     const { periodo = 'mes' } = req.query;
@@ -1668,7 +1915,7 @@ app.get('/api/estadisticas', (req, res) => {
     });
 });
 
-// ================= CREAR PROCEDIMIENTOS ALMACENADOS SI NO EXISTEN =================
+// ================= CREAR PROCEDIMIENTOS ALMACENADOS =================
 
 function crearProcedimientosSiNoExisten() {
     db.query(`SHOW PROCEDURE STATUS WHERE Name = 'sp_listar_categorias'`, (err, results) => {
@@ -1743,7 +1990,7 @@ function crearProcedimientosSiNoExisten() {
     });
 }
 
-// ================= VERIFICAR COLUMNA Id_Vendedor EN TABLA compra =================
+// ================= VERIFICAR ESTRUCTURA TABLA =================
 
 function verificarEstructuraTabla() {
     db.query(`SHOW COLUMNS FROM compra LIKE 'Id_Vendedor'`, (err, results) => {
@@ -1804,6 +2051,8 @@ app.listen(PORT, () => {
     ║  🌐 URL: http://localhost:${PORT}                      
     ║  📧 Sistema de emails activado                           
     ║  🔐 Autenticación de trabajadores activada (MD5 + bcrypt)
+    ║  🔐 Recuperación de contraseña por email activada        
+    ║  🔒 5 intentos de login - Bloqueo 15 minutos             
     ╚══════════════════════════════════════════════════════════╝
     `);
 });

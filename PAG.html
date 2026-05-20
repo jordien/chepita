@@ -55,6 +55,14 @@
             color: #b57acb;
         }
 
+        .modal-contenido h3.error {
+            color: #dc2626;
+        }
+
+        .modal-contenido h3.warning {
+            color: #f59e0b;
+        }
+
         .modal-contenido input {
             width: 100%;
             padding: 12px;
@@ -193,6 +201,14 @@
             display: none;
         }
 
+        .warning-message {
+            color: #f59e0b;
+            font-size: 13px;
+            margin-top: 12px;
+            text-align: center;
+            display: none;
+        }
+
         .subtitle-login {
             font-size: 13px;
             color: #888;
@@ -289,6 +305,22 @@
             background: #caa0d8;
             border-radius: 3px;
         }
+
+        .forgot-password-caja {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .forgot-password-caja a {
+            color: #4f46e5;
+            font-size: 13px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .forgot-password-caja a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -364,7 +396,7 @@
                     </div>
                 </div>
 
-                <!-- Login CAJA - SIN mostrar el trabajador seleccionado -->
+                <!-- Login CAJA con recuperación de contraseña -->
                 <div id="stepLoginCaja" class="step">
                     <button class="back-btn" onclick="goBackToProfile()">← Volver</button>
                     <div class="login-header">
@@ -384,6 +416,7 @@
                             </div>
                             <input type="hidden" id="cajaTrabajadorId" value="">
                             <input type="hidden" id="cajaTrabajadorNombre" value="">
+                            <input type="hidden" id="cajaTrabajadorUsuario" value="">
                         </div>
 
                         <div class="input-group">
@@ -395,12 +428,17 @@
                         </div>
                         <button type="submit" class="btn-submit">Iniciar Sesión</button>
                         <div id="cajaError" class="error-message"></div>
+                        <div id="cajaWarning" class="warning-message"></div>
                     </form>
+                    <div class="forgot-password-caja">
+                        <a onclick="mostrarModalRecuperarCaja()">¿Olvidaste tu contraseña?</a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Modal de recuperación para ADMIN -->
     <div id="modalRecuperar" class="modal-mensaje">
         <div class="modal-contenido">
             <h3>Recuperar Contraseña</h3>
@@ -445,6 +483,27 @@
         </div>
     </div>
 
+    <!-- Modal de recuperación para CAJA -->
+    <div id="modalRecuperarCaja" class="modal-mensaje">
+        <div class="modal-contenido">
+            <h3>Recuperar Contraseña - Caja</h3>
+            <div id="paso1RecuperacionCaja">
+                <p>Ingresa tu correo electrónico registrado:</p>
+                <input type="email" id="recuperarEmailCaja" placeholder="correo@ejemplo.com">
+                <div class="modal-buttons" style="margin-top: 15px;">
+                    <button class="modal-btn" onclick="solicitarRecuperacionCaja()">Enviar enlace</button>
+                    <button class="modal-btn cancelar" onclick="cerrarModalRecuperarCaja()">Cancelar</button>
+                </div>
+            </div>
+            <div id="resultadoRecuperacionCaja" style="display:none;">
+                <p id="resultadoTextoCaja"></p>
+                <div class="modal-buttons">
+                    <button class="modal-btn" onclick="cerrarModalRecuperarCaja()">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let selectedProfile = null;
         let trabajadoresData = [];
@@ -470,6 +529,7 @@
             
             document.getElementById('adminError').style.display = 'none';
             document.getElementById('cajaError').style.display = 'none';
+            document.getElementById('cajaWarning').style.display = 'none';
         }
 
         function goBackToProfile() {
@@ -484,7 +544,10 @@
             document.getElementById('cajaPassword').value = '';
             document.getElementById('cajaTrabajadorId').value = '';
             document.getElementById('cajaTrabajadorNombre').value = '';
+            document.getElementById('cajaTrabajadorUsuario').value = '';
             document.getElementById('sugerenciasContainer').classList.remove('mostrar');
+            document.getElementById('cajaError').style.display = 'none';
+            document.getElementById('cajaWarning').style.display = 'none';
             sugerenciaActiva = -1;
         }
 
@@ -543,7 +606,7 @@
             
             let html = '';
             coincidencias.forEach((trabajador, index) => {
-                html += `<div class="sugerencia-item" data-index="${index}" data-id="${trabajador.Id_Trabajador}" data-nombre="${trabajador.NombreCompleto.replace(/"/g, '&quot;')}">${trabajador.NombreCompleto}</div>`;
+                html += `<div class="sugerencia-item" data-index="${index}" data-id="${trabajador.Id_Trabajador}" data-usuario="${trabajador.nombre_usuario || ''}" data-nombre="${trabajador.NombreCompleto.replace(/"/g, '&quot;')}">${trabajador.NombreCompleto}</div>`;
             });
             
             container.innerHTML = html;
@@ -600,14 +663,20 @@
         function seleccionarTrabajador(elemento) {
             const id = elemento.getAttribute('data-id');
             const nombre = elemento.getAttribute('data-nombre');
+            const usuario = elemento.getAttribute('data-usuario');
             
             document.getElementById('cajaTrabajadorId').value = id;
             document.getElementById('cajaTrabajadorNombre').value = nombre;
+            document.getElementById('cajaTrabajadorUsuario').value = usuario;
             document.getElementById('busquedaTrabajador').value = nombre;
             
             document.getElementById('sugerenciasContainer').classList.remove('mostrar');
             sugerenciaActiva = -1;
             document.getElementById('cajaPassword').focus();
+            
+            // Limpiar mensajes de error al seleccionar nuevo trabajador
+            document.getElementById('cajaError').style.display = 'none';
+            document.getElementById('cajaWarning').style.display = 'none';
         }
 
         async function validateAdminLogin(event) {
@@ -662,8 +731,10 @@
             
             const trabajadorId = document.getElementById('cajaTrabajadorId').value;
             const trabajadorNombre = document.getElementById('cajaTrabajadorNombre').value;
+            const trabajadorUsuario = document.getElementById('cajaTrabajadorUsuario').value;
             const password = document.getElementById('cajaPassword').value;
             const errorDiv = document.getElementById('cajaError');
+            const warningDiv = document.getElementById('cajaWarning');
             
             if (!trabajadorId) {
                 errorDiv.textContent = 'Por favor, seleccione un trabajador de la lista';
@@ -706,11 +777,29 @@
                     }
                     return true;
                 } else {
-                    errorDiv.textContent = 'Contraseña incorrecta';
-                    errorDiv.style.display = 'block';
+                    // Mostrar mensajes específicos según el contenido
+                    const mensaje = data.message || 'Contraseña incorrecta';
+                    
+                    if (mensaje.includes('bloqueada') || mensaje.includes('Bloqueada')) {
+                        warningDiv.textContent = mensaje;
+                        warningDiv.style.display = 'block';
+                        errorDiv.style.display = 'none';
+                    } else if (mensaje.includes('intento') || mensaje.includes('quedan')) {
+                        warningDiv.textContent = mensaje;
+                        warningDiv.style.display = 'block';
+                        errorDiv.style.display = 'none';
+                    } else {
+                        errorDiv.textContent = mensaje;
+                        errorDiv.style.display = 'block';
+                        warningDiv.style.display = 'none';
+                    }
+                    
                     document.getElementById('cajaPassword').value = '';
                     document.getElementById('cajaPassword').focus();
-                    setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
+                    setTimeout(() => { 
+                        errorDiv.style.display = 'none'; 
+                        warningDiv.style.display = 'none'; 
+                    }, 4000);
                     
                     submitBtn.innerHTML = originalText;
                     submitBtn.disabled = false;
@@ -728,6 +817,63 @@
             }
         }
 
+        // ========== RECUPERACIÓN DE CONTRASEÑA PARA CAJA ==========
+        function mostrarModalRecuperarCaja() {
+            document.getElementById('paso1RecuperacionCaja').style.display = 'block';
+            document.getElementById('resultadoRecuperacionCaja').style.display = 'none';
+            document.getElementById('recuperarEmailCaja').value = '';
+            document.getElementById('modalRecuperarCaja').style.display = 'flex';
+        }
+
+        function cerrarModalRecuperarCaja() {
+            document.getElementById('modalRecuperarCaja').style.display = 'none';
+        }
+
+        async function solicitarRecuperacionCaja() {
+            const email = document.getElementById('recuperarEmailCaja').value.trim();
+            const resultadoDiv = document.getElementById('resultadoRecuperacionCaja');
+            const resultadoTexto = document.getElementById('resultadoTextoCaja');
+            
+            if (!email) {
+                resultadoTexto.innerHTML = 'Por favor, ingrese su correo electrónico.';
+                resultadoDiv.style.display = 'block';
+                document.getElementById('paso1RecuperacionCaja').style.display = 'none';
+                return;
+            }
+            
+            const btn = document.querySelector('#modalRecuperarCaja .modal-btn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Enviando...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/trabajadores/recuperar-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                resultadoTexto.innerHTML = data.message;
+                resultadoDiv.style.display = 'block';
+                document.getElementById('paso1RecuperacionCaja').style.display = 'none';
+                
+                btn.textContent = originalText;
+                btn.disabled = false;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                resultadoTexto.innerHTML = 'Error de conexión con el servidor';
+                resultadoDiv.style.display = 'block';
+                document.getElementById('paso1RecuperacionCaja').style.display = 'none';
+                
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // ========== RECUPERACIÓN DE CONTRASEÑA PARA ADMIN ==========
         function mostrarModalRecuperar() {
             document.getElementById('paso1Recuperacion').style.display = 'block';
             document.getElementById('pasoPregunta').style.display = 'none';
@@ -845,9 +991,13 @@
         setInterval(actualizarFechaHora, 60000);
         
         window.onclick = function(event) {
-            const modal = document.getElementById('modalRecuperar');
-            if (event.target === modal) {
+            const modalAdmin = document.getElementById('modalRecuperar');
+            const modalCaja = document.getElementById('modalRecuperarCaja');
+            if (event.target === modalAdmin) {
                 cerrarModalRecuperar();
+            }
+            if (event.target === modalCaja) {
+                cerrarModalRecuperarCaja();
             }
         };
     </script>
