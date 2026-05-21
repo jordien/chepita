@@ -12,18 +12,18 @@
 <header class="top-bar">
     <div class="brands-container">
         <div class="brands-track">
-            <img src="imagenes/marcas/logo1.png">
-            <img src="imagenes/marcas/logo2.png">
-            <img src="imagenes/marcas/logo3.png">
-            <img src="imagenes/marcas/logo4.png">
-            <img src="imagenes/marcas/logo5.png">
-            <img src="imagenes/marcas/logo6.png">
-            <img src="imagenes/marcas/logo1.png">
-            <img src="imagenes/marcas/logo2.png">
-            <img src="imagenes/marcas/logo3.png">
-            <img src="imagenes/marcas/logo4.png">
-            <img src="imagenes/marcas/logo5.png">
-            <img src="imagenes/marcas/logo6.png">
+            <img src="imagenes/marcas/logo1.png" alt="marca">
+            <img src="imagenes/marcas/logo2.png" alt="marca">
+            <img src="imagenes/marcas/logo3.png" alt="marca">
+            <img src="imagenes/marcas/logo4.png" alt="marca">
+            <img src="imagenes/marcas/logo5.png" alt="marca">
+            <img src="imagenes/marcas/logo6.png" alt="marca">
+            <img src="imagenes/marcas/logo1.png" alt="marca">
+            <img src="imagenes/marcas/logo2.png" alt="marca">
+            <img src="imagenes/marcas/logo3.png" alt="marca">
+            <img src="imagenes/marcas/logo4.png" alt="marca">
+            <img src="imagenes/marcas/logo5.png" alt="marca">
+            <img src="imagenes/marcas/logo6.png" alt="marca">
         </div>
     </div>
     <div class="clock-box">
@@ -42,6 +42,8 @@
 
     <form id="formCompra">
         <input type="hidden" name="total" id="totalInput" value="0">
+        <input type="hidden" name="subtotal" id="subtotalInput" value="0">
+        <input type="hidden" name="iva" id="ivaInput" value="0">
         
         <div class="nc-form">
             <div class="nc-form-grid">
@@ -49,8 +51,7 @@
                     <label class="nc-required">Cliente</label>
                     <div class="nc-client-row">
                         <div class="nc-input-group" style="flex: 1;">
-                            <div class="nc-input-icon"></div>
-                            <input type="text" id="clienteBusqueda" placeholder="Buscar cliente por nombre o telefono..." autocomplete="off">
+                            <input type="text" id="clienteBusqueda" placeholder="Buscar cliente por nombre..." autocomplete="off">
                             <div id="clienteSugerencias" class="cliente-sugerencias"></div>
                             <input type="hidden" id="cliente" name="id_cliente">
                         </div>
@@ -61,7 +62,6 @@
                 <div class="nc-group">
                     <label class="nc-required">Canal de Venta</label>
                     <div class="nc-input-group">
-                        <div class="nc-input-icon"></div>
                         <select id="canal" name="id_canal" required>
                             <option value="">Seleccione un canal</option>
                         </select>
@@ -71,7 +71,6 @@
                 <div class="nc-group">
                     <label class="nc-required">Metodo de Pago</label>
                     <div class="nc-input-group">
-                        <div class="nc-input-icon"></div>
                         <select id="metodoPago" name="metodo_pago" required>
                             <option value="">Seleccione metodo</option>
                         </select>
@@ -81,215 +80,287 @@
                 <div class="nc-group">
                     <label class="nc-required">Fecha</label>
                     <div class="nc-input-group">
-                        <div class="nc-input-icon"></div>
                         <input type="date" id="fecha" name="fecha" readonly required>
                     </div>
                 </div>
 
-                <!-- ESCÁNER QR PARA VENDEDOR -->
                 <div class="nc-group">
-                    <label class="nc-required">📷 Escanear QR del Vendedor</label>
-                    <div style="position: relative; border: 2px solid #ddd; border-radius: 12px; overflow: hidden; background: #000; max-width: 400px;">
-                        <video id="qrVideo" autoplay playsinline style="width: 100%; background: #000;"></video>
-                        <canvas id="qrCanvas" style="display: none;"></canvas>
+                    <label class="nc-required">Escanear QR del Vendedor</label>
+                    <div class="qr-scanner">
+                        <div class="qr-scanner-header">
+                            <span class="qr-scanner-title">Scanner QR Vendedor</span>
+                            <div class="qr-status" id="camaraStatus">
+                                <span class="qr-status-dot" id="statusDot"></span>
+                                <span id="statusText">Inactivo</span>
+                            </div>
+                        </div>
+                        
+                        <div class="qr-video-container" id="videoWrapper" style="display: none;">
+                            <video id="qrVideo" autoplay playsinline></video>
+                            <canvas id="qrCanvas" style="display: none;"></canvas>
+                            <div class="qr-scan-overlay"></div>
+                            <div class="qr-scan-line"></div>
+                        </div>
+                        
+                        <div class="qr-actions">
+                            <button type="button" class="qr-btn qr-btn-primary" onclick="iniciarCamaraQR()">Activar Camara</button>
+                            <button type="button" class="qr-btn qr-btn-secondary" onclick="detenerCamaraQR()">Detener</button>
+                        </div>
+                        
+                        <div id="qrResultado" class="qr-result" style="display: none;"></div>
+                        <div id="nombreVendedorMostrado" class="qr-vendor-info" style="display: none;"></div>
+                        <div class="qr-hint">El vendedor debe mostrar su QR en el celular</div>
+                        <input type="hidden" id="idVendedor" name="id_vendedor">
                     </div>
-                    <div id="qrResultado" style="margin-top: 10px;"></div>
-                    <div style="display: flex; gap: 10px; margin-top: 8px;">
-                        <button type="button" class="nc-select-product-btn" onclick="iniciarCamaraQR()">📷 Activar cámara</button>
-                        <button type="button" class="nc-cancel-btn" onclick="detenerCamaraQR()">⏹️ Detener</button>
-                    </div>
-                    <input type="hidden" id="idVendedor" name="id_vendedor">
-                    <div id="nombreVendedorMostrado" style="margin-top: 8px; font-weight: bold;"></div>
-                    <small>El vendedor debe mostrar su QR en el celular. Acérquelo a la cámara.</small>
                 </div>
             </div>
 
             <div class="nc-form-full">
-                <h2>Productos</h2>
-                <table class="nc-table">
-                    <thead>
-                        <tr>
-                            <th>Producto</th>
-                            <th>Cantidad</th>
-                            <th>Precio U.</th>
-                            <th>Subtotal</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="detalleCompras">
-                        <tr id="mensajeSinProductos"><td colspan="5">No hay productos agregados</td></tr>
-                    </tbody>
-                </table>
-                <button type="button" class="nc-select-product-btn" onclick="abrirModalProducto()">+ Agregar Producto</button>
+                <div class="section-header">
+                    <h2>Productos</h2>
+                    <button type="button" class="btn-add-product" onclick="abrirModalProducto()">+ Agregar Producto</button>
+                </div>
+                
+                <div class="table-wrapper">
+                    <table class="nc-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th width="100">Cantidad</th>
+                                <th width="120">Precio Unitario</th>
+                                <th width="120">Subtotal</th>
+                                <th width="80"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="detalleCompras">
+                            <tr class="empty-row">
+                                <td colspan="5">No hay productos agregados</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div class="nc-form-full">
-                <div class="nc-total-box">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 18px;">Total de la Compra:</span>
-                        <span style="font-size: 28px; font-weight: bold; color: #4CAF50;">C$ <span id="totalCompra">0.00</span></span>
+                <div class="total-card">
+                    <div class="total-row">
+                        <span>Subtotal</span>
+                        <span>C$ <span id="subtotalDisplay">0.00</span></span>
+                    </div>
+                    <div class="total-row">
+                        <span>IVA (15%)</span>
+                        <span>C$ <span id="ivaDisplay">0.00</span></span>
+                    </div>
+                    <div class="total-row grand-total">
+                        <span>Total</span>
+                        <span>C$ <span id="totalCompra">0.00</span></span>
                     </div>
                 </div>
-                <div class="nc-buttons-row">
-                    <button type="button" class="nc-save-btn" onclick="procesarPago()">Guardar Compra</button>
-                    <button type="button" class="nc-cancel-btn" onclick="cancelarCompra()">Cancelar Compra</button>
+                
+                <div class="action-buttons">
+                    <button type="button" class="btn-primary" onclick="procesarPago()">Guardar Compra</button>
+                    <button type="button" class="btn-secondary" onclick="cancelarCompra()">Cancelar</button>
                 </div>
             </div>
         </div>
     </form>
 </div>
 
-<!-- MODAL CLIENTE (igual) -->
-<div class="nc-modal-overlay" id="modalCliente">
-    <div class="nc-modal-box">
-        <button class="nc-modal-close" onclick="cerrarModalCliente()">x</button>
-        <div class="nc-modal-header"><h2>Nuevo Cliente</h2></div>
-        <div class="nc-modal-content">
-            <div class="nc-group"><label>Nombre</label><input type="text" id="nuevoNombre" placeholder="Ingrese el nombre"></div>
-            <div class="nc-group"><label>Apellido</label><input type="text" id="nuevoApellido" placeholder="Ingrese el apellido"></div>
-            <div class="nc-group"><label>Telefono</label><input type="text" id="nuevoTelefono" placeholder="81234567" maxlength="8"></div>
+<!-- Modal Cliente -->
+<div class="modal" id="modalCliente">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Nuevo Cliente</h2>
+            <button class="modal-close" onclick="cerrarModalCliente()">&times;</button>
         </div>
-        <div class="nc-modal-footer">
-            <button class="nc-modal-save" onclick="guardarCliente()">Guardar Cliente</button>
-            <button class="nc-modal-cancel" onclick="cerrarModalCliente()">Cancelar</button>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" id="nuevoNombre" placeholder="Ingrese el nombre">
+            </div>
+            <div class="form-group">
+                <label>Apellido</label>
+                <input type="text" id="nuevoApellido" placeholder="Ingrese el apellido">
+            </div>
+            <div class="form-group">
+                <label>Telefono</label>
+                <input type="text" id="nuevoTelefono" placeholder="81234567" maxlength="8">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal-save" onclick="guardarCliente()">Guardar</button>
+            <button class="btn-modal-cancel" onclick="cerrarModalCliente()">Cancelar</button>
         </div>
     </div>
 </div>
 
-<!-- MODAL PRODUCTOS (igual) -->
-<div class="nc-modal-overlay" id="modalProducto">
-    <div class="nc-modal-box nc-modal-box-xlarge">
-        <button class="nc-modal-close" onclick="cerrarModalProducto()">x</button>
-        <div class="nc-modal-header"><h2>Buscar Producto</h2></div>
-        <div class="nc-modal-content">
-            <input type="text" id="buscarProductoModal" placeholder="Ej. Crema Facial" onkeyup="filtrarProductosModal()">
-            <div class="nc-productos-list" id="listaProductos"></div>
+<!-- Modal Productos -->
+<div class="modal" id="modalProducto">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h2>Seleccionar Producto</h2>
+            <button class="modal-close" onclick="cerrarModalProducto()">&times;</button>
         </div>
-        <div class="nc-modal-footer">
-            <button class="nc-modal-cancel" onclick="cerrarModalProducto()">Cerrar</button>
+        <div class="modal-body">
+            <div class="search-box">
+                <input type="text" id="buscarProductoModal" placeholder="Buscar producto..." onkeyup="filtrarProductosModal()">
+            </div>
+            <div class="productos-grid" id="listaProductos"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal-cancel" onclick="cerrarModalProducto()">Cerrar</button>
         </div>
     </div>
 </div>
 
-<!-- MODAL PAGO EFECTIVO (igual) -->
-<div class="nc-modal-overlay" id="modalPagoEfectivo">
-    <div class="nc-modal-box">
-        <button class="nc-modal-close" onclick="cerrarModalPagoEfectivo()">x</button>
-        <div class="nc-modal-header"><h2>Pago en Efectivo</h2></div>
-        <div class="nc-modal-content">
-            <div class="pago-efectivo-monedas">
-                <div class="pago-efectivo-moneda seleccionada" data-moneda="cordobas" onclick="seleccionarMoneda(this)">CORDOBAS</div>
-                <div class="pago-efectivo-moneda" data-moneda="dolares" onclick="seleccionarMoneda(this)">DOLARES</div>
-            </div>
-            <div class="pago-efectivo-input-group">
-                <label>Monto recibido:</label>
-                <input type="number" id="montoRecibido" class="pago-efectivo-input" placeholder="0.00" oninput="calcularVuelto()">
-            </div>
-            <div class="pago-efectivo-resultado" id="pagoResultado">
-                <strong>VUELTO A ENTREGAR:</strong><br>
-                <span id="vueltoCalculado" style="font-size: 24px; font-weight: bold; color: #155724;">C$ 0.00</span>
-            </div>
-            <div class="pago-efectivo-error" id="pagoError">Monto insuficiente. Faltan <span id="montoFaltante">C$ 0.00</span></div>
+<!-- Modal Pago Efectivo -->
+<div class="modal" id="modalPagoEfectivo">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Pago en Efectivo</h2>
+            <button class="modal-close" onclick="cerrarModalPagoEfectivo()">&times;</button>
         </div>
-        <div class="nc-modal-footer">
-            <button class="nc-modal-save" onclick="confirmarPagoEfectivo()">Confirmar Pago</button>
-            <button class="nc-modal-cancel" onclick="cerrarModalPagoEfectivo()">Cancelar</button>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL PAGO TRANSFERENCIA (igual) -->
-<div class="nc-modal-overlay" id="modalPagoTransferencia">
-    <div class="nc-modal-box">
-        <button class="nc-modal-close" onclick="cerrarModalPagoTransferencia()">x</button>
-        <div class="nc-modal-header"><h2>Pago por Transferencia</h2></div>
-        <div class="nc-modal-content">
-            <div class="transferencia-datos" id="datosTransferencia"></div>
-            <div style="background: #e8f4fd; padding: 15px; border-radius: 10px; text-align: center;">
-                <p><strong>Instrucciones:</strong></p>
-                <p style="font-size: 13px;">1.Realice la transferencia a los datos mostrados</p>
-                <p style="font-size: 13px;">2.Use el numero de factura como referencia</p>
-                <p style="font-size: 13px;">3.Confirme la transferencia para completar la compra</p>
+        <div class="modal-body">
+            <div class="currency-selector">
+                <button class="currency-btn active" data-moneda="cordobas" onclick="seleccionarMoneda(this)">Cordobas</button>
+                <button class="currency-btn" data-moneda="dolares" onclick="seleccionarMoneda(this)">Dolares</button>
+            </div>
+            <div class="exchange-rate">Tasa de cambio: 1 USD = C$ <span id="tasaCambioDisplay">36.50</span></div>
+            <div class="form-group">
+                <label>Monto recibido</label>
+                <input type="number" id="montoRecibido" class="amount-input" placeholder="0.00" oninput="calcularVuelto()">
+            </div>
+            <div class="change-result" id="pagoResultado" style="display: none;">
+                <div class="change-label">Vuelto a entregar</div>
+                <div class="change-amount" id="vueltoCalculado">C$ 0.00</div>
+            </div>
+            <div class="error-message" id="pagoError" style="display: none;">
+                Monto insuficiente. Faltan <span id="montoFaltante">C$ 0.00</span>
             </div>
         </div>
-        <div class="nc-modal-footer">
-            <button class="nc-modal-save" onclick="confirmarPagoTransferencia()">Confirmar Transferencia</button>
-            <button class="nc-modal-cancel" onclick="cerrarModalPagoTransferencia()">Cancelar</button>
+        <div class="modal-footer">
+            <button class="btn-modal-save" onclick="confirmarPagoEfectivo()">Confirmar Pago</button>
+            <button class="btn-modal-cancel" onclick="cerrarModalPagoEfectivo()">Cancelar</button>
         </div>
     </div>
 </div>
 
-<!-- MODAL PAGO TARJETA (igual) -->
-<div class="nc-modal-overlay" id="modalPagoTarjeta">
-    <div class="nc-modal-box">
-        <button class="nc-modal-close" onclick="cerrarModalPagoTarjeta()">x</button>
-        <div class="nc-modal-header"><h2>Pago con Tarjeta</h2></div>
-        <div class="nc-modal-content">
-            <div class="tarjeta-bancos" id="tarjetaBancos">
-                <div class="tarjeta-banco" data-banco="lafise"><span>LAFISE</span></div>
-                <div class="tarjeta-banco" data-banco="banpro"><span>BANPRO</span></div>
-                <div class="tarjeta-banco" data-banco="bac"><span>BAC</span></div>
-                <div class="tarjeta-banco" data-banco="ficohsa"><span>FICOHSA</span></div>
-                <div class="tarjeta-banco" data-banco="bancoDemocratico"><span>BANCO DEMOCRATICO</span></div>
+<!-- Modal Pago Transferencia -->
+<div class="modal" id="modalPagoTransferencia">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Transferencia Bancaria</h2>
+            <button class="modal-close" onclick="cerrarModalPagoTransferencia()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="bank-details" id="datosTransferencia"></div>
+            <div class="instructions">
+                <p>Instrucciones:</p>
+                <ul>
+                    <li>Realice la transferencia a los datos mostrados</li>
+                    <li>Use el numero de factura como referencia</li>
+                    <li>Confirme la transferencia para completar la compra</li>
+                </ul>
             </div>
-            <div class="tarjeta-info">
-                <label>Numero de Tarjeta:</label>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal-save" onclick="confirmarPagoTransferencia()">Confirmar Transferencia</button>
+            <button class="btn-modal-cancel" onclick="cerrarModalPagoTransferencia()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Pago Tarjeta -->
+<div class="modal" id="modalPagoTarjeta">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Pago con Tarjeta</h2>
+            <button class="modal-close" onclick="cerrarModalPagoTarjeta()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="bank-logos" id="tarjetaBancos">
+                <div class="bank-logo" data-banco="lafise">LAFISE</div>
+                <div class="bank-logo" data-banco="banpro">BANPRO</div>
+                <div class="bank-logo" data-banco="bac">BAC</div>
+                <div class="bank-logo" data-banco="ficohsa">FICOHSA</div>
+                <div class="bank-logo" data-banco="bancoDemocratico">B.DEMOCRATICO</div>
+            </div>
+            <div class="form-group">
+                <label>Numero de Tarjeta</label>
                 <input type="text" id="numeroTarjeta" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19" oninput="validarTarjeta(this)">
             </div>
-            <div class="tarjeta-validacion" id="tarjetaValidacion"></div>
+            <div class="card-validation" id="tarjetaValidacion"></div>
         </div>
-        <div class="nc-modal-footer">
-            <button class="nc-modal-save" onclick="confirmarPagoTarjeta()">Pagar con Tarjeta</button>
-            <button class="nc-modal-cancel" onclick="cerrarModalPagoTarjeta()">Cancelar</button>
+        <div class="modal-footer">
+            <button class="btn-modal-save" onclick="confirmarPagoTarjeta()">Pagar</button>
+            <button class="btn-modal-cancel" onclick="cerrarModalPagoTarjeta()">Cancelar</button>
         </div>
     </div>
 </div>
 
-<!-- MODAL RESUMEN DE COMPRA (igual) -->
-<div class="nc-modal-overlay" id="modalResumenCompra">
-    <div class="nc-modal-box" style="max-width: 800px;">
-        <button class="nc-modal-close" onclick="cerrarModalResumen()">x</button>
-        <div class="nc-modal-header">
-            <h2>RESUMEN DE COMPRA</h2>
-            <div class="nc-modal-subtitle">Factura #<span id="resumenNumFactura"></span></div>
+<!-- Modal Resumen Compra -->
+<div class="modal" id="modalResumenCompra">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h2>Resumen de Compra</h2>
+            <div class="invoice-number">Factura #<span id="resumenNumFactura"></span></div>
+            <button class="modal-close" onclick="cerrarModalResumen()">&times;</button>
         </div>
-        <div class="nc-modal-content">
-            <div style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-                <h3 style="color: #A63C89; margin-bottom: 10px;">Informacion de la Compra</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <p><strong>Fecha:</strong> <span id="resumenFecha"></span></p>
-                    <p><strong>Cliente:</strong> <span id="resumenCliente"></span></p>
-                    <p><strong>Canal:</strong> <span id="resumenCanal"></span></p>
-                    <p><strong>Metodo de Pago:</strong> <span id="resumenMetodoPago"></span></p>
-                    <p><strong>Vendedor:</strong> <span id="resumenVendedor"></span></p>
-                    <p><strong>Total:</strong> <span id="resumenTotal" style="color: #4CAF50; font-weight: bold;"></span></p>
+        <div class="modal-body">
+            <div class="summary-section">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Fecha</label>
+                        <span id="resumenFecha"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>Cliente</label>
+                        <span id="resumenCliente"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>Canal</label>
+                        <span id="resumenCanal"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>Metodo de Pago</label>
+                        <span id="resumenMetodoPago"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>Vendedor</label>
+                        <span id="resumenVendedor"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>Total</label>
+                        <span class="total-amount" id="resumenTotal"></span>
+                    </div>
                 </div>
             </div>
             
-            <div style="margin-bottom: 20px;">
-                <h3 style="color: #A63C89; margin-bottom: 10px;">Productos Comprados</h3>
-                <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
-                    <thead>
-                        <tr style="background: #A63C89; color: white;">
-                            <th style="padding: 10px;">Producto</th>
-                            <th style="padding: 10px;">Cantidad</th>
-                            <th style="padding: 10px;">Precio U.</th>
-                            <th style="padding: 10px;">Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody id="resumenProductos"></tbody>
-                </table>
+            <div class="summary-section">
+                <h3>Productos</h3>
+                <div class="table-wrapper">
+                    <table class="summary-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th width="80">Cantidad</th>
+                                <th width="120">Precio Unitario</th>
+                                <th width="120">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resumenProductos"></tbody>
+                    </table>
+                </div>
             </div>
             
-            <div id="resumenPagoDetalle" style="background: #d4edda; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-                <h3 style="color: #155724;">Detalle del Pago</h3>
+            <div class="payment-detail" id="resumenPagoDetalle">
+                <h3>Detalle del Pago</h3>
                 <div id="detallePagoInfo"></div>
             </div>
-            
-            <div class="nc-modal-footer" style="justify-content: center;">
-                <button class="nc-modal-cancel" onclick="cerrarModalResumenYVolver()" style="background: #f39c12;">Modificar Compra</button>
-                <button class="nc-modal-save" onclick="confirmarYGuardarCompra()" style="background: #27ae60;">Confirmar y Finalizar</button>
-            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal-warning" onclick="cerrarModalResumenYVolver()">Modificar</button>
+            <button class="btn-modal-success" onclick="confirmarYGuardarCompra()">Confirmar</button>
         </div>
     </div>
 </div>
@@ -310,10 +381,43 @@
     let qrValidado = false;
     let vendedorValidado = null;
 
+    const IVA_PORCENTAJE = 0.15;
+
+    function calcularTotalConIVA() {
+        let subtotal = 0;
+        productosSeleccionados.forEach(producto => {
+            subtotal += producto.precio * producto.cantidad;
+        });
+        const iva = subtotal * IVA_PORCENTAJE;
+        const total = subtotal + iva;
+        
+        document.getElementById('subtotalDisplay').textContent = subtotal.toFixed(2);
+        document.getElementById('ivaDisplay').textContent = iva.toFixed(2);
+        document.getElementById('totalCompra').textContent = total.toFixed(2);
+        document.getElementById('totalInput').value = total;
+        document.getElementById('subtotalInput').value = subtotal;
+        document.getElementById('ivaInput').value = iva;
+        
+        return { subtotal, iva, total };
+    }
+
     // ============ FUNCIONES QR ============
     
+    function actualizarEstadoCamara(activo, mensaje) {
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        if (activo) {
+            statusDot.classList.remove('inactive');
+            statusText.textContent = mensaje || 'Escaneando';
+        } else {
+            statusDot.classList.add('inactive');
+            statusText.textContent = mensaje || 'Inactivo';
+        }
+    }
+
     async function iniciarCamaraQR() {
         const video = document.getElementById('qrVideo');
+        const videoWrapper = document.getElementById('videoWrapper');
         
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -323,11 +427,13 @@
             video.srcObject = stream;
             video.play();
             scanning = true;
-            mostrarMensajeSistema('📷 Cámara activada. Acerca el QR del vendedor.', 'success');
+            videoWrapper.style.display = 'block';
+            actualizarEstadoCamara(true, 'Escaneando QR');
+            mostrarMensajeSistema('Camara activada. Acerca el QR del vendedor.', 'success');
             escanearQRContinuo();
         } catch (error) {
-            console.error('Error cámara:', error);
-            mostrarMensajeSistema('No se pudo acceder a la cámara. Verifica los permisos.', 'error');
+            actualizarEstadoCamara(false, 'Error');
+            mostrarMensajeSistema('No se pudo acceder a la camara.', 'error');
         }
     }
 
@@ -338,7 +444,10 @@
         }
         scanning = false;
         const video = document.getElementById('qrVideo');
+        const videoWrapper = document.getElementById('videoWrapper');
         if (video) video.srcObject = null;
+        if (videoWrapper) videoWrapper.style.display = 'none';
+        actualizarEstadoCamara(false, 'Detenido');
     }
 
     async function escanearQRContinuo() {
@@ -346,7 +455,10 @@
         
         const video = document.getElementById('qrVideo');
         const canvas = document.getElementById('qrCanvas');
-        if (!video || !canvas) return;
+        if (!video || !canvas) {
+            requestAnimationFrame(escanearQRContinuo);
+            return;
+        }
         
         const context = canvas.getContext('2d');
         
@@ -360,6 +472,7 @@
             if (code) {
                 await procesarQRVendedor(code.data);
                 detenerCamaraQR();
+                return;
             }
         }
         requestAnimationFrame(escanearQRContinuo);
@@ -369,7 +482,9 @@
         const resultadoDiv = document.getElementById('qrResultado');
         const nombreDiv = document.getElementById('nombreVendedorMostrado');
         
-        resultadoDiv.innerHTML = '<div style="background:#fff3cd;padding:10px;border-radius:8px;">🔍 Verificando código...</div>';
+        resultadoDiv.style.display = 'block';
+        resultadoDiv.className = 'qr-result info';
+        resultadoDiv.innerHTML = 'Verificando codigo del vendedor...';
         
         try {
             const response = await fetch('/api/validar-qr-vendedor', {
@@ -387,40 +502,49 @@
                 };
                 
                 document.getElementById('idVendedor').value = data.id_vendedor;
-                nombreDiv.innerHTML = `✅ VENDEDOR ASIGNADO: ${data.nombre_vendedor}`;
-                nombreDiv.style.color = '#4CAF50';
-                resultadoDiv.innerHTML = `
-                    <div style="background:#d4edda;padding:10px;border-radius:8px;color:#155724;">
-                        ✅ Venta asignada a: ${data.nombre_vendedor}
-                    </div>
-                `;
-                mostrarMensajeSistema(`✅ Vendedor asignado: ${data.nombre_vendedor}`, 'success');
                 
-                // Reproducir sonido de éxito
-                try {
-                    const beep = new Audio('data:audio/wav;base64,U3RlYWx0aCBTb3VuZA==');
-                    beep.play();
-                } catch(e) { /* ignorar */ }
+                resultadoDiv.className = 'qr-result success';
+                resultadoDiv.innerHTML = '<strong>Codigo valido</strong><br>Vendedor autorizado correctamente';
+                
+                nombreDiv.style.display = 'flex';
+                nombreDiv.className = 'qr-vendor-info success';
+                nombreDiv.innerHTML = `
+                    <div class="vendor-avatar">V</div>
+                    <div class="vendor-details">
+                        <div class="vendor-name">${data.nombre_vendedor}</div>
+                        <div class="vendor-id">ID: ${data.id_vendedor}</div>
+                    </div>
+                    <div class="vendor-badge">Verificado</div>
+                `;
+                
+                mostrarMensajeSistema(`Vendedor asignado: ${data.nombre_vendedor}`, 'success');
             } else {
                 qrValidado = false;
                 vendedorValidado = null;
                 document.getElementById('idVendedor').value = '';
-                nombreDiv.innerHTML = `❌ ${data.message}`;
-                nombreDiv.style.color = '#f44336';
-                resultadoDiv.innerHTML = `
-                    <div style="background:#f8d7da;padding:10px;border-radius:8px;color:#721c24;">
-                        ❌ ${data.message}
+                
+                resultadoDiv.className = 'qr-result error';
+                resultadoDiv.innerHTML = `<strong>Codigo invalido</strong><br>${data.message}`;
+                
+                nombreDiv.style.display = 'flex';
+                nombreDiv.className = 'qr-vendor-info error';
+                nombreDiv.innerHTML = `
+                    <div class="vendor-avatar">!</div>
+                    <div class="vendor-details">
+                        <div class="vendor-name">Vendedor no autorizado</div>
+                        <div class="vendor-id">El codigo no es valido</div>
                     </div>
                 `;
+                
                 mostrarMensajeSistema(data.message, 'error');
             }
         } catch (error) {
-            console.error('Error validando QR:', error);
-            resultadoDiv.innerHTML = '<div style="background:#f8d7da;padding:10px;border-radius:8px;color:#721c24;">❌ Error de conexión. Intente de nuevo.</div>';
+            resultadoDiv.className = 'qr-result error';
+            resultadoDiv.innerHTML = '<strong>Error de conexion</strong><br>No se pudo verificar el codigo';
         }
     }
 
-    // ============ FUNCIONES ORIGINALES (modificadas) ============
+    // ============ FUNCIONES PRINCIPALES ============
 
     function actualizarFechaHora() {
         const ahora = new Date();
@@ -434,7 +558,7 @@
     function mostrarMensajeSistema(mensaje, tipo) {
         const contenedor = document.getElementById('ncMensajesSistema');
         const mensajeDiv = document.createElement('div');
-        mensajeDiv.className = `nc-mensaje-sistema ${tipo}`;
+        mensajeDiv.className = `toast-message ${tipo}`;
         mensajeDiv.textContent = mensaje;
         contenedor.appendChild(mensajeDiv);
         setTimeout(() => mensajeDiv.remove(), 4000);
@@ -453,16 +577,24 @@
             const busqueda = document.getElementById('clienteBusqueda').value.toLowerCase().trim();
             const sugerenciasDiv = document.getElementById('clienteSugerencias');
             if (!sugerenciasDiv) return;
-            if (busqueda === '') { sugerenciasDiv.style.display = 'none'; return; }
+            
+            if (busqueda === '') { 
+                sugerenciasDiv.style.display = 'none'; 
+                return; 
+            }
+            
             const filtrados = clientesData.filter(c => 
-                `${c.Nombre} ${c.Apellido}`.toLowerCase().includes(busqueda) ||
-                (c.Num_Celular && c.Num_Celular.includes(busqueda))
+                `${c.Nombre} ${c.Apellido}`.toLowerCase().includes(busqueda)
             ).slice(0, 10);
-            if (filtrados.length === 0) { sugerenciasDiv.style.display = 'none'; return; }
+            
+            if (filtrados.length === 0) { 
+                sugerenciasDiv.style.display = 'none'; 
+                return; 
+            }
+            
             sugerenciasDiv.innerHTML = filtrados.map(c => `
-                <div class="cliente-sugerencia" onclick="seleccionarCliente(${c.Id_cliente}, '${c.Nombre} ${c.Apellido} - ${c.Num_Celular || 'Sin telefono'}')">
+                <div class="cliente-sugerencia" onclick="seleccionarCliente(${c.Id_cliente}, '${c.Nombre} ${c.Apellido}')">
                     <strong>${c.Nombre} ${c.Apellido}</strong>
-                    <small>${c.Num_Celular || 'Sin telefono'}</small>
                 </div>
             `).join('');
             sugerenciasDiv.style.display = 'block';
@@ -548,22 +680,29 @@
     function cargarProductosEnModal() {
         const lista = document.getElementById('listaProductos');
         if (!lista) return;
-        if (!productosDisponibles.length) { lista.innerHTML = '<div style="padding:20px;">Cargando productos...</div>'; return; }
+        if (!productosDisponibles.length) { lista.innerHTML = '<div class="loading">Cargando productos...</div>'; return; }
         lista.innerHTML = '';
         productosDisponibles.forEach(producto => {
             const stock = producto.Stock || 0;
-            let claseStock = '';
-            if (stock <= 0) claseStock = 'sin-stock';
-            else if (stock < 10) claseStock = 'stock-bajo';
-            const div = document.createElement('div');
-            div.className = `nc-producto-item ${claseStock}`;
-            div.setAttribute('data-id', producto.Id_Producto);
-            div.setAttribute('data-nombre', producto.Nombre);
-            div.setAttribute('data-precio', producto.Precio);
-            div.setAttribute('data-stock', stock);
-            div.innerHTML = `<div><strong>${producto.Nombre}</strong><br>Precio: C$${parseFloat(producto.Precio).toFixed(2)} | Stock: ${stock}</div><button>Seleccionar</button>`;
-            div.onclick = () => seleccionarProducto(div);
-            lista.appendChild(div);
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            if (stock <= 0) card.classList.add('out-of-stock');
+            else if (stock < 10) card.classList.add('low-stock');
+            
+            card.setAttribute('data-id', producto.Id_Producto);
+            card.setAttribute('data-nombre', producto.Nombre);
+            card.setAttribute('data-precio', producto.Precio);
+            card.setAttribute('data-stock', stock);
+            card.innerHTML = `
+                <div class="product-info">
+                    <div class="product-name">${producto.Nombre}</div>
+                    <div class="product-price">C$ ${parseFloat(producto.Precio).toFixed(2)}</div>
+                    <div class="product-stock">Stock: ${stock}</div>
+                </div>
+                <button class="select-product-btn">Seleccionar</button>
+            `;
+            card.onclick = () => seleccionarProducto(card);
+            lista.appendChild(card);
         });
     }
 
@@ -582,29 +721,29 @@
 
     function actualizarTabla() {
         const tbody = document.getElementById('detalleCompras');
-        let total = 0;
+        
         if (productosSeleccionados.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5">No hay productos agregados</td></tr>';
-            document.getElementById('totalCompra').textContent = '0.00';
-            document.getElementById('totalInput').value = '0';
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No hay productos agregados</td></tr>';
+            calcularTotalConIVA();
+            actualizarInputsProductos();
             return;
         }
+        
         tbody.innerHTML = '';
         productosSeleccionados.forEach((producto, index) => {
             const subtotal = producto.precio * producto.cantidad;
-            total += subtotal;
             tbody.innerHTML += `
                 <tr>
                     <td><strong>${producto.nombre}</strong></td>
-                    <td><input type="number" class="nc-quantity-input" value="${producto.cantidad}" min="1" max="${producto.stock}" onchange="cambiarCantidad(${index}, this.value)"></td>
+                    <td><input type="number" class="quantity-input" value="${producto.cantidad}" min="1" max="${producto.stock}" onchange="cambiarCantidad(${index}, this.value)"></td>
                     <td>C$${producto.precio.toFixed(2)}</td>
                     <td>C$${subtotal.toFixed(2)}</td>
                     <td><button class="delete-btn" onclick="eliminarProducto(${index})">Eliminar</button></td>
                 </tr>
             `;
         });
-        document.getElementById('totalCompra').textContent = total.toFixed(2);
-        document.getElementById('totalInput').value = total;
+        
+        calcularTotalConIVA();
         actualizarInputsProductos();
     }
 
@@ -647,9 +786,9 @@
 
     window.filtrarProductosModal = function() {
         const busqueda = document.getElementById('buscarProductoModal').value.toLowerCase();
-        document.querySelectorAll('.nc-producto-item').forEach(producto => {
+        document.querySelectorAll('.product-card').forEach(producto => {
             const nombre = producto.getAttribute('data-nombre').toLowerCase();
-            producto.style.display = nombre.includes(busqueda) ? 'block' : 'none';
+            producto.style.display = nombre.includes(busqueda) ? 'flex' : 'none';
         });
     };
 
@@ -672,8 +811,8 @@
     }
 
     function seleccionarMoneda(elemento) {
-        document.querySelectorAll('.pago-efectivo-moneda').forEach(m => m.classList.remove('seleccionada'));
-        elemento.classList.add('seleccionada');
+        document.querySelectorAll('.currency-btn').forEach(btn => btn.classList.remove('active'));
+        elemento.classList.add('active');
         monedaSeleccionada = elemento.getAttribute('data-moneda');
         document.getElementById('montoRecibido').value = '';
         document.getElementById('pagoResultado').style.display = 'none';
@@ -691,7 +830,7 @@
             let vueltoMostrar = vuelto;
             let monedaTexto = monedaSeleccionada === 'cordobas' ? 'C$' : 'US$';
             if (monedaSeleccionada === 'dolares') vueltoMostrar = vuelto / tasaCambio;
-            document.getElementById('vueltoCalculado').innerHTML = `${monedaTexto} ${vueltoMostrar.toFixed(2)}<br><small style="font-size: 12px;">(C$ ${vuelto.toFixed(2)})</small>`;
+            document.getElementById('vueltoCalculado').innerHTML = `${monedaTexto} ${vueltoMostrar.toFixed(2)}<br><small>(C$ ${vuelto.toFixed(2)})</small>`;
             resultadoDiv.style.display = 'block';
             errorDiv.style.display = 'none';
         } else if (monto > 0) {
@@ -711,11 +850,11 @@
         const numCuenta = `${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 900000) + 100000}-${Math.floor(Math.random() * 9) + 1}`;
         const datosDiv = document.getElementById('datosTransferencia');
         datosDiv.innerHTML = `
-            <p><strong>Banco:</strong> <span>Banco de America Central (BAC)</span></p>
-            <p><strong>Titular:</strong> <span>Tienda Chepita S.A.</span></p>
-            <p><strong>Numero de Cuenta:</strong> <span>${numCuenta}</span></p>
-            <p><strong>Monto a Transferir:</strong> <span>C$${total.toFixed(2)}</span></p>
-            <p><strong>Referencia:</strong> <span>FACTURA #${numFactura}</span></p>
+            <div class="bank-row"><strong>Banco:</strong> <span>Banco de America Central (BAC)</span></div>
+            <div class="bank-row"><strong>Titular:</strong> <span>Tienda Chepita S.A.</span></div>
+            <div class="bank-row"><strong>Numero de Cuenta:</strong> <span>${numCuenta}</span></div>
+            <div class="bank-row"><strong>Monto a Transferir:</strong> <span>C$${total.toFixed(2)}</span></div>
+            <div class="bank-row"><strong>Referencia:</strong> <span>FACTURA #${numFactura}</span></div>
         `;
     }
 
@@ -742,19 +881,19 @@
             else if (primerosDigitos.startsWith('7890')) bancoDetectado = 'bancoDemocratico';
         }
         
-        document.querySelectorAll('.tarjeta-banco').forEach(b => b.classList.remove('activo'));
+        document.querySelectorAll('.bank-logo').forEach(b => b.classList.remove('active'));
         if (bancoDetectado) {
-            document.querySelector(`.tarjeta-banco[data-banco="${bancoDetectado}"]`).classList.add('activo');
-            validacionDiv.innerHTML = `Banco detectado: ${document.querySelector(`.tarjeta-banco[data-banco="${bancoDetectado}"] span`).textContent}`;
-            validacionDiv.className = 'tarjeta-validacion valid';
+            document.querySelector(`.bank-logo[data-banco="${bancoDetectado}"]`).classList.add('active');
+            validacionDiv.innerHTML = `Banco detectado: ${document.querySelector(`.bank-logo[data-banco="${bancoDetectado}"]`).textContent}`;
+            validacionDiv.className = 'card-validation success';
         } else if (digitos.length > 0 && digitos.length < 16) {
             validacionDiv.innerHTML = 'Numero de tarjeta incompleto';
-            validacionDiv.className = 'tarjeta-validacion invalid';
+            validacionDiv.className = 'card-validation error';
         } else if (digitos.length >= 16) {
             validacionDiv.innerHTML = 'Numero de tarjeta valido';
-            validacionDiv.className = 'tarjeta-validacion valid';
+            validacionDiv.className = 'card-validation success';
         } else {
-            validacionDiv.className = 'tarjeta-validacion';
+            validacionDiv.className = 'card-validation';
         }
     }
 
@@ -777,19 +916,19 @@
         document.getElementById('resumenCanal').textContent = canalTexto;
         document.getElementById('resumenMetodoPago').textContent = metodoPagoTexto;
         document.getElementById('resumenVendedor').textContent = vendedorTexto;
-        document.getElementById('resumenTotal').textContent = `C$ ${total.toFixed(2)}`;
+        document.getElementById('resumenTotal').innerHTML = `C$ ${total.toFixed(2)}`;
         
         const tbody = document.getElementById('resumenProductos');
         tbody.innerHTML = '';
         productosSeleccionados.forEach(producto => {
             const subtotal = producto.precio * producto.cantidad;
             tbody.innerHTML += `
-                <tr style="border-bottom: 1px solid #ddd;">
-                    <td style="padding: 8px;">${producto.nombre}</td>
-                    <td style="padding: 8px; text-align: center;">${producto.cantidad}</td>
-                    <td style="padding: 8px; text-align: right;">C$${producto.precio.toFixed(2)}</td>
-                    <td style="padding: 8px; text-align: right;">C$${subtotal.toFixed(2)}</td>
-                  </tr>
+                <tr>
+                    <td>${producto.nombre}</td>
+                    <td class="text-center">${producto.cantidad}</td>
+                    <td class="text-right">C$${producto.precio.toFixed(2)}</td>
+                    <td class="text-right">C$${subtotal.toFixed(2)}</td>
+                </tr>
             `;
         });
         
@@ -799,22 +938,22 @@
             let montoMostrar = datosPagoConfirmados.moneda === 'cordobas' ? `C$ ${datosPagoConfirmados.montoRecibido.toFixed(2)}` : `US$ ${datosPagoConfirmados.montoRecibido.toFixed(2)}`;
             let vueltoMostrar = datosPagoConfirmados.moneda === 'cordobas' ? `C$ ${datosPagoConfirmados.vuelto.toFixed(2)}` : `US$ ${(datosPagoConfirmados.vuelto / tasaCambio).toFixed(2)}`;
             detalleDiv.innerHTML = `
-                <p><strong>Moneda:</strong> ${monedaTexto}</p>
-                <p><strong>Monto recibido:</strong> ${montoMostrar}</p>
-                <p><strong>Vuelto a entregar:</strong> ${vueltoMostrar}</p>
+                <div class="detail-row"><strong>Moneda:</strong> ${monedaTexto}</div>
+                <div class="detail-row"><strong>Monto recibido:</strong> ${montoMostrar}</div>
+                <div class="detail-row"><strong>Vuelto a entregar:</strong> ${vueltoMostrar}</div>
             `;
         } else if (datosPagoConfirmados.tipo === 'transferencia') {
             detalleDiv.innerHTML = `
-                <p><strong>Banco:</strong> ${datosPagoConfirmados.banco}</p>
-                <p><strong>Cuenta:</strong> ${datosPagoConfirmados.numeroCuenta}</p>
-                <p><strong>Monto transferido:</strong> C$${datosPagoConfirmados.monto.toFixed(2)}</p>
-                <p><strong>Referencia:</strong> ${datosPagoConfirmados.referencia}</p>
+                <div class="detail-row"><strong>Banco:</strong> ${datosPagoConfirmados.banco}</div>
+                <div class="detail-row"><strong>Cuenta:</strong> ${datosPagoConfirmados.numeroCuenta}</div>
+                <div class="detail-row"><strong>Monto transferido:</strong> C$${datosPagoConfirmados.monto.toFixed(2)}</div>
+                <div class="detail-row"><strong>Referencia:</strong> ${datosPagoConfirmados.referencia}</div>
             `;
         } else if (datosPagoConfirmados.tipo === 'tarjeta') {
             detalleDiv.innerHTML = `
-                <p><strong>Banco:</strong> ${datosPagoConfirmados.banco}</p>
-                <p><strong>Numero de tarjeta:</strong> ${datosPagoConfirmados.numeroTarjeta.substring(0, 4)}****${datosPagoConfirmados.numeroTarjeta.substring(12)}</p>
-                <p><strong>Monto pagado:</strong> C$${datosPagoConfirmados.monto.toFixed(2)}</p>
+                <div class="detail-row"><strong>Banco:</strong> ${datosPagoConfirmados.banco}</div>
+                <div class="detail-row"><strong>Numero de tarjeta:</strong> ${datosPagoConfirmados.numeroTarjeta.substring(0, 4)}****${datosPagoConfirmados.numeroTarjeta.substring(12)}</div>
+                <div class="detail-row"><strong>Monto pagado:</strong> C$${datosPagoConfirmados.monto.toFixed(2)}</div>
             `;
         }
         
@@ -840,7 +979,7 @@
         const total = parseFloat(document.getElementById('totalInput').value);
         
         if (!qrValidado || !vendedorValidado) {
-            mostrarMensajeSistema('❌ Debe escanear el QR de un vendedor válido', 'error');
+            mostrarMensajeSistema('Debe escanear el QR de un vendedor valido', 'error');
             return;
         }
         
@@ -858,9 +997,9 @@
             document.getElementById('modalPagoTransferencia').style.display = 'flex';
         } else if (metodoTexto === 'Tarjeta') {
             document.getElementById('numeroTarjeta').value = '';
-            document.getElementById('tarjetaValidacion').className = 'tarjeta-validacion';
+            document.getElementById('tarjetaValidacion').className = 'card-validation';
             document.getElementById('tarjetaValidacion').innerHTML = '';
-            document.querySelectorAll('.tarjeta-banco').forEach(b => b.classList.remove('activo'));
+            document.querySelectorAll('.bank-logo').forEach(b => b.classList.remove('active'));
             document.getElementById('modalPagoTarjeta').style.display = 'flex';
         }
     }
@@ -932,7 +1071,7 @@
         const idVendedor = document.getElementById('idVendedor').value;
 
         if (!qrValidado || !vendedorValidado) {
-            mostrarMensajeSistema('❌ Debe escanear el QR de un vendedor válido', 'error');
+            mostrarMensajeSistema('Debe escanear el QR de un vendedor valido', 'error');
             return;
         }
         
@@ -952,7 +1091,7 @@
                 const resOrden = await fetch('/api/ordenes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(ordenData) });
                 if (!resOrden.ok) throw new Error('Error al guardar el detalle');
             }
-            mostrarMensajeSistema(`✅ Venta guardada - Vendedor: ${vendedorValidado.nombre}`, 'success');
+            mostrarMensajeSistema(`Venta guardada - Vendedor: ${vendedorValidado.nombre}`, 'success');
             setTimeout(() => window.location.href = 'menu_caja.html', 2000);
         } catch (error) { mostrarMensajeSistema(error.message || 'Error al guardar la compra', 'error'); }
     }
@@ -963,6 +1102,8 @@
 
     document.getElementById('clienteBusqueda').addEventListener('input', buscarCliente);
     setInterval(actualizarFechaHora, 1000);
+    
+    document.getElementById('tasaCambioDisplay').textContent = tasaCambio;
 
     async function inicializar() {
         actualizarFechaHora();
@@ -973,10 +1114,7 @@
         await cargarProductos();
         await cargarTrabajadores();
         
-        // Activar cámara automáticamente al cargar (opcional)
-        setTimeout(() => {
-            iniciarCamaraQR();
-        }, 500);
+        actualizarEstadoCamara(false, 'Inactivo');
     }
 
     inicializar();
