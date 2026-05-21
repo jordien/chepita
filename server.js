@@ -2170,6 +2170,8 @@ app.post('/api/vendedor/generar-qr', verificarTokenTrabajador, (req, res) => {
     });
 });
 
+// ================= ENVÍO DE QR POR EMAIL (MEJORADO - QR VISIBLE) =================
+
 app.post('/api/vendedor/enviar-qr-email', (req, res) => {
     const { email, codigo, nombre_vendedor } = req.body;
     
@@ -2177,33 +2179,67 @@ app.post('/api/vendedor/enviar-qr-email', (req, res) => {
         return res.status(400).json({ success: false, message: 'Datos incompletos' });
     }
     
-    const qrImageUrl = `http://localhost:${PORT}/api/generar-imagen-qr?codigo=${encodeURIComponent(codigo)}`;
-    
-    const mailOptions = {
-        from: 'Tienda Chepita <isabelchepita678@gmail.com>',
-        to: email,
-        subject: '🔑 Tu código QR para ventas - Tienda Chepita',
-        html: `
-            <div style="font-family: Arial, sans-serif; border: 2px solid #A63C89; padding: 20px; border-radius: 10px;">
-                <h2 style="color: #A63C89;">🔑 Tu código QR de vendedor</h2>
-                <p>Hola <strong>${nombre_vendedor || 'Vendedor'}</strong>,</p>
-                <div style="text-align: center; margin: 25px 0;">
-                    <img src="${qrImageUrl}" style="width: 250px;">
-                </div>
-                <p>Código: <strong>${codigo}</strong></p>
-                <p>Válido por 60 minutos</p>
-            </div>
-        `
-    };
-    
-    transporter.sendMail(mailOptions, (error) => {
-        if (error) {
-            console.error('Error enviando email:', error);
-            return res.status(500).json({ success: false, message: 'Error al enviar email' });
+    // Generar QR como buffer para adjuntar directamente en el correo
+    qrcode.toBuffer(codigo, { errorCorrectionLevel: 'H' }, (err, qrBuffer) => {
+        if (err) {
+            console.error('Error generando QR buffer:', err);
+            return res.status(500).json({ success: false, message: 'Error generando QR' });
         }
-        res.json({ success: true, message: 'QR enviado a tu correo' });
+        
+        const qrBase64 = qrBuffer.toString('base64');
+        const qrImageSrc = `data:image/png;base64,${qrBase64}`;
+        
+        const mailOptions = {
+            from: 'Tienda Chepita <isabelchepita678@gmail.com>',
+            to: email,
+            subject: 'Tu codigo QR para ventas - Tienda Chepita',
+            html: `
+                <div style="font-family: Arial, sans-serif; border: 2px solid #A63C89; padding: 20px; border-radius: 10px; max-width: 500px; margin: 0 auto;">
+                    <h2 style="color: #A63C89; text-align: center;">Tu codigo QR de vendedor</h2>
+                    <p>Hola <strong>${nombre_vendedor || 'Vendedor'}</strong>,</p>
+                    <p>Este es tu codigo QR para asignar tus ventas en la caja.</p>
+                    
+                    <div style="text-align: center; margin: 25px 0;">
+                        <img src="${qrImageSrc}" alt="QR Code" style="width: 250px; height: 250px; border: 2px solid #A63C89; border-radius: 15px;">
+                    </div>
+                    
+                    <div style="background: #f0f0f0; padding: 15px; border-radius: 8px;">
+                        <p><strong>Codigo numerico (respaldo):</strong></p>
+                        <p style="font-family: monospace; font-size: 16px; font-weight: bold; text-align: center; background: white; padding: 10px; border-radius: 8px;">${codigo}</p>
+                    </div>
+                    
+                    <div style="background: #e8f4fd; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <p><strong>Instrucciones:</strong></p>
+                        <ol>
+                            <li>Muestra este QR en tu celular o imprime esta pagina</li>
+                            <li>Cuando atiendas a un cliente, muestrale el QR</li>
+                            <li>El cliente lo acerca a la camara de la caja</li>
+                            <li>La venta se asignara automaticamente a ti</li>
+                        </ol>
+                    </div>
+                    
+                    <p style="color: #666; font-size: 12px; margin-top: 15px;">
+                        Este QR es valido por 60 minutos.<br>
+                        Si expira, puedes generar uno nuevo desde la app en tu celular.
+                    </p>
+                    
+                    <hr>
+                    <p style="color: #999; font-size: 11px; text-align: center;">Tienda Chepita - Sistema de Gestion Comercial</p>
+                </div>
+            `
+        };
+        
+        transporter.sendMail(mailOptions, (error) => {
+            if (error) {
+                console.error('Error enviando email:', error);
+                return res.status(500).json({ success: false, message: 'Error al enviar email: ' + error.message });
+            }
+            res.json({ success: true, message: 'QR enviado a tu correo electronico' });
+        });
     });
 });
+
+// ================= GENERAR IMAGEN QR (MEJORADO - DEVUELVE IMAGEN DIRECTA) =================
 
 app.get('/api/generar-imagen-qr', (req, res) => {
     const { codigo } = req.query;
@@ -2212,11 +2248,16 @@ app.get('/api/generar-imagen-qr', (req, res) => {
         return res.status(400).send('Código requerido');
     }
     
-    qrcode.toDataURL(codigo, { errorCorrectionLevel: 'H' }, (err, url) => {
+    // Configurar respuesta como imagen PNG
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Disposition', 'inline');
+    
+    qrcode.toBuffer(codigo, { errorCorrectionLevel: 'H' }, (err, buffer) => {
         if (err) {
+            console.error('Error generando QR:', err);
             return res.status(500).send('Error generando QR');
         }
-        res.send(`<img src="${url}" style="width: 300px;">`);
+        res.send(buffer);
     });
 });
 
