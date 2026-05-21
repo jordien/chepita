@@ -1,0 +1,8 @@
+{
+    "name": "Chepita Vendedor",
+    "short_name": "Chepita",
+    "start_url": "/vendedor_app.html",
+    "display": "standalone",
+    "background_color": "#A63C89",
+    "theme_color": "#A63C89"
+}

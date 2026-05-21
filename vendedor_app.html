@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Chepita Vendedor">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23A63C89'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='white'%3E🏪%3C/text%3E%3C/svg%3E">
+    <link rel="manifest" href="/manifest.json">
+    <title>Chepita Vendedor</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 16px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 32px;
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #A63C89;
+            font-size: 28px;
+        }
+        .vendedor-info {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .qr-container {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            text-align: center;
+            border: 3px solid #A63C89;
+            margin: 20px 0;
+        }
+        .qr-container canvas, .qr-container img {
+            width: 250px;
+            height: 250px;
+            margin: 0 auto;
+        }
+        .codigo-texto {
+            font-family: monospace;
+            font-size: 14px;
+            background: #f0f0f0;
+            padding: 8px;
+            border-radius: 10px;
+            margin-top: 10px;
+            word-break: break-all;
+        }
+        .tiempo {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 12px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            margin: 8px 0;
+            cursor: pointer;
+        }
+        .btn-secundario {
+            background: #A63C89;
+        }
+        .btn-peligro {
+            background: #dc3545;
+        }
+        .instrucciones {
+            background: #e8f4fd;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 13px;
+            margin-top: 20px;
+        }
+        .status-activo {
+            background: #d4edda;
+            color: #155724;
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 12px;
+        }
+        .status-expirado {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            margin: 8px 0;
+        }
+        @media (prefers-color-scheme: dark) {
+            .container { background: #1a1a1a; color: white; }
+            .vendedor-info { background: #2a2a2a; }
+            .tiempo { background: #332701; color: #ffc107; }
+            .instrucciones { background: #1a3a4a; color: white; }
+            .codigo-texto { background: #333; color: #eee; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏪 Chepita Vendedor</h1>
+            <p>Genera tu QR para ventas</p>
+        </div>
+
+        <div id="loginSection">
+            <div class="vendedor-info">
+                <p>🔐 Inicia sesión con tus credenciales</p>
+            </div>
+            <input type="text" id="email" placeholder="Correo electrónico">
+            <input type="password" id="password" placeholder="Contraseña">
+            <button class="btn" onclick="iniciarSesion()">Iniciar Sesión</button>
+            <div class="instrucciones">
+                Usa tu correo y contraseña de trabajador.<br>
+                Si es primera vez, usa "1234" como contraseña.
+            </div>
+        </div>
+
+        <div id="appSection" style="display: none;">
+            <div class="vendedor-info" id="vendedorInfo">
+                Cargando...
+            </div>
+
+            <div class="qr-container" id="qrContainer" style="display: none;">
+                <div id="qrcode"></div>
+                <div class="codigo-texto" id="codigoTexto"></div>
+            </div>
+
+            <div class="tiempo" id="tiempoInfo" style="display: none;"></div>
+
+            <button class="btn" onclick="generarNuevoQR()" id="btnGenerar">
+                🔄 Generar nuevo QR
+            </button>
+            
+            <button class="btn btn-secundario" onclick="enviarQREmail()">
+                📧 Enviar QR por email
+            </button>
+            
+            <button class="btn btn-peligro" onclick="cerrarSesion()">
+                🚪 Cerrar sesión
+            </button>
+
+            <div class="instrucciones">
+                <strong>📌 Instrucciones:</strong><br>
+                1. Muestra este QR en tu celular<br>
+                2. Cuando atiendas a un cliente, muéstrale el QR<br>
+                3. El cliente lo acerca a la cámara de la caja<br>
+                4. ¡La venta se asigna automáticamente a ti!<br>
+                <br>
+                💡 El QR se renueva cada 60 minutos por seguridad.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let token = null;
+        let vendedor = null;
+        let qrActual = null;
+        let intervalo = null;
+
+        async function iniciarSesion() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                alert('Ingresa correo y contraseña');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/trabajadores/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre_usuario: email, password: password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    token = data.token;
+                    vendedor = data.trabajador;
+                    localStorage.setItem('token_vendedor', token);
+                    localStorage.setItem('vendedor', JSON.stringify(vendedor));
+                    mostrarApp();
+                    cargarQRActivo();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error de conexión: ' + error.message);
+            }
+        }
+
+        function mostrarApp() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('appSection').style.display = 'block';
+            document.getElementById('vendedorInfo').innerHTML = `
+                👤 <strong>${vendedor.nombre}</strong><br>
+                <small>ID: ${vendedor.id} | ${vendedor.email || 'Sin email'}</small>
+            `;
+        }
+
+        async function cargarQRActivo() {
+            try {
+                const response = await fetch(`/api/vendedor/qr-activo/${vendedor.id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (data.tiene_qr_activo && new Date(data.expira) > new Date()) {
+                    mostrarQR(data.codigo, data.expira);
+                } else {
+                    await generarNuevoQR();
+                }
+            } catch (error) {
+                console.error('Error cargando QR:', error);
+                await generarNuevoQR();
+            }
+        }
+
+        async function generarNuevoQR() {
+            const btn = document.getElementById('btnGenerar');
+            btn.textContent = '⏳ Generando...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/vendedor/generar-qr', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ id_vendedor: vendedor.id, duracion_minutos: 60 })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    mostrarQR(data.codigo, data.expira);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error generando QR: ' + error.message);
+            } finally {
+                btn.textContent = '🔄 Generar nuevo QR';
+                btn.disabled = false;
+            }
+        }
+
+        function mostrarQR(codigo, expira) {
+            qrActual = codigo;
+            document.getElementById('qrContainer').style.display = 'block';
+            document.getElementById('tiempoInfo').style.display = 'block';
+            document.getElementById('codigoTexto').textContent = codigo;
+
+            // Limpiar QR anterior
+            const qrDiv = document.getElementById('qrcode');
+            qrDiv.innerHTML = '';
+
+            // Generar nuevo QR
+            new QRCode(qrDiv, {
+                text: codigo,
+                width: 250,
+                height: 250,
+                colorDark: "#A63C89",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            actualizarTiempo(expira);
+            if (intervalo) clearInterval(intervalo);
+            intervalo = setInterval(() => actualizarTiempo(expira), 1000);
+        }
+
+        function actualizarTiempo(expira) {
+            const ahora = new Date();
+            const expiraDate = new Date(expira);
+            const diff = expiraDate - ahora;
+
+            const tiempoDiv = document.getElementById('tiempoInfo');
+
+            if (diff <= 0) {
+                tiempoDiv.innerHTML = '⏰ QR EXPIRADO - Genera uno nuevo';
+                tiempoDiv.className = 'tiempo status-expirado';
+                document.getElementById('qrContainer').style.opacity = '0.5';
+            } else {
+                const horas = Math.floor(diff / 3600000);
+                const minutos = Math.floor((diff % 3600000) / 60000);
+                tiempoDiv.innerHTML = `✅ QR VÁLIDO por: ${horas}h ${minutos}min`;
+                tiempoDiv.className = 'tiempo status-activo';
+                document.getElementById('qrContainer').style.opacity = '1';
+            }
+        }
+
+        async function enviarQREmail() {
+            if (!vendedor.email) {
+                alert('Tu cuenta no tiene correo electrónico registrado');
+                return;
+            }
+
+            if (!qrActual) {
+                alert('Primero genera un QR');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/vendedor/enviar-qr-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: vendedor.email,
+                        codigo: qrActual,
+                        nombre_vendedor: vendedor.nombre
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('✅ QR enviado a tu correo electrónico');
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error enviando email: ' + error.message);
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('token_vendedor');
+            localStorage.removeItem('vendedor');
+            token = null;
+            vendedor = null;
+            if (intervalo) clearInterval(intervalo);
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('appSection').style.display = 'none';
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        // Verificar si hay sesión guardada
+        const tokenGuardado = localStorage.getItem('token_vendedor');
+        const vendedorGuardado = localStorage.getItem('vendedor');
+
+        if (tokenGuardado && vendedorGuardado) {
+            token = tokenGuardado;
+            vendedor = JSON.parse(vendedorGuardado);
+            mostrarApp();
+            cargarQRActivo();
+        }
+    </script>
+</body>
+</html>

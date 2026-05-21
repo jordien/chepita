@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nueva Compra - Tienda Chepita</title>
     <link rel="stylesheet" href="nueva_compra.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 </head>
 <body>
 
@@ -85,13 +86,21 @@
                     </div>
                 </div>
 
+                <!-- ESCÁNER QR PARA VENDEDOR -->
                 <div class="nc-group">
-                    <label class="nc-required">Codigo del Vendedor</label>
-                    <div class="nc-input-group">
-                        <div class="nc-input-icon"></div>
-                        <input type="number" id="idVendedor" placeholder="Ej: 1, 2, 3..." required min="1">
-                        <small id="nombreVendedorMostrado" style="display: block; margin-top: 5px; color: #4CAF50; font-weight: bold;"></small>
+                    <label class="nc-required">📷 Escanear QR del Vendedor</label>
+                    <div style="position: relative; border: 2px solid #ddd; border-radius: 12px; overflow: hidden; background: #000; max-width: 400px;">
+                        <video id="qrVideo" autoplay playsinline style="width: 100%; background: #000;"></video>
+                        <canvas id="qrCanvas" style="display: none;"></canvas>
                     </div>
+                    <div id="qrResultado" style="margin-top: 10px;"></div>
+                    <div style="display: flex; gap: 10px; margin-top: 8px;">
+                        <button type="button" class="nc-select-product-btn" onclick="iniciarCamaraQR()">📷 Activar cámara</button>
+                        <button type="button" class="nc-cancel-btn" onclick="detenerCamaraQR()">⏹️ Detener</button>
+                    </div>
+                    <input type="hidden" id="idVendedor" name="id_vendedor">
+                    <div id="nombreVendedorMostrado" style="margin-top: 8px; font-weight: bold;"></div>
+                    <small>El vendedor debe mostrar su QR en el celular. Acérquelo a la cámara.</small>
                 </div>
             </div>
 
@@ -130,7 +139,7 @@
     </form>
 </div>
 
-<!-- MODAL CLIENTE -->
+<!-- MODAL CLIENTE (igual) -->
 <div class="nc-modal-overlay" id="modalCliente">
     <div class="nc-modal-box">
         <button class="nc-modal-close" onclick="cerrarModalCliente()">x</button>
@@ -147,7 +156,7 @@
     </div>
 </div>
 
-<!-- MODAL PRODUCTOS -->
+<!-- MODAL PRODUCTOS (igual) -->
 <div class="nc-modal-overlay" id="modalProducto">
     <div class="nc-modal-box nc-modal-box-xlarge">
         <button class="nc-modal-close" onclick="cerrarModalProducto()">x</button>
@@ -162,7 +171,7 @@
     </div>
 </div>
 
-<!-- MODAL PAGO EFECTIVO -->
+<!-- MODAL PAGO EFECTIVO (igual) -->
 <div class="nc-modal-overlay" id="modalPagoEfectivo">
     <div class="nc-modal-box">
         <button class="nc-modal-close" onclick="cerrarModalPagoEfectivo()">x</button>
@@ -189,7 +198,7 @@
     </div>
 </div>
 
-<!-- MODAL PAGO TRANSFERENCIA -->
+<!-- MODAL PAGO TRANSFERENCIA (igual) -->
 <div class="nc-modal-overlay" id="modalPagoTransferencia">
     <div class="nc-modal-box">
         <button class="nc-modal-close" onclick="cerrarModalPagoTransferencia()">x</button>
@@ -210,7 +219,7 @@
     </div>
 </div>
 
-<!-- MODAL PAGO TARJETA -->
+<!-- MODAL PAGO TARJETA (igual) -->
 <div class="nc-modal-overlay" id="modalPagoTarjeta">
     <div class="nc-modal-box">
         <button class="nc-modal-close" onclick="cerrarModalPagoTarjeta()">x</button>
@@ -236,7 +245,7 @@
     </div>
 </div>
 
-<!-- MODAL RESUMEN DE COMPRA -->
+<!-- MODAL RESUMEN DE COMPRA (igual) -->
 <div class="nc-modal-overlay" id="modalResumenCompra">
     <div class="nc-modal-box" style="max-width: 800px;">
         <button class="nc-modal-close" onclick="cerrarModalResumen()">x</button>
@@ -294,6 +303,124 @@
     let monedaSeleccionada = 'cordobas';
     let tasaCambio = 36.50;
     let datosPagoConfirmados = {};
+    
+    // Variables para QR
+    let videoStream = null;
+    let scanning = true;
+    let qrValidado = false;
+    let vendedorValidado = null;
+
+    // ============ FUNCIONES QR ============
+    
+    async function iniciarCamaraQR() {
+        const video = document.getElementById('qrVideo');
+        
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "environment" } 
+            });
+            videoStream = stream;
+            video.srcObject = stream;
+            video.play();
+            scanning = true;
+            mostrarMensajeSistema('📷 Cámara activada. Acerca el QR del vendedor.', 'success');
+            escanearQRContinuo();
+        } catch (error) {
+            console.error('Error cámara:', error);
+            mostrarMensajeSistema('No se pudo acceder a la cámara. Verifica los permisos.', 'error');
+        }
+    }
+
+    function detenerCamaraQR() {
+        if (videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+            videoStream = null;
+        }
+        scanning = false;
+        const video = document.getElementById('qrVideo');
+        if (video) video.srcObject = null;
+    }
+
+    async function escanearQRContinuo() {
+        if (!scanning) return;
+        
+        const video = document.getElementById('qrVideo');
+        const canvas = document.getElementById('qrCanvas');
+        if (!video || !canvas) return;
+        
+        const context = canvas.getContext('2d');
+        
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvas.height = video.videoHeight;
+            canvas.width = video.videoWidth;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, canvas.width, canvas.height);
+            
+            if (code) {
+                await procesarQRVendedor(code.data);
+                detenerCamaraQR();
+            }
+        }
+        requestAnimationFrame(escanearQRContinuo);
+    }
+
+    async function procesarQRVendedor(codigo) {
+        const resultadoDiv = document.getElementById('qrResultado');
+        const nombreDiv = document.getElementById('nombreVendedorMostrado');
+        
+        resultadoDiv.innerHTML = '<div style="background:#fff3cd;padding:10px;border-radius:8px;">🔍 Verificando código...</div>';
+        
+        try {
+            const response = await fetch('/api/validar-qr-vendedor', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ codigo: codigo })
+            });
+            const data = await response.json();
+            
+            if (data.valido) {
+                qrValidado = true;
+                vendedorValidado = {
+                    id: data.id_vendedor,
+                    nombre: data.nombre_vendedor
+                };
+                
+                document.getElementById('idVendedor').value = data.id_vendedor;
+                nombreDiv.innerHTML = `✅ VENDEDOR ASIGNADO: ${data.nombre_vendedor}`;
+                nombreDiv.style.color = '#4CAF50';
+                resultadoDiv.innerHTML = `
+                    <div style="background:#d4edda;padding:10px;border-radius:8px;color:#155724;">
+                        ✅ Venta asignada a: ${data.nombre_vendedor}
+                    </div>
+                `;
+                mostrarMensajeSistema(`✅ Vendedor asignado: ${data.nombre_vendedor}`, 'success');
+                
+                // Reproducir sonido de éxito
+                try {
+                    const beep = new Audio('data:audio/wav;base64,U3RlYWx0aCBTb3VuZA==');
+                    beep.play();
+                } catch(e) { /* ignorar */ }
+            } else {
+                qrValidado = false;
+                vendedorValidado = null;
+                document.getElementById('idVendedor').value = '';
+                nombreDiv.innerHTML = `❌ ${data.message}`;
+                nombreDiv.style.color = '#f44336';
+                resultadoDiv.innerHTML = `
+                    <div style="background:#f8d7da;padding:10px;border-radius:8px;color:#721c24;">
+                        ❌ ${data.message}
+                    </div>
+                `;
+                mostrarMensajeSistema(data.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error validando QR:', error);
+            resultadoDiv.innerHTML = '<div style="background:#f8d7da;padding:10px;border-radius:8px;color:#721c24;">❌ Error de conexión. Intente de nuevo.</div>';
+        }
+    }
+
+    // ============ FUNCIONES ORIGINALES (modificadas) ============
 
     function actualizarFechaHora() {
         const ahora = new Date();
@@ -389,15 +516,6 @@
             const respuesta = await fetch('/api/trabajadores/activos');
             trabajadoresLista = await respuesta.json();
         } catch (error) { console.error('Error cargando trabajadores:', error); }
-    }
-
-    function validarVendedor() {
-        const idVendedor = document.getElementById('idVendedor').value;
-        const nombreMostrado = document.getElementById('nombreVendedorMostrado');
-        if (!idVendedor || idVendedor < 1) { nombreMostrado.textContent = ''; return false; }
-        const trabajador = trabajadoresLista.find(t => t.Id_Trabajador == idVendedor);
-        if (trabajador) { nombreMostrado.textContent = `Vendedor: ${trabajador.NombreCompleto}`; return true; }
-        else { nombreMostrado.textContent = 'Codigo no valido'; return false; }
     }
 
     async function cargarCanales() {
@@ -649,8 +767,8 @@
         const metodoPagoSelect = document.getElementById('metodoPago');
         const metodoPagoTexto = metodoPagoSelect.options[metodoPagoSelect.selectedIndex]?.text || '';
         const idVendedor = document.getElementById('idVendedor').value;
-        const vendedor = trabajadoresLista.find(t => t.Id_Trabajador == idVendedor);
-        const vendedorTexto = vendedor ? vendedor.NombreCompleto : 'No especificado';
+        const trabajador = trabajadoresLista.find(t => t.Id_Trabajador == idVendedor);
+        const vendedorTexto = trabajador ? trabajador.NombreCompleto : (vendedorValidado ? vendedorValidado.nombre : 'No especificado');
         const total = parseFloat(document.getElementById('totalInput').value);
         
         document.getElementById('resumenNumFactura').textContent = numFactura;
@@ -671,7 +789,7 @@
                     <td style="padding: 8px; text-align: center;">${producto.cantidad}</td>
                     <td style="padding: 8px; text-align: right;">C$${producto.precio.toFixed(2)}</td>
                     <td style="padding: 8px; text-align: right;">C$${subtotal.toFixed(2)}</td>
-                 </tr>
+                  </tr>
             `;
         });
         
@@ -720,6 +838,11 @@
         const metodo = document.getElementById('metodoPago').value;
         const metodoTexto = document.getElementById('metodoPago').options[document.getElementById('metodoPago').selectedIndex]?.text;
         const total = parseFloat(document.getElementById('totalInput').value);
+        
+        if (!qrValidado || !vendedorValidado) {
+            mostrarMensajeSistema('❌ Debe escanear el QR de un vendedor válido', 'error');
+            return;
+        }
         
         if (!metodo) { mostrarMensajeSistema('Seleccione un metodo de pago', 'error'); return; }
         if (productosSeleccionados.length === 0) { mostrarMensajeSistema('Agregue al menos un producto', 'error'); return; }
@@ -808,15 +931,17 @@
         const total = parseFloat(document.getElementById('totalInput').value);
         const idVendedor = document.getElementById('idVendedor').value;
 
+        if (!qrValidado || !vendedorValidado) {
+            mostrarMensajeSistema('❌ Debe escanear el QR de un vendedor válido', 'error');
+            return;
+        }
+        
         if (!idCliente) { mostrarMensajeSistema('Seleccione un cliente', 'error'); return; }
         if (!idCanal) { mostrarMensajeSistema('Seleccione un canal de venta', 'error'); return; }
         if (!idMetodo) { mostrarMensajeSistema('Seleccione un metodo de pago', 'error'); return; }
         if (!fecha) { mostrarMensajeSistema('Seleccione una fecha', 'error'); return; }
         if (productosSeleccionados.length === 0) { mostrarMensajeSistema('Agregue al menos un producto', 'error'); return; }
-        if (!idVendedor) { mostrarMensajeSistema('Ingrese codigo del vendedor', 'error'); return; }
-
-        const trabajadorValido = trabajadoresLista.find(t => t.Id_Trabajador == idVendedor);
-        if (!trabajadorValido) { mostrarMensajeSistema('Codigo de vendedor no existe', 'error'); return; }
+        if (!idVendedor) { mostrarMensajeSistema('No hay vendedor asignado', 'error'); return; }
 
         try {
             const compraData = { Num_Factura: parseInt(numFactura), Id_cliente: parseInt(idCliente), Id_Vendedor: parseInt(idVendedor), Id_Canal: parseInt(idCanal), Id_Metodo: parseInt(idMetodo), Fecha: fecha, Monto: total };
@@ -827,7 +952,7 @@
                 const resOrden = await fetch('/api/ordenes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(ordenData) });
                 if (!resOrden.ok) throw new Error('Error al guardar el detalle');
             }
-            mostrarMensajeSistema('Compra guardada exitosamente', 'success');
+            mostrarMensajeSistema(`✅ Venta guardada - Vendedor: ${vendedorValidado.nombre}`, 'success');
             setTimeout(() => window.location.href = 'menu_caja.html', 2000);
         } catch (error) { mostrarMensajeSistema(error.message || 'Error al guardar la compra', 'error'); }
     }
@@ -836,8 +961,6 @@
     function cerrarModalPagoTransferencia() { document.getElementById('modalPagoTransferencia').style.display = 'none'; }
     function cerrarModalPagoTarjeta() { document.getElementById('modalPagoTarjeta').style.display = 'none'; }
 
-    document.getElementById('idVendedor').addEventListener('input', validarVendedor);
-    document.getElementById('idVendedor').addEventListener('change', validarVendedor);
     document.getElementById('clienteBusqueda').addEventListener('input', buscarCliente);
     setInterval(actualizarFechaHora, 1000);
 
@@ -849,6 +972,11 @@
         await cargarMetodosPago();
         await cargarProductos();
         await cargarTrabajadores();
+        
+        // Activar cámara automáticamente al cargar (opcional)
+        setTimeout(() => {
+            iniciarCamaraQR();
+        }, 500);
     }
 
     inicializar();

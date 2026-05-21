@@ -2,7 +2,7 @@
  * ============================================================================
  * @file server.js
  * @description Servidor principal del Sistema de Gestión Comercial "Chepita"
- * @version 2.0 - Con sistema de autenticación de trabajadores por email
+ * @version 3.0 - Con sistema QR para vendedores (PWA)
  * ============================================================================
  * 
  * 📌 PROCEDIMIENTOS ALMACENADOS UTILIZADOS EN ESTE SERVIDOR:
@@ -23,6 +23,8 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const qrcode = require('qrcode');
+
 const app = express();
 
 app.use(cors());
@@ -46,6 +48,7 @@ db.connect(err => {
     crearTablaTokens();
     crearTablaRecuperacionTokens();
     agregarColumnasIntentos();
+    crearTablaQRVendedores();
 });
 
 // ================= CONFIGURACIÓN DE GMAIL =================
@@ -2032,6 +2035,256 @@ app.get('/api/estadisticas', (req, res) => {
     });
 });
 
+// ================= SISTEMA QR PARA VENDEDORES (PWA) =================
+
+function generarCodigoUnico(idVendedor) {
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const hash = crypto.createHash('md5').update(`${idVendedor}${timestamp}${random}`).digest('hex').substring(0, 8);
+    return `CHP${idVendedor}${timestamp}${hash}`;
+}
+
+function crearTablaQRVendedores() {
+    const sql = `
+        CREATE TABLE IF NOT EXISTS qr_vendedores (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            codigo VARCHAR(100) NOT NULL UNIQUE,
+            id_vendedor INT NOT NULL,
+            nombre_vendedor VARCHAR(100),
+            generado_en DATETIME DEFAULT NOW(),
+            expira_en DATETIME NOT NULL,
+            usado TINYINT DEFAULT 0,
+            generado_desde_app TINYINT DEFAULT 0,
+            enviado_por_email TINYINT DEFAULT 0,
+            FOREIGN KEY (id_vendedor) REFERENCES trabajadores(Id_Trabajador),
+            INDEX idx_codigo (codigo),
+            INDEX idx_expira (expira_en),
+            INDEX idx_vendedor (id_vendedor)
+        )
+    `;
+    db.query(sql, (err) => {
+        if (err) {
+            console.error('❌ Error creando tabla qr_vendedores:', err);
+        } else {
+            console.log('✅ Tabla qr_vendedores lista');
+        }
+    });
+}
+
+setInterval(() => {
+    db.query(`DELETE FROM qr_vendedores WHERE expira_en < NOW() OR usado = 1`, (err) => {
+        if (!err) console.log('🧹 QR expirados limpiados');
+    });
+}, 3600000);
+
+app.get('/api/vendedor/verificar', verificarTokenTrabajador, (req, res) => {
+    db.query(`SELECT Id_Trabajador, NombreCompleto, email FROM trabajadores WHERE Id_Trabajador = ?`, 
+        [req.usuario.id], (err, results) => {
+        if (err) return res.status(500).json({ error: err.sqlMessage });
+        if (results.length === 0) return res.status(404).json({ error: 'Vendedor no encontrado' });
+        res.json({
+            vendedor: {
+                id: results[0].Id_Trabajador,
+                nombre: results[0].NombreCompleto,
+                email: results[0].email
+            }
+        });
+    });
+});
+
+app.get('/api/vendedor/qr-activo/:id', (req, res) => {
+    const { id } = req.params;
+    
+    db.query(`
+        SELECT codigo, expira_en FROM qr_vendedores 
+        WHERE id_vendedor = ? AND usado = 0 AND expira_en > NOW()
+        ORDER BY generado_en DESC LIMIT 1
+    `, [id], (err, results) => {
+        if (err) return res.status(500).json({ error: err.sqlMessage });
+        
+        if (results.length > 0) {
+            res.json({
+                tiene_qr_activo: true,
+                codigo: results[0].codigo,
+                expira: results[0].expira_en
+            });
+        } else {
+            res.json({ tiene_qr_activo: false });
+        }
+    });
+});
+
+app.post('/api/vendedor/generar-qr', verificarTokenTrabajador, (req, res) => {
+    console.log('📱 [QR] Solicitud recibida');
+    console.log('📱 [QR] Body:', req.body);
+    console.log('📱 [QR] Usuario:', req.usuario);
+    
+    const { id_vendedor, duracion_minutos = 60 } = req.body;
+    
+    if (!id_vendedor) {
+        console.log('❌ [QR] id_vendedor no proporcionado');
+        return res.status(400).json({ success: false, message: 'ID de vendedor requerido' });
+    }
+    
+    if (req.usuario.id !== id_vendedor) {
+        console.log('❌ [QR] Token no coincide');
+        return res.status(403).json({ success: false, message: 'No autorizado' });
+    }
+    
+    const codigo = generarCodigoUnico(id_vendedor);
+    const expiraEn = new Date(Date.now() + duracion_minutos * 60000);
+    
+    console.log('📱 [QR] Código generado:', codigo);
+    
+    db.query(`SELECT NombreCompleto FROM trabajadores WHERE Id_Trabajador = ?`, [id_vendedor], (err, results) => {
+        if (err) {
+            console.error('❌ [QR] Error consultando trabajador:', err);
+            return res.status(500).json({ success: false, message: 'Error en servidor' });
+        }
+        
+        if (results.length === 0) {
+            console.error('❌ [QR] Vendedor no encontrado');
+            return res.status(404).json({ success: false, message: 'Vendedor no encontrado' });
+        }
+        
+        const nombreVendedor = results[0].NombreCompleto;
+        
+        db.query(`
+            INSERT INTO qr_vendedores (codigo, id_vendedor, nombre_vendedor, expira_en, generado_desde_app) 
+            VALUES (?, ?, ?, ?, 1)
+        `, [codigo, id_vendedor, nombreVendedor, expiraEn], (err2) => {
+            if (err2) {
+                console.error('❌ [QR] Error insertando:', err2);
+                return res.status(500).json({ success: false, message: 'Error guardando QR: ' + err2.message });
+            }
+            
+            console.log('✅ [QR] QR guardado exitosamente');
+            
+            res.json({
+                success: true,
+                codigo: codigo,
+                expira: expiraEn,
+                vendedor: nombreVendedor
+            });
+        });
+    });
+});
+
+app.post('/api/vendedor/enviar-qr-email', (req, res) => {
+    const { email, codigo, nombre_vendedor } = req.body;
+    
+    if (!email || !codigo) {
+        return res.status(400).json({ success: false, message: 'Datos incompletos' });
+    }
+    
+    const qrImageUrl = `http://localhost:${PORT}/api/generar-imagen-qr?codigo=${encodeURIComponent(codigo)}`;
+    
+    const mailOptions = {
+        from: 'Tienda Chepita <isabelchepita678@gmail.com>',
+        to: email,
+        subject: '🔑 Tu código QR para ventas - Tienda Chepita',
+        html: `
+            <div style="font-family: Arial, sans-serif; border: 2px solid #A63C89; padding: 20px; border-radius: 10px;">
+                <h2 style="color: #A63C89;">🔑 Tu código QR de vendedor</h2>
+                <p>Hola <strong>${nombre_vendedor || 'Vendedor'}</strong>,</p>
+                <div style="text-align: center; margin: 25px 0;">
+                    <img src="${qrImageUrl}" style="width: 250px;">
+                </div>
+                <p>Código: <strong>${codigo}</strong></p>
+                <p>Válido por 60 minutos</p>
+            </div>
+        `
+    };
+    
+    transporter.sendMail(mailOptions, (error) => {
+        if (error) {
+            console.error('Error enviando email:', error);
+            return res.status(500).json({ success: false, message: 'Error al enviar email' });
+        }
+        res.json({ success: true, message: 'QR enviado a tu correo' });
+    });
+});
+
+app.get('/api/generar-imagen-qr', (req, res) => {
+    const { codigo } = req.query;
+    
+    if (!codigo) {
+        return res.status(400).send('Código requerido');
+    }
+    
+    qrcode.toDataURL(codigo, { errorCorrectionLevel: 'H' }, (err, url) => {
+        if (err) {
+            return res.status(500).send('Error generando QR');
+        }
+        res.send(`<img src="${url}" style="width: 300px;">`);
+    });
+});
+
+app.post('/api/validar-qr-vendedor', (req, res) => {
+    const { codigo } = req.body;
+    
+    if (!codigo) {
+        return res.json({ valido: false, message: 'Código inválido' });
+    }
+    
+    db.query(`
+        SELECT q.*, t.NombreCompleto 
+        FROM qr_vendedores q
+        JOIN trabajadores t ON q.id_vendedor = t.Id_Trabajador
+        WHERE q.codigo = ? AND q.usado = 0 AND q.expira_en > NOW()
+    `, [codigo], (err, results) => {
+        if (err) return res.status(500).json({ error: err.sqlMessage });
+        
+        if (results.length === 0) {
+            db.query(`SELECT usado, expira_en FROM qr_vendedores WHERE codigo = ?`, [codigo], (err2, checkResults) => {
+                if (checkResults.length > 0) {
+                    const check = checkResults[0];
+                    if (check.usado === 1) {
+                        return res.json({ valido: false, message: '⚠️ QR ya usado. Genere uno nuevo.' });
+                    }
+                    if (new Date(check.expira_en) < new Date()) {
+                        return res.json({ valido: false, message: '⏰ QR expirado. Genere uno nuevo.' });
+                    }
+                }
+                return res.json({ valido: false, message: '❌ QR inválido' });
+            });
+            return;
+        }
+        
+        const qr = results[0];
+        db.query(`UPDATE qr_vendedores SET usado = 1 WHERE id = ?`, [qr.id]);
+        
+        console.log(`✅ QR válido - Vendedor: ${qr.NombreCompleto}`);
+        
+        res.json({
+            valido: true,
+            id_vendedor: qr.id_vendedor,
+            nombre_vendedor: qr.NombreCompleto,
+            expira: qr.expira_en
+        });
+    });
+});
+
+app.get('/api/codigos-activos/:id_vendedor', (req, res) => {
+    const { id_vendedor } = req.params;
+    
+    db.query(`
+        SELECT codigo, expira_en, usado, generado_en 
+        FROM qr_vendedores 
+        WHERE id_vendedor = ? AND expira_en > NOW() AND usado = 0
+        ORDER BY generado_en DESC
+    `, [id_vendedor], (err, results) => {
+        if (err) return res.status(500).json({ error: err.sqlMessage });
+        res.json(results);
+    });
+});
+
+app.post('/api/registrar-uso-qr', (req, res) => {
+    const { codigo, id_vendedor, id_cajero } = req.body;
+    console.log(`📊 QR usado: ${codigo} | Vendedor: ${id_vendedor} | Cajero: ${id_cajero || 'desconocido'}`);
+    res.json({ success: true });
+});
+
 // ================= CREAR PROCEDIMIENTOS ALMACENADOS =================
 
 function crearProcedimientosSiNoExisten() {
@@ -2172,6 +2425,7 @@ app.listen(PORT, () => {
     ║  🔒 5 intentos de login - Bloqueo 15 minutos             
     ║  🔒 Admin: bcrypt + control de intentos                  
     ║  🔒 Admin: contraseña mínima 8 caracteres                
+    ║  📱 QR Vendedores: SISTEMA ACTIVADO ✅                    
     ╚══════════════════════════════════════════════════════════╝
     `);
 });
