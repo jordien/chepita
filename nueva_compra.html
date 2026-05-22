@@ -6,6 +6,322 @@
     <title>Nueva Compra - Tienda Chepita</title>
     <link rel="stylesheet" href="nueva_compra.css">
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <style>
+        /* Estilos adicionales para que funcione correctamente */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-large {
+            max-width: 800px;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .modal-body {
+            padding: 20px;
+        }
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .btn-modal-save {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-modal-cancel {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-modal-warning {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-modal-success {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .cliente-sugerencias {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 100;
+            width: calc(100% - 2px);
+        }
+        .cliente-sugerencia {
+            padding: 8px;
+            cursor: pointer;
+        }
+        .cliente-sugerencia:hover {
+            background: #f0f0f0;
+        }
+        .toast-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            z-index: 2000;
+            animation: fadeOut 4s forwards;
+        }
+        .toast-message.success { background: #4CAF50; }
+        .toast-message.error { background: #f44336; }
+        .toast-message.warning { background: #ff9800; }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+        .productos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .product-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .product-card:hover {
+            background: #f5f5f5;
+            transform: scale(1.02);
+        }
+        .product-card.out-of-stock {
+            opacity: 0.5;
+            background: #ffebee;
+        }
+        .product-card.low-stock {
+            background: #fff3e0;
+        }
+        .product-name {
+            font-weight: bold;
+        }
+        .product-price {
+            color: #4CAF50;
+        }
+        .product-stock {
+            font-size: 12px;
+            color: #666;
+        }
+        .quantity-input {
+            width: 70px;
+            padding: 5px;
+            text-align: center;
+        }
+        .delete-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .currency-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .currency-btn {
+            padding: 8px 16px;
+            border: 1px solid #ccc;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .currency-btn.active {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        .change-result {
+            margin-top: 15px;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 8px;
+        }
+        .change-amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .error-message {
+            margin-top: 15px;
+            padding: 10px;
+            background: #ffebee;
+            border-radius: 8px;
+            color: #f44336;
+        }
+        .bank-logos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .bank-logo {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .bank-logo.active {
+            background: #4CAF50;
+            color: white;
+        }
+        .card-validation {
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        .card-validation.success { color: #4CAF50; }
+        .card-validation.error { color: #f44336; }
+        .bank-row {
+            margin: 8px 0;
+        }
+        .detail-row {
+            margin: 8px 0;
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .empty-row td {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+        .qr-status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ccc;
+            margin-right: 5px;
+        }
+        .qr-status-dot.inactive {
+            background-color: #f44336;
+        }
+        .qr-video-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 10px 0;
+        }
+        #qrVideo {
+            width: 100%;
+            border-radius: 8px;
+        }
+        .qr-scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: red;
+            animation: scan 2s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        .qr-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        .qr-result.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .qr-result.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .qr-result.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        .qr-vendor-info {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        .qr-vendor-info.success {
+            background: #d4edda;
+        }
+        .qr-vendor-info.error {
+            background: #f8d7da;
+        }
+        .vendor-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+        .vendor-badge {
+            margin-left: auto;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: #28a745;
+            color: white;
+            font-size: 12px;
+        }
+    </style>
 </head>
 <body>
 
@@ -50,9 +366,9 @@
                 <div class="nc-group">
                     <label class="nc-required">Cliente</label>
                     <div class="nc-client-row">
-                        <div class="nc-input-group" style="flex: 1;">
+                        <div class="nc-input-group" style="flex: 1; position: relative;">
                             <input type="text" id="clienteBusqueda" placeholder="Buscar cliente por nombre..." autocomplete="off">
-                            <div id="clienteSugerencias" class="cliente-sugerencias"></div>
+                            <div id="clienteSugerencias" class="cliente-sugerencias" style="display: none;"></div>
                             <input type="hidden" id="cliente" name="id_cliente">
                         </div>
                         <button type="button" class="nc-add-client-icon" onclick="abrirModalCliente()">+</button>
@@ -134,7 +450,7 @@
                         </thead>
                         <tbody id="detalleCompras">
                             <tr class="empty-row">
-                                <td colspan="5">No hay productos agregados</td>
+                                <td colspan="5">No hay productos agregados</span>
                             </tr>
                         </tbody>
                     </table>
@@ -366,6 +682,35 @@
 </div>
 
 <script>
+    // ========== PROTECCIÓN DE NAVEGACIÓN ==========
+    (function bloquearBotonAtras() {
+        const paginaMenuCaja = 'menu_caja.html';
+        const paginaLogin = 'PAG.html';
+        
+        const token = localStorage.getItem('token');
+        const trabajadorStr = localStorage.getItem('trabajador');
+        
+        if (!token || !trabajadorStr || trabajadorStr === 'null' || trabajadorStr === 'undefined') {
+            window.location.replace(paginaLogin);
+            return;
+        }
+        
+        for (let i = 0; i < 100; i++) {
+            history.pushState(null, null, location.href);
+        }
+        
+        window.addEventListener('popstate', function() {
+            if (!localStorage.getItem('token') || !localStorage.getItem('trabajador')) {
+                window.location.replace(paginaLogin);
+                return;
+            }
+            history.go(1);
+            setTimeout(() => {
+                history.pushState(null, null, location.href);
+            }, 10);
+        });
+    })();
+    
     let productosSeleccionados = [];
     let productosDisponibles = [];
     let trabajadoresLista = [];
@@ -734,11 +1079,11 @@
             const subtotal = producto.precio * producto.cantidad;
             tbody.innerHTML += `
                 <tr>
-                    <td><strong>${producto.nombre}</strong></td>
-                    <td><input type="number" class="quantity-input" value="${producto.cantidad}" min="1" max="${producto.stock}" onchange="cambiarCantidad(${index}, this.value)"></td>
-                    <td>C$${producto.precio.toFixed(2)}</td>
-                    <td>C$${subtotal.toFixed(2)}</td>
-                    <td><button class="delete-btn" onclick="eliminarProducto(${index})">Eliminar</button></td>
+                    <td><strong>${producto.nombre}</strong></span>
+                    <td><input type="number" class="quantity-input" value="${producto.cantidad}" min="1" max="${producto.stock}" onchange="cambiarCantidad(${index}, this.value)"></span>
+                    <td>C$${producto.precio.toFixed(2)}</span>
+                    <td>C$${subtotal.toFixed(2)}</span>
+                    <td><button class="delete-btn" onclick="eliminarProducto(${index})">Eliminar</button></span>
                 </tr>
             `;
         });
@@ -806,8 +1151,8 @@
 
     function cancelarCompra() {
         if (productosSeleccionados.length > 0 && confirm('Esta seguro que desea cancelar la compra?'))
-            window.location.href = 'menu_caja.html';
-        else window.location.href = 'menu_caja.html';
+            window.location.replace('menu_caja.html');
+        else window.location.replace('menu_caja.html');
     }
 
     function seleccionarMoneda(elemento) {
@@ -924,10 +1269,10 @@
             const subtotal = producto.precio * producto.cantidad;
             tbody.innerHTML += `
                 <tr>
-                    <td>${producto.nombre}</td>
-                    <td class="text-center">${producto.cantidad}</td>
-                    <td class="text-right">C$${producto.precio.toFixed(2)}</td>
-                    <td class="text-right">C$${subtotal.toFixed(2)}</td>
+                    <td>${producto.nombre}</span>
+                    <td class="text-center">${producto.cantidad}</span>
+                    <td class="text-right">C$${producto.precio.toFixed(2)}</span>
+                    <td class="text-right">C$${subtotal.toFixed(2)}</span>
                 </tr>
             `;
         });
@@ -957,7 +1302,9 @@
             `;
         }
         
-        document.getElementById('modalResumenCompra').style.display = 'flex';
+        const modalResumen = document.getElementById('modalResumenCompra');
+        modalResumen.style.display = 'flex';
+        console.log('✅ Modal de resumen mostrado');
     }
 
     function cerrarModalResumen() {
@@ -1092,7 +1439,7 @@
                 if (!resOrden.ok) throw new Error('Error al guardar el detalle');
             }
             mostrarMensajeSistema(`Venta guardada - Vendedor: ${vendedorValidado.nombre}`, 'success');
-            setTimeout(() => window.location.href = 'menu_caja.html', 2000);
+            setTimeout(() => window.location.replace('menu_caja.html'), 2000);
         } catch (error) { mostrarMensajeSistema(error.message || 'Error al guardar la compra', 'error'); }
     }
 

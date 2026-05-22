@@ -42,9 +42,39 @@
             background: #f3e8ff;
             color: #b57acb;
         }
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.95);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            flex-direction: column;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3e8ff;
+            border-top: 5px solid #caa0d8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <p style="margin-top: 15px; color: #caa0d8;">Cargando...</p>
+</div>
+
 <header class="top-bar">
     <div class="brands-container">
         <div class="brands-track">
@@ -62,7 +92,6 @@
 </header>
 <div class="admin-container">
 
-    <!-- HEADER -->
     <div class="admin-header">
         <div class="admin-badge">
             <i class="fas fa-cash-register"></i>
@@ -71,13 +100,11 @@
         <div class="header-date" id="headerDate"></div>
     </div>
 
-    <!-- TÍTULO -->
     <div class="main-title">
         <h1>TIENDA CHEPITA</h1>
         <p class="subtitle">Panel de Caja</p>
     </div>
 
-    <!-- INFO CAJERO -->
     <div class="welcome-card">
         <div class="welcome-icon">
             <i class="fas fa-user"></i>
@@ -88,7 +115,6 @@
         </div>
     </div>
 
-    <!-- SOLO 2 OPCIONES -->
     <div class="modules-grid">
         <div class="module-card" onclick="iniciarVenta()">
             <div class="module-icon">
@@ -117,7 +143,6 @@
         </div>
     </div>
 
-    <!-- BOTÓN -->
     <div class="logout-section">
         <button class="btn-logout" onclick="mostrarModalCerrarJornada()">
             <i class="fas fa-sign-out-alt"></i>
@@ -125,14 +150,12 @@
         </button>
     </div>
 
-    <!-- FOOTER -->
     <div class="admin-footer">
         <p><i class="fas fa-database"></i> Sistema de Gestión Comercial - v2.0</p>
         <p><i class="fas fa-copyright"></i> 2025 Tienda Chepita</p>
     </div>
 </div>
 
-<!-- Modal de mensajes -->
 <div id="modalMensaje" class="modal-mensaje"> 
     <div class="modal-contenido"> 
         <h3 id="modalTitulo"></h3> 
@@ -144,12 +167,21 @@
 </div>
 
 <script>
-    // ========== VERIFICACIÓN DE SESIÓN CON TOKEN ==========
+    function mostrarLoading() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) overlay.style.display = 'flex';
+    }
+    
+    function ocultarLoading() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) overlay.style.display = 'none';
+    }
+    
+    // ========== VERIFICACIÓN DE SESIÓN ==========
     (function verificarSesionAlInicio() {
         const token = localStorage.getItem('token');
         const trabajadorStr = localStorage.getItem('trabajador');
         
-        // Si no hay token o no hay datos del trabajador, redirigir al login
         if (!token || !trabajadorStr || trabajadorStr === 'null' || trabajadorStr === 'undefined') {
             localStorage.clear();
             sessionStorage.clear();
@@ -157,7 +189,6 @@
             return;
         }
         
-        // Verificar token con el servidor
         fetch('/api/verificar-sesion-trabajador', {
             method: 'GET',
             headers: {
@@ -171,6 +202,8 @@
                 localStorage.clear();
                 sessionStorage.clear();
                 window.location.replace('PAG.html');
+            } else {
+                ocultarLoading();
             }
         })
         .catch(error => {
@@ -181,12 +214,33 @@
         });
     })();
 
-    // ========== BLOQUEAR BOTÓN ATRÁS DEL NAVEGADOR ==========
+    // ========== BLOQUEAR BOTÓN ATRÁS - QUE NO SALGA DE MENU CAJA ==========
     (function bloquearBotonAtras() {
-        history.pushState(null, null, location.href);
-        window.addEventListener('popstate', function() {
+        // Esta es la solución más simple y efectiva
+        // Cada vez que se intenta ir atrás, se añade un nuevo estado hacia adelante
+        
+        // Crear un montón de estados falsos en el historial
+        for (let i = 0; i < 100; i++) {
             history.pushState(null, null, location.href);
-            window.location.replace('menu_caja.html');
+        }
+        
+        // Escuchar el evento de ir atrás
+        window.addEventListener('popstate', function() {
+            // Verificar sesión
+            if (!localStorage.getItem('token') || !localStorage.getItem('trabajador')) {
+                window.location.replace('PAG.html');
+                return;
+            }
+            
+            // En lugar de dejar que el navegador vaya atrás,
+            // forzamos un nuevo estado hacia adelante
+            // Esto hace que el botón "atrás" no haga nada visible
+            history.go(1);
+            
+            // También agregamos un nuevo estado para mantener el buffer
+            setTimeout(() => {
+                history.pushState(null, null, location.href);
+            }, 10);
         });
     })();
 
@@ -267,11 +321,13 @@
             return;
         }
         
-        window.location.href = 'nueva_compra.html';
+        mostrarLoading();
+        window.location.replace('nueva_compra.html');
     }
     
     function consultarInventario() {
-        window.location.href = 'inventario_caja.html';
+        mostrarLoading();
+        window.location.replace('inventario_caja.html');
     }
     
     function mostrarModalCerrarJornada() {
@@ -302,6 +358,7 @@
     window.onload = function() {
         cargarInfoCajero();
         mostrarFecha();
+        ocultarLoading();
     };
     
     window.onclick = function(event) {

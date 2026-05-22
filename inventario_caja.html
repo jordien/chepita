@@ -15,7 +15,7 @@
 <div class="container">
     <div class="top-nav">
         <h2>📦 Inventario - Caja</h2>
-        <button class="btn-volver-top" onclick="window.location.href='menu_caja.html'">← Volver a Caja</button>
+        <button class="btn-volver-top" onclick="volverMenuCaja()">← Volver a Caja</button>
     </div>
 
     <div class="filtros">
@@ -55,6 +55,59 @@
 </div>
 
 <script>
+    // ========== PROTECCIÓN DE NAVEGACIÓN ==========
+    (function bloquearBotonAtras() {
+        const paginaMenuCaja = 'menu_caja.html';
+        const paginaLogin = 'PAG.html';
+        
+        const token = localStorage.getItem('token');
+        const trabajadorStr = localStorage.getItem('trabajador');
+        
+        if (!token || !trabajadorStr || trabajadorStr === 'null' || trabajadorStr === 'undefined') {
+            window.location.replace(paginaLogin);
+            return;
+        }
+        
+        fetch('/api/verificar-sesion-trabajador', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.autenticado) {
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.replace(paginaLogin);
+            }
+        })
+        .catch(error => {
+            console.error('Error verificando sesión:', error);
+            window.location.replace(paginaLogin);
+        });
+        
+        for (let i = 0; i < 100; i++) {
+            history.pushState(null, null, location.href);
+        }
+        
+        window.addEventListener('popstate', function() {
+            if (!localStorage.getItem('token') || !localStorage.getItem('trabajador')) {
+                window.location.replace(paginaLogin);
+                return;
+            }
+            history.go(1);
+            setTimeout(() => {
+                history.pushState(null, null, location.href);
+            }, 10);
+        });
+    })();
+    
+    function volverMenuCaja() {
+        window.location.replace('menu_caja.html');
+    }
+    
     let inventarioData = [];
     let categoriasLista = [];
     let proveedoresLista = [];
@@ -218,10 +271,10 @@
                 <td><strong>${escapeHtml(p.Nombre)}</strong></td>
                 <td>${escapeHtml(p.Marca || 'N/A')}</td>
                 <td>${escapeHtml(p.Nombre_Categoria || 'Sin categoría')}</td>
-                <td>C$ ${parseFloat(p.Precio).toFixed(2)}</td>
-                <td class="${stockClass}">${stockText}</td>
-                <td>${escapeHtml(p.Proveedor)}</td>
-                <td><span class="status-badge ${estadoClass}">${p.Nombre_Estado || 'Disponible'}</span></td>
+                <td>C$ ${parseFloat(p.Precio).toFixed(2)}</span>
+                <td class="${stockClass}">${stockText}</span>
+                <td>${escapeHtml(p.Proveedor)}</span>
+                <td><span class="status-badge ${estadoClass}">${p.Nombre_Estado || 'Disponible'}</span></span>
             </tr>
         `}).join('');
     }
