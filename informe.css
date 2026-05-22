@@ -573,3 +573,222 @@ h2 {
         justify-content: center;
     }
 }
+/* Añadir estos estilos al final de tu informe.css existente */
+
+/* Estilos de modales */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: white;
+    margin: 2% auto;
+    border-radius: 24px;
+    width: 90%;
+    max-width: 900px;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: slideIn 0.3s;
+}
+
+.modal-large {
+    max-width: 1100px;
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 2px solid #f0f0f0;
+    background: linear-gradient(135deg, #A63C89, #c94f9e);
+    color: white;
+    border-radius: 24px 24px 0 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: white;
+    font-size: 22px;
+}
+
+.modal-close {
+    font-size: 32px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.modal-close:hover {
+    transform: scale(1.1);
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+.modal-periodo-info {
+    background: #f8f9fa;
+    padding: 12px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.modal-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.modal-stat {
+    background: linear-gradient(135deg, #f8f9fa, white);
+    padding: 20px;
+    border-radius: 16px;
+    text-align: center;
+    border: 1px solid #e9ecef;
+}
+
+.modal-stat-value {
+    font-size: 28px;
+    font-weight: bold;
+    color: #A63C89;
+}
+
+.modal-stat-label {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+.modal-section {
+    margin-top: 25px;
+}
+
+.modal-section h4 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tabla-detalle-container {
+    overflow-x: auto;
+    max-height: 300px;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+}
+
+.tabla-detalle {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-detalle th,
+.tabla-detalle td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.tabla-detalle th {
+    background: #f8f9fa;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+
+.top-productos-container, .mejores-clientes-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.top-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    transition: transform 0.2s;
+}
+
+.top-item:hover {
+    transform: translateX(5px);
+    background: #f0f0f0;
+}
+
+.top-rank {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #A63C89, #c94f9e);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.top-rank.rank-1 { background: linear-gradient(135deg, #ffd700, #ffed4e); color: #8B6914; }
+.top-rank.rank-2 { background: linear-gradient(135deg, #c0c0c0, #e0e0e0); color: #555; }
+.top-rank.rank-3 { background: linear-gradient(135deg, #cd7f32, #e8a87c); color: white; }
+
+.top-info {
+    flex: 1;
+}
+
+.top-name {
+    font-weight: bold;
+    font-size: 16px;
+    color: #2c3e50;
+}
+
+.top-detail {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.top-value {
+    font-weight: bold;
+    font-size: 18px;
+    color: #A63C89;
+}
+
+.clickable {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.clickable:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.stat-subinfo {
+    font-size: 11px;
+    color: #6c757d;
+    margin-top: 8px;
+}

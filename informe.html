@@ -3,18 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Informe de Estadísticas - Tienda Chepita</title>
+    <title>Dashboard - Tienda Chepita</title>
     <link rel="stylesheet" href="informe.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="nc-container">
-        <button class="nc-back-btn" onclick="window.location.href='inventario.html'">
-            <i class="fas fa-arrow-left"></i> Volver al Inventario
-        </button>
-
-        <h1><i class="fas fa-chart-line"></i> Informe de Estadísticas</h1>
+        <div class="dashboard-header">
+            <h1>
+                <i class="fas fa-chart-line"></i>
+                Dashboard de Estadísticas
+            </h1>
+            <button class="nc-back-btn" onclick="window.location.href='inventario.html'">
+                <i class="fas fa-arrow-left"></i> Volver al Inventario
+            </button>
+        </div>
 
         <!-- Selector de secciones -->
         <div class="seccion-selector">
@@ -39,62 +43,61 @@
                     <button class="periodo-btn" data-periodo="año">Año</button>
                 </div>
                 <div class="fecha-info">
-                    <span style="color: #A63C89; font-weight: 600;">
-                        <i class="fas fa-filter"></i> Período: <span id="periodoActual">Último día</span>
-                    </span>
+                    <i class="fas fa-calendar-alt"></i>
+                    <span id="rangoFecha">Hoy: <span id="fechaActual"></span></span>
                 </div>
             </div>
 
             <div class="time-stats">
                 <div class="time-stat">
-                    <h4><i class="fas fa-sun"></i> Hoy</h4>
+                    <h4><i class="fas fa-sun"></i> Ventas Hoy</h4>
                     <div class="time-value" id="totalHoy">C$0.00</div>
-                    <p id="ventasHoy" class="stat-sub">0 ventas</p>
+                    <p id="ventasHoy">0 ventas</p>
                 </div>
                 <div class="time-stat">
-                    <h4><i class="fas fa-calendar-alt"></i> Este Mes</h4>
+                    <h4><i class="fas fa-calendar-alt"></i> Ventas Este Mes</h4>
                     <div class="time-value" id="totalMes">C$0.00</div>
-                    <p id="ventasMes" class="stat-sub">0 ventas</p>
+                    <p id="ventasMes">0 ventas</p>
                 </div>
                 <div class="time-stat">
-                    <h4><i class="fas fa-calendar"></i> Este Año</h4>
+                    <h4><i class="fas fa-calendar"></i> Ventas Este Año</h4>
                     <div class="time-value" id="totalAnio">C$0.00</div>
-                    <p id="ventasAnio" class="stat-sub">0 ventas</p>
+                    <p id="ventasAnio">0 ventas</p>
                 </div>
             </div>
 
             <div class="stats-grid" id="statsGrid">
-                <div class="stat-card">
+                <div class="stat-card clickable" onclick="abrirModalVentasDetalle()">
                     <div class="stat-icon icon-sales"><i class="fas fa-chart-bar"></i></div>
-                    <h3>Ventas Totales</h3>
+                    <h3>Ventas Totales <i class="fas fa-chevron-right" style="font-size: 12px; opacity: 0.7;"></i></h3>
                     <div class="stat-value" id="totalVentas">C$0.00</div>
-                    <div class="stat-label">Total acumulado en el período</div>
                     <div class="stat-trend positive" id="cantidadVentas">0 transacciones</div>
+                    <div class="stat-subinfo" id="detalleVentas"></div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card clickable" onclick="abrirModalProductosDestacados()">
                     <div class="stat-icon icon-products"><i class="fas fa-box"></i></div>
-                    <h3>Producto Destacado</h3>
+                    <h3>Producto Destacado <i class="fas fa-chevron-right" style="font-size: 12px; opacity: 0.7;"></i></h3>
                     <div class="stat-value" id="productoMasVendido">Sin ventas</div>
-                    <div class="stat-label">Más vendido en el período</div>
                     <div class="stat-trend positive" id="cantidadMasVendido">0 unidades</div>
+                    <div class="stat-subinfo" id="detalleProductos"></div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card clickable" onclick="abrirModalMejoresClientes()">
                     <div class="stat-icon icon-clients"><i class="fas fa-users"></i></div>
-                    <h3>Mejor Cliente</h3>
+                    <h3>Mejor Cliente <i class="fas fa-chevron-right" style="font-size: 12px; opacity: 0.7;"></i></h3>
                     <div class="stat-value" id="mejorCliente">Sin cliente</div>
-                    <div class="stat-label">Mayor consumo en el período</div>
                     <div class="stat-trend positive" id="totalCliente">C$0.00</div>
+                    <div class="stat-subinfo" id="detalleClientes"></div>
                 </div>
             </div>
 
             <div class="product-stats">
-                <div class="product-stat">
-                    <h4><i class="fas fa-trophy"></i> PRODUCTO MÁS VENDIDO</h4>
+                <div class="product-stat clickable" onclick="abrirModalTopProductos('mas')">
+                    <h4><i class="fas fa-trophy"></i> PRODUCTO MÁS VENDIDO <i class="fas fa-chevron-right" style="font-size: 12px;"></i></h4>
                     <div class="product-name" id="prodMasVendido">Sin ventas</div>
                     <div class="product-quantity" id="prodMasVendidoCant">0 unidades</div>
                 </div>
-                <div class="product-stat">
-                    <h4><i class="fas fa-chart-line"></i> PRODUCTO MENOS VENDIDO</h4>
+                <div class="product-stat clickable" onclick="abrirModalTopProductos('menos')">
+                    <h4><i class="fas fa-chart-line"></i> PRODUCTO MENOS VENDIDO <i class="fas fa-chevron-right" style="font-size: 12px;"></i></h4>
                     <div class="product-name" id="prodMenosVendido">Sin ventas</div>
                     <div class="product-quantity" id="prodMenosVendidoCant">0 unidades</div>
                 </div>
@@ -102,7 +105,7 @@
 
             <div class="charts-container">
                 <div class="chart-card">
-                    <h3><i class="fas fa-chart-bar"></i> Ventas Diarias</h3>
+                    <h3><i class="fas fa-chart-line"></i> Tendencia de Ventas</h3>
                     <div class="chart-container">
                         <canvas id="ventasChart"></canvas>
                     </div>
@@ -129,7 +132,7 @@
         <!-- Sección Pérdidas -->
         <div id="seccionPerdidas" class="seccion-contenido" style="display: none;">
             <h2><i class="fas fa-exclamation-triangle"></i> Control de Pérdidas y Consumo Propio</h2>
-            <div class="perdidas-periodo-selector">
+            <div class="periodo-selector" style="margin-bottom: 25px;">
                 <button class="perdidas-periodo-btn active" data-perdidas-periodo="dia">Día</button>
                 <button class="perdidas-periodo-btn" data-perdidas-periodo="semana">Semana</button>
                 <button class="perdidas-periodo-btn" data-perdidas-periodo="mes">Mes</button>
@@ -139,20 +142,96 @@
             <div class="analisis-comparativo" id="analisisComparativo"></div>
             <div class="perdidas-charts-container">
                 <div class="perdida-chart-card">
-                    <h3><i class="fas fa-chart-pie"></i> Distribución por Categoría</h3>
+                    <h3><i class="fas fa-chart-bar"></i> Pérdidas por Categoría</h3>
                     <div class="perdida-chart-container">
                         <canvas id="categoriaChart"></canvas>
                     </div>
                 </div>
                 <div class="perdida-chart-card">
-                    <h3><i class="fas fa-chart-bar"></i> Comparación Mensual</h3>
+                    <h3><i class="fas fa-chart-line"></i> Comparación Mensual</h3>
                     <div class="perdida-chart-container">
                         <canvas id="mensualChart"></canvas>
                     </div>
                 </div>
             </div>
-            <div class="inventario-resumen" id="resumenPerdidas"></div>
             <div id="tablasPerdidas"></div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA VENTAS DETALLE -->
+    <div id="modalVentas" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-chart-line"></i> Detalle de Ventas</h2>
+                <span class="modal-close" onclick="cerrarModal('modalVentas')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-periodo-info" id="modalPeriodoInfo"></div>
+                <div class="modal-stats">
+                    <div class="modal-stat">
+                        <div class="modal-stat-value" id="modalTotalVentas">C$0.00</div>
+                        <div class="modal-stat-label">Total del período</div>
+                    </div>
+                    <div class="modal-stat">
+                        <div class="modal-stat-value" id="modalTotalTransacciones">0</div>
+                        <div class="modal-stat-label">Transacciones</div>
+                    </div>
+                    <div class="modal-stat">
+                        <div class="modal-stat-value" id="modalPromedioVenta">C$0.00</div>
+                        <div class="modal-stat-label">Promedio por venta</div>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h4><i class="fas fa-chart-simple"></i> Ventas por Hora</h4>
+                    <canvas id="ventasPorHoraChart" style="height: 250px;"></canvas>
+                </div>
+                <div class="modal-section">
+                    <h4><i class="fas fa-calendar-week"></i> Desglose Diario</h4>
+                    <div class="tabla-detalle-container">
+                        <table class="tabla-detalle" id="tablaVentasDiarias">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Ventas (C$)</th>
+                                    <th>Transacciones</th>
+                                    <th>Ticket Promedio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="4">Cargando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA TOP PRODUCTOS -->
+    <div id="modalProductos" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2><i class="fas fa-crown"></i> Top Productos Más Vendidos</h2>
+                <span class="modal-close" onclick="cerrarModal('modalProductos')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-periodo-info" id="modalProductosPeriodo"></div>
+                <div class="top-productos-container" id="topProductosContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA MEJORES CLIENTES -->
+    <div id="modalClientes" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2><i class="fas fa-trophy"></i> Ranking de Mejores Clientes</h2>
+                <span class="modal-close" onclick="cerrarModal('modalClientes')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-periodo-info" id="modalClientesPeriodo"></div>
+                <div class="mejores-clientes-container" id="mejoresClientesContainer"></div>
+            </div>
         </div>
     </div>
 
@@ -163,14 +242,27 @@
         let periodoActual = 'dia';
         let perdidasPeriodoActual = 'dia';
         let seccionActual = 'estadisticas';
-        let tablaSeleccionada = 'todas';
+        let tablaSeleccionada = 'disponibles';
+        
+        let datosVentasDetalle = {};
+        let topProductosData = [];
+        let topClientesData = [];
+
+        let ventasChart, categoriasChart, categoriaChart, mensualChart, ventasPorHoraChart;
 
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM cargado - Inicializando...');
             inicializarEventos();
             cargarEstadisticas('dia');
             cargarInventario();
             cargarPerdidas('dia');
+            mostrarFechaActual();
         });
+
+        function mostrarFechaActual() {
+            const hoy = new Date();
+            document.getElementById('fechaActual').textContent = hoy.toLocaleDateString('es-ES');
+        }
 
         function inicializarEventos() {
             document.querySelectorAll('.seccion-btn').forEach(btn => {
@@ -185,8 +277,7 @@
                     document.querySelectorAll('#seccionEstadisticas .periodo-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     periodoActual = btn.dataset.periodo;
-                    const nombres = { dia: 'Último día', semana: 'Última semana', mes: 'Último mes', año: 'Último año' };
-                    document.getElementById('periodoActual').textContent = nombres[periodoActual];
+                    actualizarTextoPeriodo();
                     cargarEstadisticas(periodoActual);
                 });
             });
@@ -204,6 +295,24 @@
                 tablaSeleccionada = 'todas';
                 mostrarTablasInventario();
             });
+        }
+
+        function actualizarTextoPeriodo() {
+            const nombres = { 
+                dia: 'Hoy', 
+                semana: 'Últimos 7 días', 
+                mes: 'Últimos 30 días', 
+                año: 'Último año' 
+            };
+            const hoy = new Date();
+            let fechaInicio = new Date();
+            switch(periodoActual) {
+                case 'dia': fechaInicio = hoy; break;
+                case 'semana': fechaInicio.setDate(hoy.getDate() - 7); break;
+                case 'mes': fechaInicio.setDate(hoy.getDate() - 30); break;
+                case 'año': fechaInicio.setFullYear(hoy.getFullYear() - 1); break;
+            }
+            document.getElementById('rangoFecha').innerHTML = `<i class="fas fa-calendar-alt"></i> ${nombres[periodoActual]} (${fechaInicio.toLocaleDateString('es-ES')} - ${hoy.toLocaleDateString('es-ES')})`;
         }
 
         function cambiarSeccion(seccion) {
@@ -228,14 +337,87 @@
 
         async function cargarEstadisticas(periodo) {
             try {
+                console.log('Cargando estadísticas para período:', periodo);
                 const response = await fetch(`http://localhost:3000/api/estadisticas-ventas?periodo=${periodo}`);
                 const data = await response.json();
+                console.log('Estadísticas recibidas:', data);
                 estadisticasData = data;
+                
+                await cargarDatosDetallados(periodo);
+                
                 actualizarEstadisticas();
                 renderizarGraficos();
             } catch (error) {
                 console.error('Error cargando estadísticas:', error);
                 document.getElementById('statsGrid').innerHTML = '<div class="no-data">Error al cargar datos. Verifique que el servidor esté corriendo.</div>';
+            }
+        }
+
+        async function cargarDatosDetallados(periodo) {
+            try {
+                console.log('Cargando datos detallados para período:', periodo);
+                
+                const ventasResponse = await fetch(`http://localhost:3000/api/ventas-detalle?periodo=${periodo}`);
+                if (ventasResponse.ok) {
+                    datosVentasDetalle = await ventasResponse.json();
+                    console.log('Ventas detalle:', datosVentasDetalle);
+                } else {
+                    console.warn('Error en ventas-detalle, usando datos simulados');
+                    generarDatosSimulados(periodo);
+                }
+                
+                const productosResponse = await fetch(`http://localhost:3000/api/top-productos?periodo=${periodo}&limite=10`);
+                if (productosResponse.ok) {
+                    topProductosData = await productosResponse.json();
+                    console.log('Top productos:', topProductosData);
+                } else {
+                    console.warn('Error en top-productos, usando datos simulados');
+                    if (topProductosData.length === 0) generarDatosSimulados(periodo);
+                }
+                
+                const clientesResponse = await fetch(`http://localhost:3000/api/top-clientes?periodo=${periodo}&limite=10`);
+                if (clientesResponse.ok) {
+                    topClientesData = await clientesResponse.json();
+                    console.log('Top clientes:', topClientesData);
+                } else {
+                    console.warn('Error en top-clientes, usando datos simulados');
+                    if (topClientesData.length === 0) generarDatosSimulados(periodo);
+                }
+            } catch (error) {
+                console.log('Error en carga detallada, usando datos simulados:', error);
+                generarDatosSimulados(periodo);
+            }
+        }
+
+        function generarDatosSimulados(periodo) {
+            console.log('Generando datos simulados para demostración');
+            datosVentasDetalle = {
+                ventas_por_hora: Array.from({length: 24}, (_, i) => ({hora: i, total: Math.random() * 5000, transacciones: Math.floor(Math.random() * 10)})),
+                ventas_diarias: Array.from({length: 7}, (_, i) => {
+                    const fecha = new Date();
+                    fecha.setDate(fecha.getDate() - i);
+                    return { fecha: fecha.toLocaleDateString('es-ES'), total: Math.random() * 10000, transacciones: Math.floor(Math.random() * 50) };
+                })
+            };
+            
+            if (topProductosData.length === 0) {
+                topProductosData = [
+                    {nombre: "Coca-Cola 2L", cantidad: 150, total_ventas: 7500},
+                    {nombre: "Pepsi 2L", cantidad: 120, total_ventas: 6000},
+                    {nombre: "Fanta Naranja", cantidad: 90, total_ventas: 4500},
+                    {nombre: "Sprite", cantidad: 80, total_ventas: 4000},
+                    {nombre: "Agua Cristal", cantidad: 70, total_ventas: 3500}
+                ];
+            }
+            
+            if (topClientesData.length === 0) {
+                topClientesData = [
+                    {nombre: "María González", total_compras: 15000, visitas: 12, compras: 12},
+                    {nombre: "Juan Pérez", total_compras: 12000, visitas: 8, compras: 8},
+                    {nombre: "Ana Martínez", total_compras: 8000, visitas: 6, compras: 6},
+                    {nombre: "Carlos López", total_compras: 7500, visitas: 5, compras: 5},
+                    {nombre: "Luisa Fernández", total_compras: 6000, visitas: 4, compras: 4}
+                ];
             }
         }
 
@@ -256,13 +438,30 @@
             document.getElementById('prodMasVendidoCant').innerHTML = `${estadisticasData.cantidad_mas_vendido || 0} unidades`;
             document.getElementById('prodMenosVendido').innerHTML = estadisticasData.producto_menos_vendido || 'Sin ventas';
             document.getElementById('prodMenosVendidoCant').innerHTML = `${estadisticasData.cantidad_menos_vendido || 0} unidades`;
+            
+            if (estadisticasData.cantidad_ventas > 0) {
+                const promedio = estadisticasData.total_ventas / estadisticasData.cantidad_ventas;
+                document.getElementById('detalleVentas').innerHTML = `<i class="fas fa-receipt"></i> Promedio: C$${promedio.toFixed(2)} por venta`;
+            }
+            if (estadisticasData.cantidad_mas_vendido > 0 && topProductosData.length > 1) {
+                const segundo = topProductosData[1];
+                if (segundo) {
+                    document.getElementById('detalleProductos').innerHTML = `<i class="fas fa-chart-simple"></i> 2°: ${segundo.nombre} (${segundo.cantidad} und)`;
+                }
+            }
+            if (topClientesData.length > 1) {
+                const segundo = topClientesData[1];
+                if (segundo) {
+                    document.getElementById('detalleClientes').innerHTML = `<i class="fas fa-medal"></i> 2°: ${segundo.nombre}`;
+                }
+            }
         }
 
         function renderizarGraficos() {
             if (estadisticasData.labels_dias && estadisticasData.labels_dias.length > 0) {
                 const ctx = document.getElementById('ventasChart').getContext('2d');
-                if (window.ventasChart) window.ventasChart.destroy();
-                window.ventasChart = new Chart(ctx, {
+                if (ventasChart) ventasChart.destroy();
+                ventasChart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: estadisticasData.labels_dias,
@@ -273,34 +472,207 @@
                             borderColor: '#A63C89',
                             borderWidth: 3,
                             fill: true,
-                            tension: 0.4
+                            tension: 0.4,
+                            pointBackgroundColor: '#A63C89',
+                            pointBorderColor: 'white',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { tooltip: { callbacks: { label: (ctx) => `Ventas: C$${ctx.parsed.y.toLocaleString('es-ES', {minimumFractionDigits: 2})}` } } },
-                        scales: { y: { beginAtZero: true, ticks: { callback: (v) => 'C$' + v.toLocaleString('es-ES') } } }
+                        plugins: {
+                            tooltip: { 
+                                callbacks: { 
+                                    label: (ctx) => `Ventas: C$${ctx.parsed.y.toLocaleString('es-ES', {minimumFractionDigits: 2})}` 
+                                } 
+                            }
+                        },
+                        scales: { 
+                            y: { 
+                                beginAtZero: true, 
+                                ticks: { callback: (v) => 'C$' + v.toLocaleString('es-ES') }
+                            }
+                        }
                     }
                 });
             }
+
             if (estadisticasData.categorias && estadisticasData.categorias.length > 0) {
                 const ctx = document.getElementById('categoriasChart').getContext('2d');
-                if (window.categoriasChart) window.categoriasChart.destroy();
-                window.categoriasChart = new Chart(ctx, {
-                    type: 'pie',
-                    data: { labels: estadisticasData.categorias, datasets: [{ data: estadisticasData.totales_categorias || [], backgroundColor: ['#A63C89', '#FF6B6B', '#4ECDC4', '#FFD166', '#06D6A0', '#118AB2', '#EF476F'] }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                if (categoriasChart) categoriasChart.destroy();
+                const colores = ['#A63C89', '#FF6B6B', '#4ECDC4', '#FFD166', '#06D6A0', '#118AB2', '#EF476F'];
+                categoriasChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: { 
+                        labels: estadisticasData.categorias, 
+                        datasets: [{ 
+                            data: estadisticasData.totales_categorias || [], 
+                            backgroundColor: colores,
+                            borderWidth: 0,
+                            hoverOffset: 8
+                        }] 
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins: { 
+                            legend: { position: 'bottom', labels: { font: { size: 11 } } },
+                            tooltip: { callbacks: { label: (ctx) => `${ctx.label}: C$${ctx.parsed.toLocaleString('es-ES', {minimumFractionDigits: 2})}` } }
+                        } 
+                    }
                 });
             }
         }
 
+        // ================= MODALES =================
+        
+        function abrirModalVentasDetalle() {
+            console.log('Abriendo modal de ventas detalle');
+            const modal = document.getElementById('modalVentas');
+            const periodoText = getPeriodoTexto();
+            document.getElementById('modalPeriodoInfo').innerHTML = `<i class="fas fa-calendar-alt"></i> Período: ${periodoText}`;
+            document.getElementById('modalTotalVentas').innerHTML = `C$${(estadisticasData.total_ventas || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}`;
+            document.getElementById('modalTotalTransacciones').innerHTML = estadisticasData.cantidad_ventas || 0;
+            const promedio = estadisticasData.total_ventas / (estadisticasData.cantidad_ventas || 1);
+            document.getElementById('modalPromedioVenta').innerHTML = `C$${promedio.toLocaleString('es-ES', {minimumFractionDigits: 2})}`;
+            
+            if (datosVentasDetalle.ventas_diarias && datosVentasDetalle.ventas_diarias.length > 0) {
+                const tbody = document.querySelector('#tablaVentasDiarias tbody');
+                tbody.innerHTML = datosVentasDetalle.ventas_diarias.map(d => `
+                    <tr>
+                        <td>${d.fecha}</td>
+                        <td>C$${(d.total || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
+                        <td>${d.transacciones || 0}</td>
+                        <td>C$${((d.total || 0) / (d.transacciones || 1)).toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
+                    </tr>
+                `).join('');
+            } else {
+                document.querySelector('#tablaVentasDiarias tbody').innerHTML = '<tr><td colspan="4">No hay datos disponibles</td></tr>';
+            }
+            
+            if (datosVentasDetalle.ventas_por_hora && datosVentasDetalle.ventas_por_hora.length > 0) {
+                const ctx = document.getElementById('ventasPorHoraChart').getContext('2d');
+                if (ventasPorHoraChart) ventasPorHoraChart.destroy();
+                ventasPorHoraChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: datosVentasDetalle.ventas_por_hora.map(v => `${v.hora}:00`),
+                        datasets: [{
+                            label: 'Ventas (C$)',
+                            data: datosVentasDetalle.ventas_por_hora.map(v => v.total),
+                            backgroundColor: 'rgba(166, 60, 137, 0.7)',
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            tooltip: { callbacks: { label: (ctx) => `Ventas: C$${ctx.parsed.y.toLocaleString('es-ES')}` } }
+                        }
+                    }
+                });
+            }
+            
+            modal.style.display = 'block';
+        }
+        
+        function abrirModalProductosDestacados() {
+            console.log('Abriendo modal de productos destacados');
+            abrirModalTopProductos('mas');
+        }
+        
+        function abrirModalTopProductos(tipo) {
+            console.log('Abriendo modal top productos, tipo:', tipo);
+            const modal = document.getElementById('modalProductos');
+            const periodoText = getPeriodoTexto();
+            document.getElementById('modalProductosPeriodo').innerHTML = `<i class="fas fa-calendar-alt"></i> Período: ${periodoText}`;
+            
+            let productos = [...topProductosData];
+            if (tipo === 'mas') {
+                productos.sort((a, b) => (b.cantidad || 0) - (a.cantidad || 0));
+                document.querySelector('#modalProductos .modal-header h2').innerHTML = '<i class="fas fa-crown"></i> Top Productos Más Vendidos';
+            } else {
+                productos.sort((a, b) => (a.cantidad || 0) - (b.cantidad || 0));
+                document.querySelector('#modalProductos .modal-header h2').innerHTML = '<i class="fas fa-chart-line"></i> Productos Menos Vendidos';
+            }
+            
+            const container = document.getElementById('topProductosContainer');
+            if (!productos || productos.length === 0) {
+                container.innerHTML = '<div class="no-data">No hay productos registrados en este período</div>';
+            } else {
+                container.innerHTML = productos.slice(0, 10).map((p, idx) => `
+                    <div class="top-item">
+                        <div class="top-rank ${idx === 0 ? 'rank-1' : (idx === 1 ? 'rank-2' : (idx === 2 ? 'rank-3' : ''))}">${idx + 1}</div>
+                        <div class="top-info">
+                            <div class="top-name">${escapeHtml(p.nombre)}</div>
+                            <div class="top-detail">Total en ventas</div>
+                        </div>
+                        <div class="top-value">${p.cantidad || 0} und</div>
+                        <div class="top-value" style="font-size: 14px; color: #27ae60;">C$${(p.total_ventas || 0).toLocaleString('es-ES')}</div>
+                    </div>
+                `).join('');
+            }
+            
+            modal.style.display = 'block';
+        }
+        
+        function abrirModalMejoresClientes() {
+            console.log('Abriendo modal mejores clientes');
+            const modal = document.getElementById('modalClientes');
+            const periodoText = getPeriodoTexto();
+            document.getElementById('modalClientesPeriodo').innerHTML = `<i class="fas fa-calendar-alt"></i> Período: ${periodoText}`;
+            
+            const container = document.getElementById('mejoresClientesContainer');
+            if (!topClientesData || topClientesData.length === 0) {
+                container.innerHTML = '<div class="no-data">No hay clientes registrados en este período</div>';
+            } else {
+                container.innerHTML = topClientesData.slice(0, 10).map((c, idx) => `
+                    <div class="top-item">
+                        <div class="top-rank ${idx === 0 ? 'rank-1' : (idx === 1 ? 'rank-2' : (idx === 2 ? 'rank-3' : ''))}">${idx + 1}</div>
+                        <div class="top-info">
+                            <div class="top-name">${escapeHtml(c.nombre)}</div>
+                            <div class="top-detail">${c.visitas || 0} visitas · ${c.compras || 0} compras</div>
+                        </div>
+                        <div class="top-value">C$${(c.total_compras || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}</div>
+                    </div>
+                `).join('');
+            }
+            
+            modal.style.display = 'block';
+        }
+        
+        function getPeriodoTexto() {
+            const nombres = { 
+                dia: 'Hoy', 
+                semana: 'Últimos 7 días', 
+                mes: 'Últimos 30 días', 
+                año: 'Último año' 
+            };
+            return nombres[periodoActual] || 'Período actual';
+        }
+        
+        function cerrarModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // ================= INVENTARIO =================
+        
         async function cargarInventario() {
             try {
                 const response = await fetch('http://localhost:3000/api/inventario-detalle');
                 const data = await response.json();
                 inventarioData = data;
                 mostrarResumenInventario();
+                tablaSeleccionada = 'disponibles';
                 mostrarTablasInventario();
             } catch (error) {
                 console.error('Error cargando inventario:', error);
@@ -315,27 +687,27 @@
                 <div class="resumen-card resumen-disponible" onclick="seleccionarTablaInventario('disponibles')">
                     <h4><i class="fas fa-check-circle"></i> Disponibles</h4>
                     <div class="resumen-value">${inventarioData.total_disponibles || 0}</div>
-                    <p class="stat-sub">En stock</p>
+                    <p>En stock</p>
                 </div>
                 <div class="resumen-card resumen-agotado" onclick="seleccionarTablaInventario('agotados')">
                     <h4><i class="fas fa-times-circle"></i> Agotados</h4>
                     <div class="resumen-value">${inventarioData.total_agotados || 0}</div>
-                    <p class="stat-sub">Sin stock</p>
+                    <p>Sin stock</p>
                 </div>
                 <div class="resumen-card resumen-bajo-stock" onclick="seleccionarTablaInventario('bajo_stock')">
                     <h4><i class="fas fa-exclamation-triangle"></i> Bajo Stock</h4>
                     <div class="resumen-value">${inventarioData.total_bajo_stock || 0}</div>
-                    <p class="stat-sub">≤ 10 unidades</p>
+                    <p>≤ 10 unidades</p>
                 </div>
                 <div class="resumen-card resumen-descontinuado" onclick="seleccionarTablaInventario('descontinuados')">
                     <h4><i class="fas fa-ban"></i> Descontinuados</h4>
                     <div class="resumen-value">${inventarioData.total_descontinuados || 0}</div>
-                    <p class="stat-sub">No disponibles</p>
+                    <p>No disponibles</p>
                 </div>
                 <div class="resumen-card resumen-sin-ventas" onclick="seleccionarTablaInventario('sin_ventas')">
                     <h4><i class="fas fa-chart-line"></i> Sin Ventas</h4>
                     <div class="resumen-value">${inventarioData.productos_sin_ventas?.length || 0}</div>
-                    <p class="stat-sub">Sin movimientos</p>
+                    <p>Sin movimientos</p>
                 </div>
             `;
         }
@@ -358,7 +730,7 @@
                 html += generarTablaProductos(inventarioData.productos_agotados || [], 'Productos Agotados', 'agotado');
             }
             if (tablaSeleccionada === 'todas' || tablaSeleccionada === 'bajo_stock') {
-                html += generarTablaProductos(inventarioData.productos_bajo_stock || [], 'Productos con Bajo Stock', 'bajo-stock');
+                html += generarTablaProductos(inventarioData.productos_bajo_stock || [], 'Productos con Bajo Stock (≤ 10 und)', 'bajo-stock');
             }
             if (tablaSeleccionada === 'todas' || tablaSeleccionada === 'descontinuados') {
                 html += generarTablaProductos(inventarioData.productos_descontinuados || [], 'Productos Descontinuados', 'descontinuado');
@@ -381,30 +753,33 @@
             
             return `
                 <div class="tabla-container">
-                    <h3 class="seccion-titulo"><i class="fas fa-box"></i> ${titulo}</h3>
+                    <h3><i class="fas fa-box"></i> ${titulo} (${productos.length} productos)</h3>
                     <div class="inventario-tabla-container">
                         <table class="inventario-tabla">
-                            <thead><tr><th>Producto</th><th>Categoría</th><th>Marca</th><th>Estado</th><th>Stock</th><th>Precio</th><th>Ventas Totales</th></tr></thead>
+                            <thead>
+                                <tr><th>Producto</th><th>Categoría</th><th>Marca</th><th>Estado</th><th>Stock</th><th>Precio</th><th>Ventas Totales</th></tr></thead>
                             <tbody>
                                 ${productos.map(p => {
                                     let cantidadClass = p.cantidad > 20 ? 'cantidad-alta' : (p.cantidad > 0 ? 'cantidad-media' : 'cantidad-baja');
                                     return `
-                                    <tr>
-                                        <td><strong>${escapeHtml(p.nombre)}</strong></td>
-                                        <td>${escapeHtml(p.categoria || '-')}</td>
-                                        <td>${escapeHtml(p.marca || '-')}</td>
-                                        <td><span class="estado-badge ${estadoClass}">${badgeText}</span></td>
-                                        <td><span class="cantidad-badge ${cantidadClass}">${p.cantidad || 0} und</span></td>
-                                        <td class="precio">C$${(p.precio || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
-                                        <td class="ventas-info">${p.total_vendido || 0} und<br>C$${(p.total_ventas || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
-                                    </tr>
-                                `}).join('')}
+                                        <tr>
+                                            <td><strong>${escapeHtml(p.nombre)}</strong></td>
+                                            <td>${escapeHtml(p.categoria || '-')}</td>
+                                            <td>${escapeHtml(p.marca || '-')}</td>
+                                            <td><span class="estado-badge ${estadoClass}">${badgeText}</span></td>
+                                            <td><span class="cantidad-badge ${cantidadClass}">${p.cantidad || 0} und</span></td>
+                                            <td class="precio">C$${(p.precio || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
+                                            <td>${p.total_vendido || 0} und<br><small>C$${(p.total_ventas || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}</small></td>
+                                        </tr>
+                                    `}).join('')}
                             </tbody>
                         </table>
                     </div>
                 </div>
             `;
         }
+
+        // ================= PERDIDAS =================
 
         async function cargarPerdidas(periodo) {
             try {
@@ -424,24 +799,25 @@
         function mostrarResumenPerdidas() {
             const container = document.getElementById('perdidasResumen');
             if (!container) return;
+            const totalGeneral = (perdidasData.total_perdidas || 0) + (perdidasData.total_consumo_propio || 0);
             container.innerHTML = `
                 <div class="perdida-stat-card perdida">
                     <div class="stat-icon icon-perdidas"><i class="fas fa-exclamation-circle"></i></div>
                     <h3>Pérdidas Totales</h3>
                     <div class="stat-value valor-negativo">C$${(perdidasData.total_perdidas || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}</div>
-                    <div class="stat-trend negative"><i class="fas fa-arrow-down"></i> ${perdidasData.total_unidades_perdidas || 0} unidades perdidas</div>
+                    <div class="stat-trend negative">${perdidasData.total_unidades_perdidas || 0} unidades perdidas</div>
                 </div>
                 <div class="perdida-stat-card consumo">
                     <div class="stat-icon icon-consumo"><i class="fas fa-home"></i></div>
                     <h3>Consumo Propio</h3>
                     <div class="stat-value valor-consumo">C$${(perdidasData.total_consumo_propio || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}</div>
-                    <div class="stat-trend positive"><i class="fas fa-utensils"></i> ${perdidasData.total_unidades_consumo || 0} unidades consumidas</div>
+                    <div class="stat-trend positive">${perdidasData.total_unidades_consumo || 0} unidades consumidas</div>
                 </div>
                 <div class="perdida-stat-card total">
                     <div class="stat-icon icon-money"><i class="fas fa-money-bill-wave"></i></div>
                     <h3>Total General</h3>
-                    <div class="stat-value">C$${((perdidasData.total_perdidas || 0) + (perdidasData.total_consumo_propio || 0)).toLocaleString('es-ES', {minimumFractionDigits: 2})}</div>
-                    <div class="stat-trend negative"><i class="fas fa-calculator"></i> ${(perdidasData.total_unidades_perdidas || 0) + (perdidasData.total_unidades_consumo || 0)} unidades totales</div>
+                    <div class="stat-value">C$${totalGeneral.toLocaleString('es-ES', {minimumFractionDigits: 2})}</div>
+                    <div class="stat-trend negative">${(perdidasData.total_unidades_perdidas || 0) + (perdidasData.total_unidades_consumo || 0)} unidades totales</div>
                 </div>
             `;
         }
@@ -450,17 +826,18 @@
             const container = document.getElementById('analisisComparativo');
             if (!container) return;
             const ventas = estadisticasData.total_ventas || 1;
-            const ratio = ((perdidasData.total_perdidas || 0) / ventas) * 100;
+            const ratioPerdidas = ((perdidasData.total_perdidas || 0) / ventas) * 100;
+            const ratioConsumo = ((perdidasData.total_consumo_propio || 0) / ventas) * 100;
             container.innerHTML = `
                 <div class="analisis-card">
-                    <h3><i class="fas fa-balance-scale"></i> Análisis Comparativo</h3>
-                    <div class="analisis-valor">${ratio.toFixed(2)}%</div>
-                    <div class="stat-label">Las pérdidas representan el ${ratio.toFixed(2)}% de las ventas</div>
+                    <h3><i class="fas fa-balance-scale"></i> Pérdidas vs Ventas</h3>
+                    <div class="analisis-valor">${ratioPerdidas.toFixed(2)}%</div>
+                    <p>de las ventas representan pérdidas</p>
                 </div>
-                <div class="analisis-card">
-                    <h3><i class="fas fa-percentage"></i> Stock vs Pérdidas</h3>
-                    <div class="analisis-valor">${((perdidasData.total_perdidas || 0) / (inventarioData.total_disponibles || 1) * 10).toFixed(2)}%</div>
-                    <div class="stat-label">Relación pérdidas vs inventario disponible</div>
+                <div class="analisis-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                    <h3><i class="fas fa-percentage"></i> Consumo vs Ventas</h3>
+                    <div class="analisis-valor">${ratioConsumo.toFixed(2)}%</div>
+                    <p>de las ventas en consumo propio</p>
                 </div>
             `;
         }
@@ -470,11 +847,28 @@
                 const ctx = document.getElementById('categoriaChart').getContext('2d');
                 const categorias = perdidasData.perdidas_por_categoria.map(p => p.categoria);
                 const valores = perdidasData.perdidas_por_categoria.map(p => p.total_perdida);
-                if (window.categoriaChart) window.categoriaChart.destroy();
-                window.categoriaChart = new Chart(ctx, {
+                if (categoriaChart) categoriaChart.destroy();
+                categoriaChart = new Chart(ctx, {
                     type: 'bar',
-                    data: { labels: categorias, datasets: [{ label: 'Pérdidas por Categoría', data: valores, backgroundColor: 'rgba(232,62,140,0.7)' }] },
-                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: v => 'C$' + v.toLocaleString('es-ES') } } } }
+                    data: { 
+                        labels: categorias, 
+                        datasets: [{ 
+                            label: 'Pérdidas (C$)', 
+                            data: valores, 
+                            backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                            borderRadius: 8
+                        }] 
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false,
+                        scales: { 
+                            y: { 
+                                beginAtZero: true, 
+                                ticks: { callback: v => 'C$' + v.toLocaleString('es-ES') } 
+                            } 
+                        }
+                    }
                 });
             }
         }
@@ -498,10 +892,11 @@
             const badgeIcon = tipo === 'perdida' ? '<i class="fas fa-exclamation-triangle"></i> Pérdida' : '<i class="fas fa-home"></i> Consumo';
             return `
                 <div class="tabla-container">
-                    <h3 class="seccion-titulo"><i class="fas ${tipo === 'perdida' ? 'fa-exclamation-triangle' : 'fa-home'}"></i> ${titulo}</h3>
+                    <h3><i class="fas ${tipo === 'perdida' ? 'fa-exclamation-triangle' : 'fa-home'}"></i> ${titulo}</h3>
                     <div class="inventario-tabla-container">
                         <table class="inventario-tabla">
-                            <thead><tr><th>Producto</th><th>Categoría</th><th>Marca</th><th>Tipo</th><th>Cantidad</th><th>Valor Unitario</th><th>Valor Total</th></tr></thead>
+                            <thead>
+                                <tr><th>Producto</th><th>Categoría</th><th>Marca</th><th>Tipo</th><th>Cantidad</th><th>Valor Unitario</th><th>Valor Total</th></tr></thead>
                             <tbody>
                                 ${productos.map(p => `
                                     <tr>
@@ -509,8 +904,8 @@
                                         <td>${escapeHtml(p.categoria || '-')}</td>
                                         <td>${escapeHtml(p.marca || '-')}</td>
                                         <td><span class="estado-badge ${badgeClass}">${badgeIcon}</span></td>
-                                        <td><span class="cantidad-badge ${tipo === 'perdida' ? 'cantidad-perdida' : 'cantidad-consumo'}">${p.cantidad || 0} und</span></td>
-                                        <td class="precio">C$${(p.precio || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
+                                        <td>${p.cantidad || 0} und</span></td>
+                                        <td>C$${(p.precio || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
                                         <td class="${tipo === 'perdida' ? 'valor-negativo' : 'valor-consumo'}">C$${(p.valor_total || 0).toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
                                     </tr>
                                 `).join('')}

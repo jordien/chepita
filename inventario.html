@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        /* Estilos para autocompletado NO invasivo */
         .autocomplete-wrapper {
             position: relative;
             width: 100%;
@@ -59,6 +58,18 @@
             background-color: #fef3c7;
             font-weight: bold;
         }
+        .error-msg {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        .error-msg.show {
+            display: block;
+        }
+        .invalid {
+            border-color: #dc3545 !important;
+        }
     </style>
 </head>
 <body>
@@ -66,7 +77,7 @@
 <div class="container">
     <div class="top-nav">
         <h2></h2>
-        <button class="btn-volver-top" onclick="window.location.href='menu_admin.html'">Volver al menu</button>
+        <button class="btn-volver-top" onclick="volverMenuAdmin()">Volver al menu</button>
     </div>
 
     <div id="errorBox" class="error-message"></div>
@@ -92,24 +103,24 @@
     <div class="admin-actions-bar">
         <div class="btn-group">
             <button class="btn-admin btn-add" onclick="abrirModalAgregar()">
-                <i class="fas fa-plus"></i> Agregar Producto
+                Agregar Producto
             </button>
             <button id="btnModoEditar" class="btn-admin btn-edit-mode" onclick="toggleModo('editar')">
-                <i class="fas fa-edit"></i> Editar Producto
+                Editar Producto
             </button>
             <button id="btnModoEliminar" class="btn-admin btn-delete-mode" onclick="toggleModo('eliminar')">
-                <i class="fas fa-trash"></i> Eliminar Producto
+                Eliminar Producto
             </button>
         </div>
         <div class="btn-group">
             <button class="btn-admin btn-consumo" onclick="abrirModalConsumo()">
-                <i class="fas fa-apple-alt"></i> Consumo Interno
+                Consumo Interno
             </button>
             <button class="btn-admin btn-perdida" onclick="abrirModalPerdida()">
-                <i class="fas fa-exclamation-triangle"></i> Perdida
+                Perdida
             </button>
             <button class="btn-admin btn-informe" onclick="generarInforme()">
-                <i class="fas fa-file-alt"></i> Informe
+                Informe
             </button>
         </div>
         <span id="indicadorModo" class="modo-info"></span>
@@ -142,22 +153,23 @@
         <div class="form-edit">
             <div class="form-group">
                 <label>Nombre del Producto:</label>
-                <input type="text" id="addNombre" maxlength="50">
+                <input type="text" id="addNombre" maxlength="100" onkeyup="validarNombreProducto(this)">
                 <div id="addNombreError" class="error-msg"></div>
             </div>
             <div class="form-group">
                 <label>Stock Inicial (1-9999):</label>
-                <input type="number" id="addStock" min="1" max="9999" value="1">
+                <input type="text" id="addStock" value="1" onkeypress="return soloNumeros(event)" oninput="validarCampoNumerico(this, 1, 9999)">
                 <div id="addStockError" class="error-msg"></div>
             </div>
             <div class="form-group">
                 <label>Precio Venta (C$ 1-10000):</label>
-                <input type="number" id="addPrecio" min="1" max="10000" step="0.01">
+                <input type="text" id="addPrecio" onkeypress="return soloNumerosDecimal(event)" oninput="validarCampoNumericoDecimal(this, 1, 10000)">
                 <div id="addPrecioError" class="error-msg"></div>
             </div>
             <div class="form-group">
                 <label>Marca:</label>
-                <input type="text" id="addMarca" maxlength="50">
+                <input type="text" id="addMarca" maxlength="100" onkeyup="validarMarca(this)">
+                <div id="addMarcaError" class="error-msg"></div>
             </div>
             <div class="form-group">
                 <label>Proveedor:</label>
@@ -188,21 +200,22 @@
             <input type="hidden" id="editId">
             <div class="form-group">
                 <label>Nombre del Producto:</label>
-                <input type="text" id="editNombre" maxlength="50">
+                <input type="text" id="editNombre" maxlength="100" onkeyup="validarNombreProductoEdit(this)">
                 <div id="editNombreError" class="error-msg"></div>
             </div>
             <div class="form-group">
                 <label>Precio de Venta (C$ 1-10000):</label>
-                <input type="number" id="editPrecio" min="1" max="10000" step="0.01">
+                <input type="text" id="editPrecio" onkeypress="return soloNumerosDecimal(event)" oninput="validarCampoNumericoDecimal(this, 1, 10000)">
                 <div id="editPrecioError" class="error-msg"></div>
             </div>
             <div class="form-group">
                 <label>Marca:</label>
-                <input type="text" id="editMarca" maxlength="50">
+                <input type="text" id="editMarca" maxlength="100" onkeyup="validarMarcaEdit(this)">
+                <div id="editMarcaError" class="error-msg"></div>
             </div>
             <div class="form-group">
                 <label>Stock Actual (1-9999):</label>
-                <input type="number" id="editStockTotal" min="1" max="9999">
+                <input type="text" id="editStockTotal" onkeypress="return soloNumeros(event)" oninput="validarCampoNumerico(this, 1, 9999)">
                 <div id="editStockError" class="error-msg"></div>
             </div>
             <div class="form-group">
@@ -229,9 +242,10 @@
             <div class="form-group">
                 <label>Nueva Categoria:</label>
                 <div style="display: flex; gap: 10px;">
-                    <input type="text" id="nuevaCategoria" placeholder="Nombre de la categoria" style="flex: 1;">
+                    <input type="text" id="nuevaCategoria" placeholder="Nombre de la categoria" style="flex: 1;" onkeyup="validarCategoria(this)">
                     <button class="btn-small" onclick="crearNuevaCategoria()">Agregar</button>
                 </div>
+                <div id="nuevaCategoriaError" class="error-msg"></div>
             </div>
             <div class="form-group">
                 <label>Categorias existentes:</label>
@@ -265,7 +279,7 @@
         
         <div id="modoAgregarConsumo" class="modo-agregar-consumo">
             <div class="consumo-form-group">
-                <label>Producto <span style="color: #dc3545;">*</span></label>
+                <label>Producto *</label>
                 <div class="autocomplete-wrapper">
                     <input type="text" id="consumoProductoSearch" class="autocomplete-input" placeholder="Escriba el nombre del producto..." autocomplete="off">
                     <div id="consumoSuggestionBox" class="autocomplete-suggestion-box"></div>
@@ -281,8 +295,8 @@
             </div>
 
             <div class="consumo-form-group">
-                <label>Cantidad <span style="color: #dc3545;">*</span></label>
-                <input type="number" id="consumoCantidad" min="1" value="1">
+                <label>Cantidad *</label>
+                <input type="text" id="consumoCantidad" value="1" onkeypress="return soloNumeros(event)" oninput="validarCantidadConsumo(this)">
                 <div id="consumoCantidadError" class="error-msg"></div>
             </div>
 
@@ -320,8 +334,8 @@
             <input type="text" id="editarConsumoProducto" class="consumo-fecha-readonly" readonly style="background: #f0f0f0;">
         </div>
         <div class="consumo-form-group">
-            <label>Cantidad <span style="color: #dc3545;">*</span></label>
-            <input type="number" id="editarConsumoCantidad" min="1" value="1">
+            <label>Cantidad *</label>
+            <input type="text" id="editarConsumoCantidad" value="1" onkeypress="return soloNumeros(event)" oninput="validarEdicionCantidad(this)">
             <div id="editarConsumoError" class="error-msg"></div>
         </div>
         <div class="custom-modal-buttons" style="margin-top: 20px; justify-content: space-between;">
@@ -350,7 +364,7 @@
         
         <div id="modoAgregarPerdida" class="modo-agregar-perdida">
             <div class="perdida-form-group">
-                <label>Producto <span style="color: #dc3545;">*</span></label>
+                <label>Producto *</label>
                 <div class="autocomplete-wrapper">
                     <input type="text" id="perdidaProductoSearch" class="autocomplete-input" placeholder="Escriba el nombre del producto..." autocomplete="off">
                     <div id="perdidaSuggestionBox" class="autocomplete-suggestion-box"></div>
@@ -360,8 +374,8 @@
             </div>
 
             <div class="perdida-form-group">
-                <label>Cantidad <span style="color: #dc3545;">*</span></label>
-                <input type="number" id="perdidaCantidad" min="1" value="1">
+                <label>Cantidad *</label>
+                <input type="text" id="perdidaCantidad" value="1" onkeypress="return soloNumeros(event)" oninput="validarCantidadPerdida(this)">
                 <div id="perdidaCantidadError" class="error-msg"></div>
             </div>
 
@@ -372,8 +386,8 @@
             </div>
 
             <div class="perdida-form-group">
-                <label>Motivo <span style="color: #dc3545;">*</span></label>
-                <input type="text" id="perdidaMotivo" placeholder="Ej. Danado, caducado, rotura, etc.">
+                <label>Motivo *</label>
+                <input type="text" id="perdidaMotivo" placeholder="Ej. Danado, caducado, rotura, etc." onkeyup="validarMotivoPerdida(this)">
                 <div id="perdidaMotivoError" class="error-msg"></div>
             </div>
 
@@ -405,13 +419,13 @@
             <input type="text" id="editarPerdidaProducto" class="perdida-fecha-readonly" readonly style="background: #f0f0f0;">
         </div>
         <div class="perdida-form-group">
-            <label>Cantidad <span style="color: #dc3545;">*</span></label>
-            <input type="number" id="editarPerdidaCantidad" min="1">
+            <label>Cantidad *</label>
+            <input type="text" id="editarPerdidaCantidad" onkeypress="return soloNumeros(event)" oninput="validarEdicionCantidadPerdida(this)">
             <div id="editarPerdidaError" class="error-msg"></div>
         </div>
         <div class="perdida-form-group">
             <label>Motivo</label>
-            <input type="text" id="editarPerdidaMotivo">
+            <input type="text" id="editarPerdidaMotivo" onkeyup="validarMotivoPerdidaEdit(this)">
         </div>
         <div class="custom-modal-buttons" style="margin-top: 20px; justify-content: space-between;">
             <button class="custom-modal-btn confirm" onclick="guardarEdicionPerdida()" style="flex: 1; margin-right: 10px;">Guardar Cambios</button>
@@ -444,6 +458,67 @@
 </div>
 
 <script>
+    // ========== PROTECCIÓN DE NAVEGACIÓN ==========
+    (function bloquearBotonAtras() {
+        const paginaAdmin = 'menu_admin.html';
+        const paginaLogin = 'PAG.html';
+        
+        // Verificar sesión
+        const token = localStorage.getItem('token');
+        const tipoUsuario = localStorage.getItem('tipoUsuario');
+        
+        if (!token || tipoUsuario !== 'admin') {
+            window.location.replace(paginaLogin);
+            return;
+        }
+        
+        // Verificar token con el servidor
+        fetch('/api/verificar-sesion', {
+            method: 'GET',
+            headers: {
+                'x-auth-token': token,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.autenticado) {
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.replace(paginaLogin);
+            }
+        })
+        .catch(error => {
+            console.error('Error verificando sesión:', error);
+            window.location.replace(paginaLogin);
+        });
+        
+        // Crear buffer de estados en el historial
+        for (let i = 0; i < 100; i++) {
+            history.pushState(null, null, location.href);
+        }
+        
+        // Escuchar evento de ir atrás
+        window.addEventListener('popstate', function() {
+            if (!localStorage.getItem('token') || localStorage.getItem('tipoUsuario') !== 'admin') {
+                window.location.replace(paginaLogin);
+                return;
+            }
+            
+            // Forzar ir hacia adelante (cancelar el "atrás")
+            history.go(1);
+            
+            // Mantener el buffer
+            setTimeout(() => {
+                history.pushState(null, null, location.href);
+            }, 10);
+        });
+    })();
+    
+    function volverMenuAdmin() {
+        window.location.replace('menu_admin.html');
+    }
+    
     let inventarioData = [];
     let proveedoresLista = [];
     let categoriasLista = [];
@@ -456,6 +531,281 @@
     let perdidasData = [];
     let perdidaEditandoId = null;
 
+    // Funciones de validacion de entrada - Solo numeros
+    function soloNumeros(event) {
+        const charCode = event.which ? event.which : event.keyCode;
+        if (charCode < 48 || charCode > 57) {
+            event.preventDefault();
+            return false;
+        }
+        return true;
+    }
+
+    function soloNumerosDecimal(event) {
+        const charCode = event.which ? event.which : event.keyCode;
+        const caracter = String.fromCharCode(charCode);
+        if (caracter === '.' && event.target.value.indexOf('.') === -1) {
+            return true;
+        }
+        if (charCode < 48 || charCode > 57) {
+            event.preventDefault();
+            return false;
+        }
+        return true;
+    }
+
+    // Funcion para eliminar comillas dobles y simples
+    function eliminarComillas(texto) {
+        if (!texto) return '';
+        return texto.replace(/["']/g, '');
+    }
+
+    // Validacion para nombres de producto (agregar)
+    function validarNombreProducto(input) {
+        let valor = input.value;
+        const regex = /^[a-zA-Z0-9\s\u00C0-\u00FF\-\.]+$/;
+        
+        valor = eliminarComillas(valor);
+        
+        if (valor && !regex.test(valor)) {
+            valor = valor.replace(/[^a-zA-Z0-9\s\u00C0-\u00FF\-\.]/g, '');
+            input.value = valor;
+            document.getElementById('addNombreError').innerText = 'No use simbolos ni comillas';
+            document.getElementById('addNombreError').classList.add('show');
+        } else {
+            document.getElementById('addNombreError').classList.remove('show');
+        }
+        
+        if (valor && valor.length < 2) {
+            document.getElementById('addNombreError').innerText = 'El nombre debe tener al menos 2 caracteres';
+            document.getElementById('addNombreError').classList.add('show');
+        } else if (valor && regex.test(valor)) {
+            document.getElementById('addNombreError').classList.remove('show');
+        }
+        
+        input.value = valor;
+    }
+
+    // Validacion para nombres de producto (editar)
+    function validarNombreProductoEdit(input) {
+        let valor = input.value;
+        const regex = /^[a-zA-Z0-9\s\u00C0-\u00FF\-\.]+$/;
+        
+        valor = eliminarComillas(valor);
+        
+        if (valor && !regex.test(valor)) {
+            valor = valor.replace(/[^a-zA-Z0-9\s\u00C0-\u00FF\-\.]/g, '');
+            input.value = valor;
+            document.getElementById('editNombreError').innerText = 'No use simbolos ni comillas';
+            document.getElementById('editNombreError').classList.add('show');
+        } else {
+            document.getElementById('editNombreError').classList.remove('show');
+        }
+        
+        if (valor && valor.length < 2) {
+            document.getElementById('editNombreError').innerText = 'El nombre debe tener al menos 2 caracteres';
+            document.getElementById('editNombreError').classList.add('show');
+        } else if (valor && regex.test(valor)) {
+            document.getElementById('editNombreError').classList.remove('show');
+        }
+        
+        input.value = valor;
+    }
+
+    // Validacion para marca (agregar)
+    function validarMarca(input) {
+        let valor = input.value;
+        const regex = /^[a-zA-Z0-9\s\u00C0-\u00FF\.\']*$/;
+        
+        valor = eliminarComillas(valor);
+        
+        if (valor && !regex.test(valor)) {
+            valor = valor.replace(/[^a-zA-Z0-9\s\u00C0-\u00FF\.\']/g, '');
+            input.value = valor;
+            document.getElementById('addMarcaError').innerText = 'Solo letras, numeros, espacios y puntos';
+            document.getElementById('addMarcaError').classList.add('show');
+        } else {
+            document.getElementById('addMarcaError').classList.remove('show');
+        }
+        
+        input.value = valor;
+    }
+
+    // Validacion para marca (editar)
+    function validarMarcaEdit(input) {
+        let valor = input.value;
+        const regex = /^[a-zA-Z0-9\s\u00C0-\u00FF\.\']*$/;
+        
+        valor = eliminarComillas(valor);
+        
+        if (valor && !regex.test(valor)) {
+            valor = valor.replace(/[^a-zA-Z0-9\s\u00C0-\u00FF\.\']/g, '');
+            input.value = valor;
+            document.getElementById('editMarcaError').innerText = 'Solo letras, numeros, espacios y puntos';
+            document.getElementById('editMarcaError').classList.add('show');
+        } else {
+            document.getElementById('editMarcaError').classList.remove('show');
+        }
+        
+        input.value = valor;
+    }
+
+    // Validacion para categoria
+    function validarCategoria(input) {
+        let valor = input.value;
+        const regex = /^[a-zA-Z0-9\u00C0-\u00FF]+$/;
+        
+        valor = eliminarComillas(valor);
+        
+        if (valor && !regex.test(valor)) {
+            valor = valor.replace(/[^a-zA-Z0-9\u00C0-\u00FF]/g, '');
+            input.value = valor;
+            document.getElementById('nuevaCategoriaError').innerText = 'Solo letras y numeros, sin espacios';
+            document.getElementById('nuevaCategoriaError').classList.add('show');
+        } else if (valor && valor.includes(' ')) {
+            input.value = valor.replace(/\s/g, '');
+            document.getElementById('nuevaCategoriaError').innerText = 'La categoria no puede contener espacios';
+            document.getElementById('nuevaCategoriaError').classList.add('show');
+        } else {
+            document.getElementById('nuevaCategoriaError').classList.remove('show');
+        }
+        
+        input.value = valor;
+    }
+
+    // Validacion para motivo de perdida
+    function validarMotivoPerdida(input) {
+        let valor = input.value;
+        const regex = /^[a-zA-Z0-9\s\u00C0-\u00FF\u00E1\u00E9\u00ED\u00F3\u00FA\u00F1]*$/;
+        
+        valor = eliminarComillas(valor);
+        
+        if (valor && !regex.test(valor)) {
+            valor = valor.replace(/[^a-zA-Z0-9\s\u00C0-\u00FF\u00E1\u00E9\u00ED\u00F3\u00FA\u00F1]/g, '');
+            input.value = valor;
+            document.getElementById('perdidaMotivoError').innerText = 'Solo letras, numeros y espacios';
+            document.getElementById('perdidaMotivoError').classList.add('show');
+        } else {
+            document.getElementById('perdidaMotivoError').classList.remove('show');
+        }
+        
+        input.value = valor;
+    }
+
+    function validarMotivoPerdidaEdit(input) {
+        let valor = input.value;
+        const regex = /^[a-zA-Z0-9\s\u00C0-\u00FF\u00E1\u00E9\u00ED\u00F3\u00FA\u00F1]*$/;
+        
+        valor = eliminarComillas(valor);
+        
+        if (valor && !regex.test(valor)) {
+            valor = valor.replace(/[^a-zA-Z0-9\s\u00C0-\u00FF\u00E1\u00E9\u00ED\u00F3\u00FA\u00F1]/g, '');
+            input.value = valor;
+        }
+        
+        input.value = valor;
+    }
+
+    // Validaciones para campos numericos
+    function validarCampoNumerico(input, min, max) {
+        let valor = input.value;
+        if (valor === '') return;
+        
+        let num = parseInt(valor);
+        if (isNaN(num)) {
+            input.value = '';
+            return;
+        }
+        
+        if (num < min) {
+            input.value = min;
+        } else if (num > max) {
+            input.value = max;
+        }
+    }
+
+    function validarCampoNumericoDecimal(input, min, max) {
+        let valor = input.value;
+        if (valor === '') return;
+        
+        let num = parseFloat(valor);
+        if (isNaN(num)) {
+            input.value = '';
+            return;
+        }
+        
+        if (num < min) {
+            input.value = min;
+        } else if (num > max) {
+            input.value = max;
+        }
+    }
+
+    function validarCantidadConsumo(input) {
+        let valor = input.value;
+        if (valor === '') return;
+        
+        let num = parseInt(valor);
+        if (isNaN(num)) {
+            input.value = '1';
+        } else if (num < 1) {
+            input.value = '1';
+        }
+    }
+
+    function validarEdicionCantidad(input) {
+        let valor = input.value;
+        if (valor === '') return;
+        
+        let num = parseInt(valor);
+        if (isNaN(num)) {
+            input.value = '1';
+        } else if (num < 1) {
+            input.value = '1';
+        }
+    }
+
+    function validarCantidadPerdida(input) {
+        let valor = input.value;
+        if (valor === '') return;
+        
+        let num = parseInt(valor);
+        if (isNaN(num)) {
+            input.value = '1';
+        } else if (num < 1) {
+            input.value = '1';
+        }
+    }
+
+    function validarEdicionCantidadPerdida(input) {
+        let valor = input.value;
+        if (valor === '') return;
+        
+        let num = parseInt(valor);
+        if (isNaN(num)) {
+            input.value = '';
+        } else if (num < 1) {
+            input.value = '';
+        }
+    }
+
+    // Validacion general para texto
+    function validarTexto(valor, campo, mensajeError) {
+        const regex = /^[a-zA-Z0-9\s\u00C0-\u00FF\-\.]+$/;
+        valor = eliminarComillas(valor);
+        
+        if (valor.trim() === '') {
+            campo.classList.add('invalid');
+            return { valid: false, error: mensajeError || 'Este campo no puede estar vacio' };
+        }
+        if (!regex.test(valor)) {
+            campo.classList.add('invalid');
+            return { valid: false, error: 'Solo letras, numeros, espacios, guiones y puntos' };
+        }
+        campo.classList.remove('invalid');
+        return { valid: true, value: valor };
+    }
+
     function validarNumero(valor, campo, min, max, mensajeError) {
         const num = parseFloat(valor);
         if (isNaN(num)) {
@@ -464,19 +814,10 @@
         }
         if (num < min || num > max) {
             campo.classList.add('invalid');
-            return { valid: false, error: mensajeError || `Valor debe estar entre ${min} y ${max}` };
+            return { valid: false, error: mensajeError || 'Valor debe estar entre ' + min + ' y ' + max };
         }
         campo.classList.remove('invalid');
         return { valid: true, value: num };
-    }
-
-    function validarTexto(valor, campo, mensajeError) {
-        if (valor.trim() === '') {
-            campo.classList.add('invalid');
-            return { valid: false, error: mensajeError || 'Este campo no puede estar vacio' };
-        }
-        campo.classList.remove('invalid');
-        return { valid: true, value: valor };
     }
 
     function limpiarErrores() {
@@ -487,9 +828,12 @@
     function cerrarModal(id) { 
         document.getElementById(id).style.display = 'none'; 
         limpiarErrores();
-        document.getElementById('proveedorDropdown')?.classList.remove('show');
-        document.getElementById('consumoSuggestionBox')?.classList.remove('show');
-        document.getElementById('perdidaSuggestionBox')?.classList.remove('show');
+        const proveedorDropdown = document.getElementById('proveedorDropdown');
+        const consumoSuggestionBox = document.getElementById('consumoSuggestionBox');
+        const perdidaSuggestionBox = document.getElementById('perdidaSuggestionBox');
+        if (proveedorDropdown) proveedorDropdown.classList.remove('show');
+        if (consumoSuggestionBox) consumoSuggestionBox.classList.remove('show');
+        if (perdidaSuggestionBox) perdidaSuggestionBox.classList.remove('show');
     }
 
     function mostrarMensaje(titulo, texto, esError = false) {
@@ -571,13 +915,21 @@
     }
 
     async function crearNuevaCategoria() {
-        const nombre = document.getElementById('nuevaCategoria').value.trim();
+        let nombre = document.getElementById('nuevaCategoria').value.trim();
+        nombre = eliminarComillas(nombre);
+        
         if (!nombre) {
             mostrarMensaje('Error', 'Ingrese un nombre para la categoria', true);
             return;
         }
         if (nombre.includes(' ')) {
             mostrarMensaje('Error', 'El nombre de la categoria no puede contener espacios', true);
+            return;
+        }
+        
+        const regex = /^[a-zA-Z0-9\u00C0-\u00FF]+$/;
+        if (!regex.test(nombre)) {
+            mostrarMensaje('Error', 'La categoria solo puede contener letras y numeros', true);
             return;
         }
         
@@ -604,9 +956,9 @@
     }
 
     async function eliminarCategoria(idCategoria, nombre) {
-        mostrarConfirmacion(`¿Eliminar la categoria "${nombre}"? Los productos de esta categoria pasaran a "Sin Categoria"`, async () => {
+        mostrarConfirmacion('Eliminar la categoria "' + nombre + '"? Los productos de esta categoria pasaran a "Sin Categoria"', async () => {
             try {
-                const res = await fetch(`/api/categorias/${idCategoria}`, { method: 'DELETE' });
+                const res = await fetch('/api/categorias/' + idCategoria, { method: 'DELETE' });
                 
                 if (res.ok) {
                     mostrarMensaje('Exito', 'Categoria eliminada correctamente');
@@ -637,7 +989,7 @@
 
             for (let p of productos) {
                 try {
-                    const resAbast = await fetch(`/api/producto-proveedor/${p.Id_Producto}`);
+                    const resAbast = await fetch('/api/producto-proveedor/' + p.Id_Producto);
                     const abast = await resAbast.json();
                     p.Proveedor = abast.Nombre_Proveedor || 'Sin asignar';
                 } catch (e) {
@@ -659,7 +1011,7 @@
             if (m === '<') return '&lt;';
             if (m === '>') return '&gt;';
             return m;
-        });
+        }).replace(/["']/g, '');
     }
 
     function mostrarTabla() {
@@ -677,7 +1029,7 @@
         });
 
         if (filtrados.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="loading">No hay resultados<\/td></tr>';
+            tbody.innerHTML = '</table><td colspan="7" class="loading">No hay resultados<\/td></tr>';
             return;
         }
 
@@ -685,12 +1037,12 @@
             <tr onclick="manejarClickFila(${p.Id_Producto})" style="cursor: ${modoActual ? 'pointer' : 'default'}">
                 <td><strong>${escapeHtml(p.Nombre)}</strong></td>
                 <td>${escapeHtml(p.Marca || 'N/A')}</td>
-                <td>${escapeHtml(p.Nombre_Categoria)}</td>
-                <td>C$ ${parseFloat(p.Precio).toFixed(2)}</td>
-                <td class="stock-valor">${p.Stock}</td>
-                <td>${escapeHtml(p.Proveedor)}</td>
-                <td><span class="status-badge status-${p.Nombre_Estado}">${p.Nombre_Estado}</span></td>
-            </tr>
+                <td>${escapeHtml(p.Nombre_Categoria)}</span>
+                <td>C$ ${parseFloat(p.Precio).toFixed(2)}</span>
+                <td class="stock-valor">${p.Stock}</span>
+                <td>${escapeHtml(p.Proveedor)}</span>
+                <td><span class="status-badge status-${p.Nombre_Estado}">${p.Nombre_Estado}</span></span>
+             </tr>
         `).join('');
     }
 
@@ -701,10 +1053,12 @@
             indicador.innerText = "";
         } else {
             modoActual = modo;
-            indicador.innerText = `Modo ${modo.toUpperCase()} activo: Selecciona un producto de la lista.`;
+            indicador.innerText = "Modo " + modo.toUpperCase() + " activo: Selecciona un producto de la lista.";
         }
-        document.getElementById('btnModoEditar').classList.toggle('active', modoActual === 'editar');
-        document.getElementById('btnModoEliminar').classList.toggle('active', modoActual === 'eliminar');
+        const btnEditar = document.getElementById('btnModoEditar');
+        const btnEliminar = document.getElementById('btnModoEliminar');
+        if (btnEditar) btnEditar.classList.toggle('active', modoActual === 'editar');
+        if (btnEliminar) btnEliminar.classList.toggle('active', modoActual === 'eliminar');
         mostrarTabla();
     }
 
@@ -734,7 +1088,8 @@
                     hiddenId.value = opt.dataset.id;
                     dropdown.classList.remove('show');
                     searchInput.classList.remove('invalid');
-                    document.getElementById('addProveedorError')?.classList.remove('show');
+                    const errorDiv = document.getElementById('addProveedorError');
+                    if (errorDiv) errorDiv.classList.remove('show');
                 });
             });
         }
@@ -777,7 +1132,9 @@
         let isValid = true;
 
         const nombreInput = document.getElementById('addNombre');
-        const nombreValid = validarTexto(nombreInput.value, nombreInput, 'El nombre no puede estar vacio');
+        let nombreValor = eliminarComillas(nombreInput.value);
+        nombreInput.value = nombreValor;
+        const nombreValid = validarTexto(nombreValor, nombreInput, 'El nombre no puede estar vacio');
         if (!nombreValid.valid) {
             document.getElementById('addNombreError').innerText = nombreValid.error;
             document.getElementById('addNombreError').classList.add('show');
@@ -813,7 +1170,7 @@
             Nombre: nombreValid.value,
             Stock: stockValid.value,
             Precio: precioValid.value,
-            Marca: document.getElementById('addMarca').value,
+            Marca: eliminarComillas(document.getElementById('addMarca').value),
             Id_Proveedor: proveedorId,
             Id_Categoria: document.getElementById('addCategoria').value
         };
@@ -842,7 +1199,7 @@
         if (!producto) return;
         if (modoActual === 'editar') abrirModalEditar(producto);
         if (modoActual === 'eliminar') {
-            mostrarConfirmacion(`¿Eliminar definitivamente ${producto.Nombre}?`, () => eliminarProducto(id));
+            mostrarConfirmacion('Eliminar definitivamente ' + producto.Nombre + '?', () => eliminarProducto(id));
         }
     }
 
@@ -863,7 +1220,9 @@
         let isValid = true;
 
         const nombreInput = document.getElementById('editNombre');
-        const nombreValid = validarTexto(nombreInput.value, nombreInput, 'El nombre no puede estar vacio');
+        let nombreValor = eliminarComillas(nombreInput.value);
+        nombreInput.value = nombreValor;
+        const nombreValid = validarTexto(nombreValor, nombreInput, 'El nombre no puede estar vacio');
         if (!nombreValid.valid) {
             document.getElementById('editNombreError').innerText = nombreValid.error;
             document.getElementById('editNombreError').classList.add('show');
@@ -892,19 +1251,19 @@
         const datos = {
             Nombre: nombreValid.value,
             Precio: precioValid.value,
-            Marca: document.getElementById('editMarca').value,
+            Marca: eliminarComillas(document.getElementById('editMarca').value),
             Id_Estado: document.getElementById('editEstado').value
         };
         const stock = stockValid.value;
 
         try {
             await Promise.all([
-                fetch(`/api/productos/${id}`, {
+                fetch('/api/productos/' + id, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(datos)
                 }),
-                fetch(`/api/productos/${id}/stock`, {
+                fetch('/api/productos/' + id + '/stock', {
                     method: 'PATCH',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ stock: stock })
@@ -920,7 +1279,7 @@
 
     async function eliminarProducto(id) {
         try {
-            const res = await fetch(`/api/productos/${id}`, { method: 'DELETE' });
+            const res = await fetch('/api/productos/' + id, { method: 'DELETE' });
             if (res.ok) {
                 mostrarMensaje('Eliminado', 'Producto borrado correctamente');
                 cargarInventario();
@@ -935,29 +1294,13 @@
 
     function filtrarTabla() { mostrarTabla(); }
     
-    // ================= FUNCION DE INFORME (MODIFICADA CON PROCEDIMIENTO) =================
     function generarInforme() {
-        console.log('📞 [MENU] Botón Informe clickeado - Ejecutando procedimiento sp_productos_bajo_stock...');
-        
-        // Llamar al procedimiento sp_productos_bajo_stock
         fetch('/api/productos/bajo-stock')
             .then(res => res.json())
             .then(productos => {
-                console.log(`✅ [PROCEDIMIENTO] sp_productos_bajo_stock - ${productos.length} productos con bajo stock`);
-                if (productos.length > 0) {
-                    console.log('⚠️ [PROCEDIMIENTO] Lista de productos con stock bajo (menos de 10 unidades):');
-                    productos.forEach(p => {
-                        console.log(`   📦 ${p.Nombre} - Stock: ${p.Stock} unidades - Precio: C$${parseFloat(p.Precio).toFixed(2)}`);
-                    });
-                } else {
-                    console.log('✅ [PROCEDIMIENTO] No hay productos con stock bajo');
-                }
-                // Después de mostrar en consola, redirigir al informe
                 window.location.href = 'informe.html';
             })
             .catch(err => {
-                console.error('❌ [PROCEDIMIENTO] Error al ejecutar sp_productos_bajo_stock:', err);
-                // Aún así redirigir al informe
                 window.location.href = 'informe.html';
             });
     }
@@ -1011,13 +1354,17 @@
                     document.getElementById('consumoPrecio').value = parseFloat(item.dataset.precio).toFixed(2);
                     suggestionBox.style.display = 'none';
                     input.classList.remove('invalid');
-                    document.getElementById('consumoProductoError')?.classList.remove('show');
+                    const errorDiv = document.getElementById('consumoProductoError');
+                    if (errorDiv) errorDiv.classList.remove('show');
                 });
             });
         }
         
         input.addEventListener('input', (e) => {
-            mostrarSugerencias(e.target.value);
+            let valor = e.target.value;
+            valor = eliminarComillas(valor);
+            input.value = valor;
+            mostrarSugerencias(valor);
         });
         
         input.addEventListener('focus', () => {
@@ -1039,7 +1386,7 @@
         const year = hoy.getFullYear();
         const month = String(hoy.getMonth() + 1).padStart(2, '0');
         const day = String(hoy.getDate()).padStart(2, '0');
-        fechaInput.value = `${year}-${month}-${day}`;
+        fechaInput.value = year + '-' + month + '-' + day;
     }
     
     function toggleModoConsumo() {
@@ -1076,9 +1423,13 @@
         document.getElementById('consumoProductoId').value = '';
         document.getElementById('consumoPrecio').value = '';
         document.getElementById('consumoCantidad').value = '1';
-        document.getElementById('consumoProductoError')?.classList.remove('show');
-        document.getElementById('consumoSuggestionBox').style.display = 'none';
-        document.getElementById('consumoSuggestionBox').innerHTML = '';
+        const errorDiv = document.getElementById('consumoProductoError');
+        if (errorDiv) errorDiv.classList.remove('show');
+        const suggestionBox = document.getElementById('consumoSuggestionBox');
+        if (suggestionBox) {
+            suggestionBox.style.display = 'none';
+            suggestionBox.innerHTML = '';
+        }
     }
 
     async function cargarConsumosParaModal() {
@@ -1147,7 +1498,7 @@
         if (!consumo) return;
 
         try {
-            const respuesta = await fetch(`/api/consumos/${consumoEditandoId}`, {
+            const respuesta = await fetch('/api/consumos/' + consumoEditandoId, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1198,7 +1549,7 @@
         const stockActual = producto?.Stock || 0;
         
         if (parseInt(cantidad) > stockActual) {
-            document.getElementById('consumoCantidadError').innerText = `Stock insuficiente. Stock actual: ${stockActual} unidades`;
+            document.getElementById('consumoCantidadError').innerText = 'Stock insuficiente. Stock actual: ' + stockActual + ' unidades';
             document.getElementById('consumoCantidadError').classList.add('show');
             return;
         }
@@ -1237,9 +1588,9 @@
     }
 
     async function eliminarConsumo(id) {
-        mostrarConfirmacion('¿Eliminar este consumo?', async () => {
+        mostrarConfirmacion('Eliminar este consumo?', async () => {
             try {
-                const respuesta = await fetch(`/api/consumos/${id}`, { method: 'DELETE' });
+                const respuesta = await fetch('/api/consumos/' + id, { method: 'DELETE' });
                 const data = await respuesta.json();
 
                 if (!respuesta.ok) {
@@ -1258,7 +1609,8 @@
     }
 
     function limpiarErroresConsumo() {
-        document.querySelectorAll('#consumoModal .error-msg').forEach(el => el.classList.remove('show'));
+        const errores = document.querySelectorAll('#consumoModal .error-msg');
+        errores.forEach(el => el.classList.remove('show'));
     }
     
     // ================= FUNCIONES DE PERDIDAS =================
@@ -1309,13 +1661,17 @@
                     document.getElementById('perdidaProductoId').value = item.dataset.id;
                     suggestionBox.style.display = 'none';
                     input.classList.remove('invalid');
-                    document.getElementById('perdidaProductoError')?.classList.remove('show');
+                    const errorDiv = document.getElementById('perdidaProductoError');
+                    if (errorDiv) errorDiv.classList.remove('show');
                 });
             });
         }
         
         input.addEventListener('input', (e) => {
-            mostrarSugerencias(e.target.value);
+            let valor = e.target.value;
+            valor = eliminarComillas(valor);
+            input.value = valor;
+            mostrarSugerencias(valor);
         });
         
         input.addEventListener('focus', () => {
@@ -1337,7 +1693,7 @@
         const year = hoy.getFullYear();
         const month = String(hoy.getMonth() + 1).padStart(2, '0');
         const day = String(hoy.getDate()).padStart(2, '0');
-        fechaInput.value = `${year}-${month}-${day}`;
+        fechaInput.value = year + '-' + month + '-' + day;
     }
 
     function toggleModoPerdida() {
@@ -1374,9 +1730,13 @@
         document.getElementById('perdidaProductoId').value = '';
         document.getElementById('perdidaCantidad').value = '1';
         document.getElementById('perdidaMotivo').value = '';
-        document.getElementById('perdidaProductoError')?.classList.remove('show');
-        document.getElementById('perdidaSuggestionBox').style.display = 'none';
-        document.getElementById('perdidaSuggestionBox').innerHTML = '';
+        const errorDiv = document.getElementById('perdidaProductoError');
+        if (errorDiv) errorDiv.classList.remove('show');
+        const suggestionBox = document.getElementById('perdidaSuggestionBox');
+        if (suggestionBox) {
+            suggestionBox.style.display = 'none';
+            suggestionBox.innerHTML = '';
+        }
     }
 
     async function cargarPerdidasParaModal() {
@@ -1448,7 +1808,7 @@
 
     async function guardarEdicionPerdida() {
         const nuevaCantidad = document.getElementById('editarPerdidaCantidad').value;
-        const nuevoMotivo = document.getElementById('editarPerdidaMotivo').value;
+        const nuevoMotivo = eliminarComillas(document.getElementById('editarPerdidaMotivo').value);
         
         if (!nuevaCantidad || nuevaCantidad < 1) {
             document.getElementById('editarPerdidaError').innerText = 'Ingrese una cantidad valida';
@@ -1460,7 +1820,7 @@
         if (!perdida) return;
 
         try {
-            const respuesta = await fetch(`/api/perdidas/${perdidaEditandoId}`, {
+            const respuesta = await fetch('/api/perdidas/' + perdidaEditandoId, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1493,7 +1853,7 @@
         const idProducto = document.getElementById('perdidaProductoId').value;
         const cantidad = document.getElementById('perdidaCantidad').value;
         const fecha = document.getElementById('perdidaFecha').value;
-        const motivo = document.getElementById('perdidaMotivo').value;
+        let motivo = eliminarComillas(document.getElementById('perdidaMotivo').value);
 
         if (!idProducto) {
             document.getElementById('perdidaProductoError').innerText = 'Seleccione un producto de la lista de sugerencias';
@@ -1517,7 +1877,7 @@
         const stockActual = producto?.Stock || 0;
         
         if (parseInt(cantidad) > stockActual) {
-            document.getElementById('perdidaCantidadError').innerText = `Stock insuficiente. Stock actual: ${stockActual} unidades`;
+            document.getElementById('perdidaCantidadError').innerText = 'Stock insuficiente. Stock actual: ' + stockActual + ' unidades';
             document.getElementById('perdidaCantidadError').classList.add('show');
             return;
         }
@@ -1557,9 +1917,9 @@
     }
 
     async function eliminarPerdida(id) {
-        mostrarConfirmacion('¿Eliminar esta perdida?', async () => {
+        mostrarConfirmacion('Eliminar esta perdida?', async () => {
             try {
-                const respuesta = await fetch(`/api/perdidas/${id}`, { method: 'DELETE' });
+                const respuesta = await fetch('/api/perdidas/' + id, { method: 'DELETE' });
                 const data = await respuesta.json();
 
                 if (!respuesta.ok) {
@@ -1578,7 +1938,8 @@
     }
 
     function limpiarErroresPerdida() {
-        document.querySelectorAll('#perdidaModal .error-msg').forEach(el => el.classList.remove('show'));
+        const errores = document.querySelectorAll('#perdidaModal .error-msg');
+        errores.forEach(el => el.classList.remove('show'));
     }
     
     window.onload = () => {

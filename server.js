@@ -44,7 +44,6 @@ db.connect(err => {
     if (err) return console.error('Error de conexion:', err.message);
     console.log('✅ Conexion exitosa a la base de datos chepita7');
     
-    // Crear tablas necesarias
     crearTablaTokens();
     crearTablaRecuperacionTokens();
     agregarColumnasIntentos();
@@ -60,13 +59,9 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Almacenamiento temporal de tokens
 const resetTokens = {};
-
-// Clave secreta para JWT
 const SECRET_KEY = 'chepita_secret_key_2025';
 
-// Ruta principal
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'PAG.html'));
 });
@@ -137,7 +132,7 @@ function agregarColumnasIntentos() {
     });
 }
 
-// ================= LOGIN DE TRABAJADORES CON INTENTOS Y BLOQUEO =================
+// ================= LOGIN DE TRABAJADORES =================
 
 app.post('/api/trabajadores/login', async (req, res) => {
     const { nombre_usuario, password } = req.body;
@@ -161,7 +156,6 @@ app.post('/api/trabajadores/login', async (req, res) => {
         }
         
         let passwordValida = false;
-        
         const md5pass = crypto.createHash('md5').update(password).digest('hex');
         
         if (trabajador.password_hash === md5pass) {
@@ -252,8 +246,6 @@ app.get('/api/trabajadores/estado-cuenta/:id', (req, res) => {
     });
 });
 
-// ================= CAMBIAR CONTRASEÑA DE TRABAJADOR =================
-
 app.post('/api/trabajadores/cambiar-password', async (req, res) => {
     const { id_trabajador, nueva_password } = req.body;
     
@@ -269,8 +261,6 @@ app.post('/api/trabajadores/cambiar-password', async (req, res) => {
         res.json({ success: true, message: "Contraseña actualizada correctamente" });
     });
 });
-
-// ================= AGREGAR TRABAJADOR =================
 
 app.post('/api/trabajadores', async (req, res) => {
     const { NombreCompleto, Celular, Salario, Activo, email } = req.body;
@@ -359,8 +349,6 @@ app.post('/api/trabajadores', async (req, res) => {
     });
 });
 
-// ================= VERIFICAR TOKEN DE REGISTRO =================
-
 app.get('/api/verificar-token-registro/:token', (req, res) => {
     const { token } = req.params;
     
@@ -386,8 +374,6 @@ app.get('/api/verificar-token-registro/:token', (req, res) => {
         });
     });
 });
-
-// ================= COMPLETAR REGISTRO =================
 
 app.post('/api/completar-registro-trabajador', async (req, res) => {
     const { token, nueva_password } = req.body;
@@ -434,8 +420,6 @@ app.post('/api/completar-registro-trabajador', async (req, res) => {
     });
 });
 
-// ================= ACTUALIZAR TRABAJADOR =================
-
 app.put('/api/trabajadores/:id', (req, res) => {
     const { id } = req.params;
     const { NombreCompleto, Celular, Salario, Activo, email } = req.body;
@@ -447,8 +431,6 @@ app.put('/api/trabajadores/:id', (req, res) => {
         res.json({ message: "Trabajador actualizado" });
     });
 });
-
-// ================= OBTENER TRABAJADORES =================
 
 app.get('/api/trabajadores', (req, res) => {
     db.query(`SELECT Id_Trabajador, NombreCompleto, Celular, Salario, Activo, email, nombre_usuario, debe_cambiar_password FROM trabajadores ORDER BY NombreCompleto`, (err, results) => {
@@ -486,8 +468,6 @@ app.delete('/api/trabajadores/:id', (req, res) => {
     });
 });
 
-// ================= VERIFICAR SESIÓN CON JWT =================
-
 function verificarTokenTrabajador(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -509,9 +489,8 @@ app.get('/api/verificar-sesion-trabajador', verificarTokenTrabajador, (req, res)
     res.json({ autenticado: true, usuario: req.usuario });
 });
 
-// ================= ADMINISTRADOR Y SEGURIDAD (MEJORADO) =================
+// ================= ADMINISTRADOR =================
 
-// Login de ADMINISTRADOR con control de intentos y bcrypt
 app.post('/api/admin/login', async (req, res) => {
     const { usuario, password } = req.body;
     
@@ -523,7 +502,6 @@ app.post('/api/admin/login', async (req, res) => {
         
         const admin = results[0];
         
-        // Verificar bloqueo
         if (admin.bloqueado_hasta && new Date(admin.bloqueado_hasta) > new Date()) {
             const minutosRestantes = Math.ceil((new Date(admin.bloqueado_hasta) - new Date()) / 60000);
             return res.status(401).json({ 
@@ -534,16 +512,13 @@ app.post('/api/admin/login', async (req, res) => {
         
         let passwordValida = false;
         
-        // Verificar con bcrypt primero
         if (admin.password && admin.password.startsWith('$2b$')) {
             passwordValida = await bcrypt.compare(password, admin.password);
         }
-        // Si es MD5 (migración)
         else if (admin.password && admin.password.length === 32) {
             const md5pass = crypto.createHash('md5').update(password).digest('hex');
             if (admin.password === md5pass) {
                 passwordValida = true;
-                // Migrar a bcrypt automáticamente
                 const bcryptHash = await bcrypt.hash(password, 10);
                 db.query(`UPDATE usuarios_admin SET password = ? WHERE id = ?`, [bcryptHash, admin.id]);
                 console.log(`✅ Contraseña de ${admin.usuario} migrada a bcrypt`);
@@ -551,7 +526,6 @@ app.post('/api/admin/login', async (req, res) => {
         }
         
         if (passwordValida) {
-            // Resetear intentos y actualizar último login
             db.query(`UPDATE usuarios_admin SET 
                 intentos_fallidos = 0, 
                 bloqueado_hasta = NULL,
@@ -567,7 +541,6 @@ app.post('/api/admin/login', async (req, res) => {
             return res.json({ success: true, token: token, user: admin.usuario });
         }
         
-        // Contraseña incorrecta - incrementar intentos
         const nuevosIntentos = (admin.intentos_fallidos || 0) + 1;
         
         if (nuevosIntentos >= 5) {
@@ -654,7 +627,6 @@ app.post('/api/admin/recuperar-email', (req, res) => {
     });
 });
 
-// Endpoint para verificar token de ADMIN
 app.get('/api/admin/verificar-token-recuperacion/:token', (req, res) => {
     const { token } = req.params;
     
@@ -681,8 +653,6 @@ app.post('/api/admin/reset-password', (req, res) => {
     }
 
     const { email } = tokenData;
-
-    // Hashear nueva contraseña con bcrypt
     const hashedPassword = bcrypt.hashSync(nuevaPassword, 10);
     
     const sqlActualizar = 'UPDATE usuarios_admin SET password = ? WHERE email = ?';
@@ -702,32 +672,17 @@ app.post('/api/admin/reset-password', (req, res) => {
     });
 });
 
-// CAMBIAR CONTRASEÑA DE ADMIN (mejorado)
 app.post('/api/admin/cambiar-password', async (req, res) => {
     const { usuario, passwordActual, nuevaPassword } = req.body;
     
-    // Validaciones más estrictas
     if (!nuevaPassword || nuevaPassword.length < 8) {
-        return res.status(400).json({ 
-            success: false, 
-            message: "La contraseña debe tener al menos 8 caracteres" 
-        });
+        return res.status(400).json({ success: false, message: "La contraseña debe tener al menos 8 caracteres" });
     }
-    
-    // Validar mayúscula
     if (!/[A-Z]/.test(nuevaPassword)) {
-        return res.status(400).json({ 
-            success: false, 
-            message: "La contraseña debe contener al menos una mayúscula" 
-        });
+        return res.status(400).json({ success: false, message: "La contraseña debe contener al menos una mayúscula" });
     }
-    
-    // Validar número
     if (!/[0-9]/.test(nuevaPassword)) {
-        return res.status(400).json({ 
-            success: false, 
-            message: "La contraseña debe contener al menos un número" 
-        });
+        return res.status(400).json({ success: false, message: "La contraseña debe contener al menos un número" });
     }
     
     db.query(`SELECT * FROM usuarios_admin WHERE usuario = ?`, [usuario], async (err, results) => {
@@ -739,7 +694,6 @@ app.post('/api/admin/cambiar-password', async (req, res) => {
         const admin = results[0];
         let passwordActualValida = false;
         
-        // Verificar contraseña actual
         if (admin.password && admin.password.startsWith('$2b$')) {
             passwordActualValida = await bcrypt.compare(passwordActual, admin.password);
         } else {
@@ -751,7 +705,6 @@ app.post('/api/admin/cambiar-password', async (req, res) => {
             return res.status(401).json({ success: false, message: "Contraseña actual incorrecta" });
         }
         
-        // Verificar que la nueva contraseña no sea igual a la actual
         let esIgual = false;
         if (admin.password && admin.password.startsWith('$2b$')) {
             esIgual = await bcrypt.compare(nuevaPassword, admin.password);
@@ -761,10 +714,7 @@ app.post('/api/admin/cambiar-password', async (req, res) => {
         }
         
         if (esIgual) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "La nueva contraseña no puede ser igual a la anterior" 
-            });
+            return res.status(400).json({ success: false, message: "La nueva contraseña no puede ser igual a la anterior" });
         }
         
         const hashedPassword = await bcrypt.hash(nuevaPassword, 10);
@@ -990,8 +940,6 @@ app.delete('/api/productos/:id', (req, res) => {
             res.status(500).json({ error: "Error limpiando dependencias: " + err.message });
         });
 });
-
-// ================= PRODUCTOS CON BAJO STOCK =================
 
 app.get('/api/productos/bajo-stock', (req, res) => {
     console.log('⚠️ [PROCEDIMIENTO] sp_productos_bajo_stock - Ejecutando consulta...');
@@ -1800,6 +1748,120 @@ app.get('/api/estadisticas-ventas', (req, res) => {
     });
 });
 
+// ================= NUEVOS ENDPOINTS PARA MODALES =================
+
+app.get('/api/ventas-detalle', (req, res) => {
+    const { periodo = 'dia' } = req.query;
+    
+    let fechaInicio = new Date();
+    switch(periodo) {
+        case 'dia': fechaInicio.setDate(fechaInicio.getDate() - 1); break;
+        case 'semana': fechaInicio.setDate(fechaInicio.getDate() - 7); break;
+        case 'mes': fechaInicio.setDate(fechaInicio.getDate() - 30); break;
+        case 'año': fechaInicio.setFullYear(fechaInicio.getFullYear() - 1); break;
+        default: fechaInicio.setDate(fechaInicio.getDate() - 30);
+    }
+    const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
+    
+    const sqlPorHora = `
+        SELECT HOUR(Fecha) as hora, SUM(Monto) as total, COUNT(*) as transacciones
+        FROM compra
+        WHERE Fecha >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        GROUP BY HOUR(Fecha)
+        ORDER BY hora
+    `;
+    
+    const sqlDiario = `
+        SELECT DATE(Fecha) as fecha, SUM(Monto) as total, COUNT(*) as transacciones
+        FROM compra
+        WHERE Fecha >= ?
+        GROUP BY DATE(Fecha)
+        ORDER BY fecha DESC
+        LIMIT 30
+    `;
+    
+    Promise.all([
+        db.promise().query(sqlPorHora),
+        db.promise().query(sqlDiario, [fechaInicioStr])
+    ]).then(([porHora, diario]) => {
+        res.json({
+            ventas_por_hora: porHora[0].map(v => ({ hora: v.hora, total: parseFloat(v.total) || 0, transacciones: v.transacciones })),
+            ventas_diarias: diario[0].map(v => ({ fecha: v.fecha, total: parseFloat(v.total) || 0, transacciones: v.transacciones }))
+        });
+    }).catch(err => {
+        console.error('Error en /api/ventas-detalle:', err);
+        res.status(500).json({ error: err.message });
+    });
+});
+
+app.get('/api/top-productos', (req, res) => {
+    const { periodo = 'mes', limite = 10 } = req.query;
+    
+    let fechaInicio = new Date();
+    switch(periodo) {
+        case 'dia': fechaInicio.setDate(fechaInicio.getDate() - 1); break;
+        case 'semana': fechaInicio.setDate(fechaInicio.getDate() - 7); break;
+        case 'mes': fechaInicio.setDate(fechaInicio.getDate() - 30); break;
+        case 'año': fechaInicio.setFullYear(fechaInicio.getFullYear() - 1); break;
+        default: fechaInicio.setDate(fechaInicio.getDate() - 30);
+    }
+    const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
+    
+    const sql = `
+        SELECT 
+            p.Nombre as nombre,
+            SUM(o.CantidadVendida) as cantidad,
+            SUM(o.CantidadVendida * o.PrecioUnitario) as total_ventas
+        FROM orden o
+        JOIN producto p ON o.Id_Producto = p.Id_Producto
+        JOIN compra c ON o.NumFactura = c.Num_Factura
+        WHERE c.Fecha >= ?
+        GROUP BY p.Id_Producto
+        ORDER BY cantidad DESC
+        LIMIT ?
+    `;
+    
+    db.query(sql, [fechaInicioStr, parseInt(limite)], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+app.get('/api/top-clientes', (req, res) => {
+    const { periodo = 'mes', limite = 10 } = req.query;
+    
+    let fechaInicio = new Date();
+    switch(periodo) {
+        case 'dia': fechaInicio.setDate(fechaInicio.getDate() - 1); break;
+        case 'semana': fechaInicio.setDate(fechaInicio.getDate() - 7); break;
+        case 'mes': fechaInicio.setDate(fechaInicio.getDate() - 30); break;
+        case 'año': fechaInicio.setFullYear(fechaInicio.getFullYear() - 1); break;
+        default: fechaInicio.setDate(fechaInicio.getDate() - 30);
+    }
+    const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
+    
+    const sql = `
+        SELECT 
+            CONCAT(COALESCE(cl.Nombre, 'Cliente'), ' ', COALESCE(cl.Apellido, '')) as nombre,
+            COUNT(c.Num_Factura) as compras,
+            SUM(c.Monto) as total_compras,
+            COUNT(DISTINCT DATE(c.Fecha)) as visitas
+        FROM compra c
+        LEFT JOIN clientes cl ON c.Id_cliente = cl.Id_cliente
+        WHERE c.Fecha >= ? AND c.Id_cliente IS NOT NULL
+        GROUP BY c.Id_cliente
+        ORDER BY total_compras DESC
+        LIMIT ?
+    `;
+    
+    db.query(sql, [fechaInicioStr, parseInt(limite)], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+// ================= INVENTARIO DETALLE Y PÉRDIDAS =================
+
 app.get('/api/inventario-detalle', (req, res) => {
     const sql = `
         SELECT 
@@ -1950,22 +2012,17 @@ app.get('/api/perdidas-estadisticas', (req, res) => {
             valor_total: parseFloat(p.valor) || 0
         }));
         
-        const productosMasPerdidas = [...productosConPerdidas].sort((a, b) => b.cantidad - a.cantidad).slice(0, 5);
-        const productosMasConsumo = [...productosConsumoPropio].sort((a, b) => b.cantidad - a.cantidad).slice(0, 5);
-        
         res.json({
             productos_con_perdidas: productosConPerdidas,
             productos_consumo_propio: productosConsumoPropio,
-            productos_mas_perdidas: productosMasPerdidas,
-            produtos_mas_consumo: productosMasConsumo,
+            productos_mas_perdidas: productosConPerdidas.slice(0, 5),
+            produtos_mas_consumo: productosConsumoPropio.slice(0, 5),
             total_perdidas: parseFloat(totales[0][0]?.total_perdidas) || 0,
             total_unidades_perdidas: parseInt(totales[0][0]?.unidades_perdidas) || 0,
             total_consumo_propio: parseFloat(totales[0][0]?.total_consumo) || 0,
             total_unidades_consumo: parseInt(totales[0][0]?.unidades_consumo) || 0,
             perdidas_por_categoria: [],
-            consumo_por_categoria: [],
-            perdidas_mensuales: [],
-            consumo_mensual: []
+            consumo_por_categoria: []
         });
     }).catch(err => {
         console.error('Error en /api/perdidas-estadisticas:', err);
@@ -2035,7 +2092,7 @@ app.get('/api/estadisticas', (req, res) => {
     });
 });
 
-// ================= SISTEMA QR PARA VENDEDORES (PWA) =================
+// ================= SISTEMA QR PARA VENDEDORES =================
 
 function generarCodigoUnico(idVendedor) {
     const timestamp = Date.now().toString(36);
@@ -2115,35 +2172,25 @@ app.get('/api/vendedor/qr-activo/:id', (req, res) => {
 });
 
 app.post('/api/vendedor/generar-qr', verificarTokenTrabajador, (req, res) => {
-    console.log('📱 [QR] Solicitud recibida');
-    console.log('📱 [QR] Body:', req.body);
-    console.log('📱 [QR] Usuario:', req.usuario);
-    
     const { id_vendedor, duracion_minutos = 60 } = req.body;
     
     if (!id_vendedor) {
-        console.log('❌ [QR] id_vendedor no proporcionado');
         return res.status(400).json({ success: false, message: 'ID de vendedor requerido' });
     }
     
     if (req.usuario.id !== id_vendedor) {
-        console.log('❌ [QR] Token no coincide');
         return res.status(403).json({ success: false, message: 'No autorizado' });
     }
     
     const codigo = generarCodigoUnico(id_vendedor);
     const expiraEn = new Date(Date.now() + duracion_minutos * 60000);
     
-    console.log('📱 [QR] Código generado:', codigo);
-    
     db.query(`SELECT NombreCompleto FROM trabajadores WHERE Id_Trabajador = ?`, [id_vendedor], (err, results) => {
         if (err) {
-            console.error('❌ [QR] Error consultando trabajador:', err);
             return res.status(500).json({ success: false, message: 'Error en servidor' });
         }
         
         if (results.length === 0) {
-            console.error('❌ [QR] Vendedor no encontrado');
             return res.status(404).json({ success: false, message: 'Vendedor no encontrado' });
         }
         
@@ -2154,11 +2201,8 @@ app.post('/api/vendedor/generar-qr', verificarTokenTrabajador, (req, res) => {
             VALUES (?, ?, ?, ?, 1)
         `, [codigo, id_vendedor, nombreVendedor, expiraEn], (err2) => {
             if (err2) {
-                console.error('❌ [QR] Error insertando:', err2);
                 return res.status(500).json({ success: false, message: 'Error guardando QR: ' + err2.message });
             }
-            
-            console.log('✅ [QR] QR guardado exitosamente');
             
             res.json({
                 success: true,
@@ -2170,8 +2214,6 @@ app.post('/api/vendedor/generar-qr', verificarTokenTrabajador, (req, res) => {
     });
 });
 
-// ================= ENVÍO DE QR POR EMAIL (MEJORADO - QR VISIBLE) =================
-
 app.post('/api/vendedor/enviar-qr-email', (req, res) => {
     const { email, codigo, nombre_vendedor } = req.body;
     
@@ -2179,7 +2221,6 @@ app.post('/api/vendedor/enviar-qr-email', (req, res) => {
         return res.status(400).json({ success: false, message: 'Datos incompletos' });
     }
     
-    // Generar QR como buffer para adjuntar directamente en el correo
     qrcode.toBuffer(codigo, { errorCorrectionLevel: 'H' }, (err, qrBuffer) => {
         if (err) {
             console.error('Error generando QR buffer:', err);
@@ -2198,31 +2239,13 @@ app.post('/api/vendedor/enviar-qr-email', (req, res) => {
                     <h2 style="color: #A63C89; text-align: center;">Tu codigo QR de vendedor</h2>
                     <p>Hola <strong>${nombre_vendedor || 'Vendedor'}</strong>,</p>
                     <p>Este es tu codigo QR para asignar tus ventas en la caja.</p>
-                    
                     <div style="text-align: center; margin: 25px 0;">
                         <img src="${qrImageSrc}" alt="QR Code" style="width: 250px; height: 250px; border: 2px solid #A63C89; border-radius: 15px;">
                     </div>
-                    
                     <div style="background: #f0f0f0; padding: 15px; border-radius: 8px;">
                         <p><strong>Codigo numerico (respaldo):</strong></p>
                         <p style="font-family: monospace; font-size: 16px; font-weight: bold; text-align: center; background: white; padding: 10px; border-radius: 8px;">${codigo}</p>
                     </div>
-                    
-                    <div style="background: #e8f4fd; padding: 15px; border-radius: 8px; margin-top: 15px;">
-                        <p><strong>Instrucciones:</strong></p>
-                        <ol>
-                            <li>Muestra este QR en tu celular o imprime esta pagina</li>
-                            <li>Cuando atiendas a un cliente, muestrale el QR</li>
-                            <li>El cliente lo acerca a la camara de la caja</li>
-                            <li>La venta se asignara automaticamente a ti</li>
-                        </ol>
-                    </div>
-                    
-                    <p style="color: #666; font-size: 12px; margin-top: 15px;">
-                        Este QR es valido por 60 minutos.<br>
-                        Si expira, puedes generar uno nuevo desde la app en tu celular.
-                    </p>
-                    
                     <hr>
                     <p style="color: #999; font-size: 11px; text-align: center;">Tienda Chepita - Sistema de Gestion Comercial</p>
                 </div>
@@ -2239,8 +2262,6 @@ app.post('/api/vendedor/enviar-qr-email', (req, res) => {
     });
 });
 
-// ================= GENERAR IMAGEN QR (MEJORADO - DEVUELVE IMAGEN DIRECTA) =================
-
 app.get('/api/generar-imagen-qr', (req, res) => {
     const { codigo } = req.query;
     
@@ -2248,7 +2269,6 @@ app.get('/api/generar-imagen-qr', (req, res) => {
         return res.status(400).send('Código requerido');
     }
     
-    // Configurar respuesta como imagen PNG
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Content-Disposition', 'inline');
     
@@ -2401,8 +2421,6 @@ function crearProcedimientosSiNoExisten() {
     });
 }
 
-// ================= VERIFICAR ESTRUCTURA TABLA =================
-
 function verificarEstructuraTabla() {
     db.query(`SHOW COLUMNS FROM compra LIKE 'Id_Vendedor'`, (err, results) => {
         if (err) {
@@ -2467,6 +2485,10 @@ app.listen(PORT, () => {
     ║  🔒 Admin: bcrypt + control de intentos                  
     ║  🔒 Admin: contraseña mínima 8 caracteres                
     ║  📱 QR Vendedores: SISTEMA ACTIVADO ✅                    
+    ║  📊 Nuevos endpoints para Dashboard:                     
+    ║     - /api/ventas-detalle (ventas por hora/día)          
+    ║     - /api/top-productos (ranking productos)             
+    ║     - /api/top-clientes (ranking clientes)               
     ╚══════════════════════════════════════════════════════════╝
     `);
 });

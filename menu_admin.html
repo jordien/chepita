@@ -289,13 +289,82 @@
             });
         })();
 
-        // ========== BLOQUEAR BOTÓN ATRÁS DEL NAVEGADOR ==========
+        // ========== BLOQUEAR BOTÓN ATRÁS DEL NAVEGADOR (VERSIÓN MEJORADA) ==========
         (function bloquearBotonAtras() {
-            history.pushState(null, null, location.href);
+            const paginaActual = 'menu_admin.html';
+            const paginaLogin = 'PAG.html';
             
-            window.addEventListener('popstate', function() {
-                history.pushState(null, null, location.href);
-                window.location.replace('menu_admin.html');
+            // Verificar sesión antes de hacer cualquier cosa
+            const token = localStorage.getItem('token');
+            const tipoUsuario = localStorage.getItem('tipoUsuario');
+            
+            if (!token || tipoUsuario !== 'admin') {
+                window.location.replace(paginaLogin);
+                return;
+            }
+            
+            // Crear un historial profundo con múltiples estados
+            // Esto crea un "buffer" que atrapa todos los intentos de ir atrás
+            
+            // Limpiar cualquier estado anterior y crear un estado base
+            history.replaceState({ pagina: paginaActual, protegido: true, nivel: 0 }, '', location.href);
+            
+            // Agregar 100 estados falsos para que el usuario no pueda salir fácilmente
+            for (let i = 1; i <= 100; i++) {
+                history.pushState({ 
+                    pagina: paginaActual, 
+                    protegido: true, 
+                    nivel: i,
+                    timestamp: Date.now() 
+                }, '', location.href);
+            }
+            
+            let ultimoPopState = 0;
+            
+            window.addEventListener('popstate', function(event) {
+                const ahora = Date.now();
+                const estado = event.state;
+                
+                // Evitar ejecuciones en ráfaga
+                if (ahora - ultimoPopState < 150) {
+                    return;
+                }
+                ultimoPopState = ahora;
+                
+                // Verificar si la sesión sigue activa
+                const tokenActual = localStorage.getItem('token');
+                const tipoActual = localStorage.getItem('tipoUsuario');
+                const sesionValida = tokenActual && tipoActual === 'admin';
+                
+                if (!sesionValida) {
+                    // Sesión perdida, ir al login
+                    window.location.replace(paginaLogin);
+                    return;
+                }
+                
+                // Verificar si el estado es válido
+                const esEstadoValido = estado && estado.protegido === true && estado.pagina === paginaActual;
+                
+                if (!esEstadoValido) {
+                    // Estado inválido, regresar a nuestra página
+                    window.location.replace(paginaActual);
+                    return;
+                }
+                
+                // Estado válido, mantener el buffer de historial
+                setTimeout(() => {
+                    if (localStorage.getItem('token') && localStorage.getItem('tipoUsuario') === 'admin') {
+                        // Reponer el buffer de estados
+                        for (let i = 1; i <= 5; i++) {
+                            history.pushState({ 
+                                pagina: paginaActual, 
+                                protegido: true, 
+                                nivel: i,
+                                timestamp: Date.now() 
+                            }, '', location.href);
+                        }
+                    }
+                }, 50);
             });
         })();
 
