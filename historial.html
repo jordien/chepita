@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Historial de Compras - Tienda Chepita</title>
     <link rel="stylesheet" href="historial.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
 
 <div class="container">
     <div class="top-nav">
-        <h2>📋 Historial de Compras</h2>
+        <h2>Historial de Compras</h2>
         <button class="btn-volver-top" onclick="window.location.href='menu_admin.html'">
             Volver al menu
         </button>
@@ -24,7 +25,7 @@
         </select>
 
         <select id="metodoSelect" onchange="filtrarEnTiempoReal()">
-            <option value="">Todos los métodos</option>
+            <option value="">Todos los metodos</option>
         </select>
 
         <button class="btn-admin btn-delete-mode" onclick="limpiarFiltros()">
@@ -40,27 +41,23 @@
                     <th>Cliente</th>
                     <th>Fecha</th>
                     <th>Canal</th>
-                    <th>Método de Pago</th>
+                    <th>Metodo de Pago</th>
                     <th>Monto Total</th>
+                    <th>Vendedor</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody id="resultadosCompras">
-                <tr><td colspan="7" class="loading">Cargando compras...</td></tr>
+                <tr><td colspan="8" class="loading">Cargando compras...</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
 <div class="custom-modal-overlay" id="modalDetalles">
-    <div class="custom-modal">
-
+    <div class="custom-modal modal-ancha">
         <div id="detallesContent">
             <div class="loading">Cargando detalles...</div>
-        </div>
-
-        <div class="custom-modal-buttons">
-            <button class="custom-modal-btn cancel" onclick="cerrarModal()">Cerrar</button>
         </div>
     </div>
 </div>
@@ -88,27 +85,27 @@
             canalSelect.innerHTML = '<option value="">Todos los canales</option>';
             if (canales && canales.length) {
                 canales.forEach(canal => {
-                    canalSelect.innerHTML += `<option value="${canal.Id_Canal}">${canal.Nombre_Canal}</option>`;
+                    canalSelect.innerHTML += `<option value="${canal.Id_Canal}">${escapeHtml(canal.Nombre_Canal)}</option>`;
                 });
             }
             
-            metodoSelect.innerHTML = '<option value="">Todos los métodos</option>';
+            metodoSelect.innerHTML = '<option value="">Todos los metodos</option>';
             if (metodos && metodos.length) {
                 metodos.forEach(metodo => {
-                    metodoSelect.innerHTML += `<option value="${metodo.Id_Metodo}">${metodo.Nombre_Metodo}</option>`;
+                    metodoSelect.innerHTML += `<option value="${metodo.Id_Metodo}">${escapeHtml(metodo.Nombre_Metodo)}</option>`;
                 });
             }
             
             await cargarCompras();
         } catch (error) {
             console.error('Error en cargarDatos:', error);
-            document.getElementById('resultadosCompras').innerHTML = '<div class="hc-error">❌ Error al cargar los datos</div>';
+            document.getElementById('resultadosCompras').innerHTML = '<tr><td colspan="8" class="hc-error">Error al cargar los datos</td></tr>';
         }
     }
 
     async function cargarCompras() {
         const resultadosDiv = document.getElementById('resultadosCompras');
-        resultadosDiv.innerHTML = '<div class="hc-loading">Cargando compras...</div>';
+        resultadosDiv.innerHTML = '<tr><td colspan="8" class="loading">Cargando compras...</td></tr>';
         
         try {
             const respuesta = await fetch(`${API}/ventas`);
@@ -121,7 +118,7 @@
             console.log('Ventas recibidas:', compras.length);
             
             if (!compras || compras.length === 0) {
-                resultadosDiv.innerHTML = '<div class="hc-no-results">📭 No hay compras registradas</div>';
+                resultadosDiv.innerHTML = '<tr><td colspan="8" class="hc-no-results">No hay compras registradas</td></tr>';
                 return;
             }
             
@@ -139,6 +136,8 @@
                         Canal: venta.Nombre_Canal,
                         Metodo: venta.Nombre_Metodo,
                         Monto: parseFloat(venta.Monto) || 0,
+                        Vendedor: venta.Nombre_Vendedor || 'No asignado',
+                        Id_Vendedor: venta.Id_Vendedor,
                         productos: []
                     };
                 }
@@ -178,37 +177,37 @@
             }
             
             if (facturasArray.length === 0) {
-                resultadosDiv.innerHTML = '<div class="hc-no-results">📭 No se encontraron compras</div>';
+                resultadosDiv.innerHTML = '<tr><td colspan="8" class="hc-no-results">No se encontraron compras</td></tr>';
                 return;
             }
             
-
             let html = "";
-            
             facturasArray.forEach(compra => {
-    const fecha = compra.Fecha ? new Date(compra.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
-    const clienteNombre = compra.Cliente || 'Cliente no especificado';
+                const fecha = compra.Fecha ? new Date(compra.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
+                const clienteNombre = compra.Cliente || 'Cliente no especificado';
+                const vendedor = compra.Vendedor || 'No asignado';
 
-    html += `<tr>
-        <td>#${compra.NumFactura}</td>
-        <td>${escapeHtml(clienteNombre)}</td>
-        <td>${fecha}</td>
-        <td><span class="hc-badge hc-badge-canal">${compra.Canal || 'N/A'}</span></td>
-        <td><span class="hc-badge hc-badge-metodo">${compra.Metodo || 'N/A'}</span></td>
-        <td>C$ ${compra.Monto.toFixed(2)}</td>
-        <td>
-            <button class="btn-detalles" onclick="verDetalles(${compra.NumFactura})">
-                Ver Detalles
-            </button>
-        </td>
-    </tr>`;
-});
+                html += `<tr>
+                    <td>#${escapeHtml(compra.NumFactura)}</td>
+                    <td>${escapeHtml(clienteNombre)}</td>
+                    <td>${escapeHtml(fecha)}</td>
+                    <td><span class="hc-badge hc-badge-canal">${escapeHtml(compra.Canal || 'N/A')}</span></td>
+                    <td><span class="hc-badge hc-badge-metodo">${escapeHtml(compra.Metodo || 'N/A')}</span></td>
+                    <td>C$ ${compra.Monto.toFixed(2)}</td>
+                    <td><span class="vendedor-badge">${escapeHtml(vendedor)}</span></td>
+                    <td>
+                        <button class="btn-detalles" onclick="verDetalles(${compra.NumFactura})">
+                            Ver Detalles
+                        </button>
+                    </td>
+                </tr>`;
+            });
             
             resultadosDiv.innerHTML = html;
             
         } catch (error) {
             console.error('Error cargando compras:', error);
-            resultadosDiv.innerHTML = '<div class="hc-error">❌ Error al cargar los datos</div>';
+            resultadosDiv.innerHTML = '<tr><td colspan="8" class="hc-error">Error al cargar los datos</td></tr>';
         }
     }
 
@@ -240,7 +239,7 @@
         const content = document.getElementById('detallesContent');
         
         modal.style.display = 'flex';
-        content.innerHTML = '<div class="hc-loading">Cargando detalles...</div>';
+        content.innerHTML = '<div class="loading">Cargando detalles...</div>';
         
         try {
             const respuesta = await fetch(`${API}/ventas`);
@@ -251,67 +250,293 @@
                 const primera = compraFiltrada[0];
                 const fecha = primera.Fecha ? new Date(primera.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
                 const cliente = `${primera.Nombre_Cliente || ''} ${primera.Apellido || ''}`.trim() || 'Cliente no especificado';
+                const vendedor = primera.Nombre_Vendedor || 'No asignado';
+                const canal = primera.Nombre_Canal || 'N/A';
+                const metodo = primera.Nombre_Metodo || 'N/A';
+                const montoTotal = parseFloat(primera.Monto) || 0;
                 
-let html = `
-
-    <div class="modal-header">
-        <h3>📋 Detalles de la Compra</h3>
-    </div>
-
-    <div class="modal-body">
-
-        <div class="hc-detalle-header">
-            <p><strong>Factura:</strong> #${primera.NumFactura}</p>
-            <p><strong>Cliente:</strong> ${escapeHtml(cliente)}</p>
-            <p><strong>Fecha:</strong> ${fecha}</p>
-            <p><strong>Canal:</strong> 
-                <span class="hc-badge hc-badge-canal">${primera.Nombre_Canal || 'N/A'}</span>
-            </p>
-            <p><strong>Método:</strong> 
-                <span class="hc-badge hc-badge-metodo">${primera.Nombre_Metodo || 'N/A'}</span>
-            </p>
-        </div>
-
-        <h3 class="hc-subtitle">📦 Productos</h3>
-
-        <table class="hc-detalle-table">
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Cantidad</th>
-                    <th>Precio</th>
-                    <th>Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-`;
-                
+                let productosHtml = '';
                 compraFiltrada.forEach(p => {
                     if (p.Producto) {
-                        html += `<tr><td>${escapeHtml(p.Producto)}</td><td>${p.CantidadVendida || 0}</td><td>C$${parseFloat(p.PrecioUnitario || 0).toFixed(2)}</td><td>C$${parseFloat(p.Subtotal || 0).toFixed(2)}</td></tr>`;
+                        productosHtml += `<tr>
+                            <td>${escapeHtml(p.Producto)}</td>
+                            <td>${p.CantidadVendida || 0}</td>
+                            <td>C$ ${parseFloat(p.PrecioUnitario || 0).toFixed(2)}</td>
+                            <td>C$ ${parseFloat(p.Subtotal || 0).toFixed(2)}</td>
+                        </tr>`;
                     }
                 });
                 
-                html += `
-    </tbody>
-    <tfoot>
-        <tr>
-            <td colspan="3"><strong>Total</strong></td>
-            <td>
-                <span class="hc-total">
-                    C$${parseFloat(primera.Monto).toFixed(2)}
-                </span>
-            </td>
-        </tr>
-    </tfoot>
-</table>
-`;
+                let html = `
+                    <div class="modal-header">
+                        <h3>Detalles de la Compra</h3>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn-descargar-pdf" onclick="descargarFacturaPDF(${numFactura})">
+                            Descargar Factura PDF
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="hc-detalle-header">
+                            <p><strong>Factura:</strong> #${primera.NumFactura}</p>
+                            <p><strong>Cliente:</strong> ${escapeHtml(cliente)}</p>
+                            <p><strong>Fecha:</strong> ${escapeHtml(fecha)}</p>
+                            <p><strong>Canal:</strong> <span class="hc-badge hc-badge-canal">${escapeHtml(canal)}</span></p>
+                            <p><strong>Metodo de Pago:</strong> <span class="hc-badge hc-badge-metodo">${escapeHtml(metodo)}</span></p>
+                            <p><strong>Vendedor:</strong> <span class="vendedor-badge">${escapeHtml(vendedor)}</span></p>
+                        </div>
+
+                        <h3 class="hc-subtitle">Productos</h3>
+                        <table class="hc-detalle-table">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unitario</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${productosHtml}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3"><strong>Total</strong></td>
+                                    <td><span class="hc-total">C$ ${montoTotal.toFixed(2)}</span></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="custom-modal-buttons">
+                        <button class="custom-modal-btn cancel" onclick="cerrarModal()">Cerrar</button>
+                    </div>
+                `;
                 content.innerHTML = html;
             } else {
                 content.innerHTML = '<div class="hc-error">No se encontraron detalles</div>';
             }
         } catch (error) {
+            console.error('Error:', error);
             content.innerHTML = '<div class="hc-error">Error al cargar detalles</div>';
+        }
+    }
+
+    async function descargarFacturaPDF(numFactura) {
+        try {
+            const respuesta = await fetch(`${API}/ventas`);
+            const compras = await respuesta.json();
+            const compraFiltrada = compras.filter(c => c.NumFactura == numFactura);
+            
+            if (compraFiltrada.length === 0) {
+                alert('No se encontraron datos para generar la factura');
+                return;
+            }
+            
+            const primera = compraFiltrada[0];
+            const fecha = primera.Fecha ? new Date(primera.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
+            const hora = primera.Fecha ? new Date(primera.Fecha).toLocaleTimeString('es-ES') : 'Sin hora';
+            const cliente = `${primera.Nombre_Cliente || ''} ${primera.Apellido || ''}`.trim() || 'Cliente no especificado';
+            const vendedor = primera.Nombre_Vendedor || 'No asignado';
+            const canal = primera.Nombre_Canal || 'N/A';
+            const metodo = primera.Nombre_Metodo || 'N/A';
+            const montoTotal = parseFloat(primera.Monto) || 0;
+            
+            let productosHtml = '';
+            compraFiltrada.forEach(p => {
+                if (p.Producto) {
+                    productosHtml += `<tr>
+                        <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0;">${escapeHtml(p.Producto)}</td>
+                        <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: center;">${p.CantidadVendida || 0}</td>
+                        <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: right;">C$ ${parseFloat(p.PrecioUnitario || 0).toFixed(2)}</td>
+                        <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: right;">C$ ${parseFloat(p.Subtotal || 0).toFixed(2)}</td>
+                    </tr>`;
+                }
+            });
+            
+            const facturaHTML = `
+                <div class="factura-pdf" id="facturaParaPDF">
+                    <div class="factura-header">
+                        <div class="factura-logo" style="text-align: center;">
+                            <svg width="80" height="80" viewBox="0 0 100 100" style="margin: 0 auto;">
+                                <circle cx="50" cy="50" r="45" fill="#A63C89" opacity="0.15"/>
+                                <circle cx="50" cy="50" r="35" fill="#A63C89" opacity="0.3"/>
+                                <circle cx="50" cy="50" r="25" fill="#A63C89"/>
+                                <text x="50" y="58" text-anchor="middle" fill="white" font-size="24" font-weight="bold" font-family="Arial">C</text>
+                            </svg>
+                        </div>
+                        <div class="factura-titulo">Tienda Chepita</div>
+                        <div class="factura-subtitulo">RUC: 1234567890001</div>
+                        <div class="factura-subtitulo">Direccion: Managua, Nicaragua</div>
+                        <div class="factura-subtitulo">Tel: +505 1234 5678</div>
+                    </div>
+                    
+                    <div class="factura-info">
+                        <div>
+                            <p><strong>Factura N°:</strong> ${primera.NumFactura}</p>
+                            <p><strong>Fecha:</strong> ${fecha}</p>
+                            <p><strong>Hora:</strong> ${hora}</p>
+                        </div>
+                        <div>
+                            <p><strong>Cliente:</strong> ${escapeHtml(cliente)}</p>
+                            <p><strong>Vendedor:</strong> ${escapeHtml(vendedor)}</p>
+                            <p><strong>Canal:</strong> ${escapeHtml(canal)}</p>
+                            <p><strong>Metodo de Pago:</strong> ${escapeHtml(metodo)}</p>
+                        </div>
+                    </div>
+                    
+                    <table class="factura-tabla">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unitario</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${productosHtml}
+                        </tbody>
+                    </table>
+                    
+                    <div class="factura-total">
+                        <p>Total a Pagar: C$ ${montoTotal.toFixed(2)}</p>
+                    </div>
+                    
+                    <div class="factura-footer">
+                        <p>Gracias por su compra</p>
+                        <p>Este documento es una factura comercial valida</p>
+                        <p>Tienda Chepita - Calidad y Confianza</p>
+                    </div>
+                </div>
+            `;
+            
+            const ventana = window.open('', '_blank');
+            ventana.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Factura #${numFactura} - Tienda Chepita</title>
+                    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+                    <style>
+                        * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                        }
+                        body {
+                            font-family: 'Poppins', 'Arial', sans-serif;
+                            background: white;
+                            padding: 40px 20px;
+                            display: flex;
+                            justify-content: center;
+                        }
+                        .factura-pdf {
+                            max-width: 800px;
+                            width: 100%;
+                            margin: 0 auto;
+                            background: white;
+                            padding: 30px;
+                            border-radius: 0;
+                            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+                        }
+                        .factura-header {
+                            text-align: center;
+                            border-bottom: 2px solid #A63C89;
+                            padding-bottom: 20px;
+                            margin-bottom: 20px;
+                        }
+                        .factura-titulo {
+                            font-size: 24px;
+                            font-weight: 700;
+                            color: #A63C89;
+                            margin: 5px 0;
+                        }
+                        .factura-subtitulo {
+                            font-size: 11px;
+                            color: #666;
+                            margin: 2px 0;
+                        }
+                        .factura-info {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 25px;
+                            padding: 15px;
+                            background: #f8f9fa;
+                            border-radius: 8px;
+                        }
+                        .factura-info p {
+                            margin: 5px 0;
+                            font-size: 11px;
+                        }
+                        .factura-info strong {
+                            color: #A63C89;
+                        }
+                        .factura-tabla {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 20px;
+                        }
+                        .factura-tabla th {
+                            background: #f1f5f9;
+                            padding: 10px;
+                            text-align: left;
+                            font-size: 12px;
+                            font-weight: 600;
+                            border-bottom: 2px solid #e2e8f0;
+                        }
+                        .factura-tabla td {
+                            padding: 8px 10px;
+                            border-bottom: 1px solid #e2e8f0;
+                            font-size: 11px;
+                        }
+                        .factura-total {
+                            text-align: right;
+                            padding-top: 15px;
+                            border-top: 2px solid #A63C89;
+                            margin-top: 15px;
+                        }
+                        .factura-total p {
+                            font-size: 16px;
+                            font-weight: 700;
+                            color: #A63C89;
+                        }
+                        .factura-footer {
+                            text-align: center;
+                            margin-top: 30px;
+                            padding-top: 15px;
+                            border-top: 1px solid #ddd;
+                            font-size: 9px;
+                            color: #999;
+                        }
+                        @media print {
+                            body {
+                                padding: 0;
+                                margin: 0;
+                            }
+                            .factura-pdf {
+                                box-shadow: none;
+                                padding: 15px;
+                            }
+                            .no-print {
+                                display: none;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${facturaHTML}
+                    <div style="text-align: center; margin-top: 20px;" class="no-print">
+                        <button onclick="window.print()" style="padding: 10px 20px; background: #A63C89; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Poppins', sans-serif; margin: 5px;">Imprimir Factura</button>
+                        <button onclick="window.close()" style="padding: 10px 20px; background: #666; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Poppins', sans-serif; margin: 5px;">Cerrar</button>
+                    </div>
+                </body>
+                </html>
+            `);
+            ventana.document.close();
+            
+        } catch (error) {
+            console.error('Error generando factura:', error);
+            alert('Error al generar la factura');
         }
     }
 
