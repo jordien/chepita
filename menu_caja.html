@@ -69,6 +69,34 @@
         }
     </style>
 </head>
+
+<div id="modalTipoVenta" class="modal-mensaje">
+    <div class="modal-contenido">
+
+        <h3>Seleccione el tipo de venta</h3>
+
+        <div style="display:flex;flex-direction:column;gap:15px;margin-top:20px;">
+
+            <button class="modal-btn"
+                    onclick="abrirVentaNormal()">
+                Venta Normal
+            </button>
+
+            <button class="modal-btn"
+                    onclick="abrirVentaExpress()">
+                Venta Express
+            </button>
+
+            <button class="modal-btn cancelar"
+                    onclick="cerrarModalTipoVenta()">
+                Cancelar
+            </button>
+
+        </div>
+
+    </div>
+</div>
+
 <body>
 <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-spinner"></div>
@@ -310,20 +338,22 @@
     }
     
     function iniciarVenta() {
-        const token = localStorage.getItem('token');
-        const trabajadorStr = localStorage.getItem('trabajador');
-        
-        if (!token || !trabajadorStr) {
-            mostrarModal('Sesión no iniciada', 'Por favor, inicie sesión para realizar una venta.', 'error');
-            setTimeout(function() {
-                window.location.replace('PAG.html');
-            }, 2000);
-            return;
-        }
-        
-        mostrarLoading();
-        window.location.replace('nueva_compra.html');
-    }
+    document.getElementById('modalTipoVenta').style.display = 'flex';
+}
+
+function cerrarModalTipoVenta() {
+    document.getElementById('modalTipoVenta').style.display = 'none';
+}
+
+function abrirVentaNormal() {
+    localStorage.setItem('tipoVenta', 'normal');
+    window.location.href = 'nueva_compra.html';
+}
+
+function abrirVentaExpress() {
+    localStorage.setItem('tipoVenta', 'express');
+    window.location.href = 'nueva_compra.html';
+}
     
     function consultarInventario() {
         mostrarLoading();

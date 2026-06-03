@@ -1407,4 +1407,22 @@ tbody tr:hover {
     .modal-actions {
         justify-content: center;
     }
+.badge-normal{
+    background:#f3e8ff;
+    color:#7c3aed;
+    padding:4px 12px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:600;
+}
+
+.badge-express{
+    background:#fef3c7;
+    color:#ea580c;
+    padding:4px 12px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:600;
+}
+
 }

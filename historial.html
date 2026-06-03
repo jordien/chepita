@@ -20,6 +20,12 @@
     <div class="filtros">
         <input type="text" id="busqueda" placeholder="Buscar por factura, cliente o fecha..." onkeyup="buscarEnTiempoReal()">
 
+<select id="tipoVentaSelect" onchange="filtrarEnTiempoReal()">
+    <option value="">Todos los tipos</option>
+    <option value="normal">Normal</option>
+    <option value="express">Express</option>
+</select>
+
         <select id="canalSelect" onchange="filtrarEnTiempoReal()">
             <option value="">Todos los canales</option>
         </select>
@@ -38,6 +44,7 @@
             <thead>
                 <tr>
                     <th>Factura</th>
+                    <th>Tipo de Venta</th>
                     <th>Cliente</th>
                     <th>Fecha</th>
                     <th>Canal</th>
@@ -114,7 +121,9 @@
                 throw new Error(`Error HTTP: ${respuesta.status}`);
             }
             
-            const compras = await respuesta.json();
+            window.compras = await respuesta.json();
+const compras = window.compras;
+            console.log(compras);
             console.log('Ventas recibidas:', compras.length);
             
             if (!compras || compras.length === 0) {
@@ -131,8 +140,30 @@
                 if (!facturas[numFactura]) {
                     facturas[numFactura] = {
                         NumFactura: numFactura,
+                       TipoVenta: (() => {
+
+    const fechaVenta = new Date(venta.Fecha);
+    const fechaExpress = new Date('2026-06-03');
+
+    if (fechaVenta < fechaExpress) {
+        return 'normal';
+    }
+
+   const tieneCliente =
+    venta.Nombre_Cliente &&
+    venta.Nombre_Cliente.trim() !== '' &&
+    venta.Nombre_Cliente !== 'Cliente no registrado';
+
+return tieneCliente
+    ? 'normal'
+    : 'express';
+
+})(),
                         Fecha: venta.Fecha,
-                        Cliente: `${venta.Nombre_Cliente || ''} ${venta.Apellido || ''}`.trim(),
+                        Cliente:
+    venta.Nombre_Cliente === 'Cliente no registrado'
+        ? '--'
+        : `${venta.Nombre_Cliente || ''} ${venta.Apellido || ''}`.trim(),
                         Canal: venta.Nombre_Canal,
                         Metodo: venta.Nombre_Metodo,
                         Monto: parseFloat(venta.Monto) || 0,
@@ -154,6 +185,8 @@
             // Aplicar filtros
             const busqueda = document.getElementById('busqueda').value.toLowerCase();
             const canalFiltro = document.getElementById('canalSelect').value;
+            const tipoVentaFiltro =
+    document.getElementById('tipoVentaSelect').value;
             const metodoFiltro = document.getElementById('metodoSelect').value;
             
             let facturasArray = Object.values(facturas);
@@ -175,6 +208,14 @@
                 const metodoNombre = metodos.find(m => m.Id_Metodo == metodoFiltro)?.Nombre_Metodo;
                 facturasArray = facturasArray.filter(f => f.Metodo === metodoNombre);
             }
+
+            if (tipoVentaFiltro) {
+
+    facturasArray = facturasArray.filter(
+        f => f.TipoVenta === tipoVentaFiltro
+    );
+
+}
             
             if (facturasArray.length === 0) {
                 resultadosDiv.innerHTML = '<tr><td colspan="8" class="hc-no-results">No se encontraron compras</td></tr>';
@@ -184,11 +225,27 @@
             let html = "";
             facturasArray.forEach(compra => {
                 const fecha = compra.Fecha ? new Date(compra.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
-                const clienteNombre = compra.Cliente || 'Cliente no especificado';
+                const clienteNombre =
+    compra.TipoVenta === 'express'
+        ? '--'
+        : (compra.Cliente || 'Cliente no especificado');
                 const vendedor = compra.Vendedor || 'No asignado';
 
                 html += `<tr>
                     <td>#${escapeHtml(compra.NumFactura)}</td>
+                    <td>
+    <span class="${
+        compra.TipoVenta === 'express'
+            ? 'badge-express'
+            : 'badge-normal'
+    }">
+        ${
+            compra.TipoVenta === 'express'
+                ? 'Express'
+                : 'Normal'
+        }
+    </span>
+</td>
                     <td>${escapeHtml(clienteNombre)}</td>
                     <td>${escapeHtml(fecha)}</td>
                     <td><span class="hc-badge hc-badge-canal">${escapeHtml(compra.Canal || 'N/A')}</span></td>
@@ -231,6 +288,7 @@
         document.getElementById('busqueda').value = '';
         document.getElementById('canalSelect').value = '';
         document.getElementById('metodoSelect').value = '';
+        document.getElementById('tipoVentaSelect').value = '';
         cargarCompras();
     }
 
@@ -249,7 +307,22 @@
             if (compraFiltrada.length > 0) {
                 const primera = compraFiltrada[0];
                 const fecha = primera.Fecha ? new Date(primera.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
-                const cliente = `${primera.Nombre_Cliente || ''} ${primera.Apellido || ''}`.trim() || 'Cliente no especificado';
+               const fechaVenta = new Date(primera.Fecha);
+const fechaExpress = new Date('2026-06-03');
+
+const tipoVenta =
+    fechaVenta < fechaExpress
+        ? 'normal'
+        : (
+            primera.Id_cliente
+                ? 'normal'
+                : 'express'
+        );
+
+const cliente =
+    tipoVenta === 'express'
+        ? null
+        : (`${primera.Nombre_Cliente || ''} ${primera.Apellido || ''}`.trim() || 'Cliente no especificado');
                 const vendedor = primera.Nombre_Vendedor || 'No asignado';
                 const canal = primera.Nombre_Canal || 'N/A';
                 const metodo = primera.Nombre_Metodo || 'N/A';
@@ -279,7 +352,16 @@
                     <div class="modal-body">
                         <div class="hc-detalle-header">
                             <p><strong>Factura:</strong> #${primera.NumFactura}</p>
-                            <p><strong>Cliente:</strong> ${escapeHtml(cliente)}</p>
+                            ${
+tipoVenta === 'normal'
+? `
+<p>
+<strong>Cliente:</strong>
+${escapeHtml(cliente)}
+</p>
+`
+: ''
+}
                             <p><strong>Fecha:</strong> ${escapeHtml(fecha)}</p>
                             <p><strong>Canal:</strong> <span class="hc-badge hc-badge-canal">${escapeHtml(canal)}</span></p>
                             <p><strong>Metodo de Pago:</strong> <span class="hc-badge hc-badge-metodo">${escapeHtml(metodo)}</span></p>
@@ -336,6 +418,9 @@
             const fecha = primera.Fecha ? new Date(primera.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
             const hora = primera.Fecha ? new Date(primera.Fecha).toLocaleTimeString('es-ES') : 'Sin hora';
             const cliente = `${primera.Nombre_Cliente || ''} ${primera.Apellido || ''}`.trim() || 'Cliente no especificado';
+            const esVentaExpress =
+    !primera.Nombre_Cliente ||
+    primera.Nombre_Cliente === 'Cliente no registrado';
             const vendedor = primera.Nombre_Vendedor || 'No asignado';
             const canal = primera.Nombre_Canal || 'N/A';
             const metodo = primera.Nombre_Metodo || 'N/A';
@@ -377,10 +462,13 @@
                             <p><strong>Hora:</strong> ${hora}</p>
                         </div>
                         <div>
-                            <p><strong>Cliente:</strong> ${escapeHtml(cliente)}</p>
-                            <p><strong>Vendedor:</strong> ${escapeHtml(vendedor)}</p>
-                            <p><strong>Canal:</strong> ${escapeHtml(canal)}</p>
-                            <p><strong>Metodo de Pago:</strong> ${escapeHtml(metodo)}</p>
+                            ${!esVentaExpress ? `
+<p><strong>Cliente:</strong> ${escapeHtml(cliente)}</p>
+` : ''}
+
+<p><strong>Vendedor:</strong> ${escapeHtml(vendedor)}</p>
+<p><strong>Canal:</strong> ${escapeHtml(canal)}</p>
+<p><strong>Metodo de Pago:</strong> ${escapeHtml(metodo)}</p>
                         </div>
                     </div>
                     

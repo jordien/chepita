@@ -363,7 +363,7 @@
         
         <div class="nc-form">
             <div class="nc-form-grid">
-                <div class="nc-group">
+               <div class="nc-group" id="bloqueCliente">
                     <label class="nc-required">Cliente</label>
                     <div class="nc-client-row">
                         <div class="nc-input-group" style="flex: 1; position: relative;">
@@ -725,6 +725,7 @@
     let scanning = true;
     let qrValidado = false;
     let vendedorValidado = null;
+    let tipoVenta = localStorage.getItem('tipoVenta') || 'normal';
 
     const IVA_PORCENTAJE = 0.15;
 
@@ -1257,7 +1258,16 @@
         
         document.getElementById('resumenNumFactura').textContent = numFactura;
         document.getElementById('resumenFecha').textContent = fecha;
-        document.getElementById('resumenCliente').textContent = clienteTexto;
+
+        const bloqueCliente = document.getElementById('resumenCliente').parentElement;
+
+if (tipoVenta === 'express') {
+    bloqueCliente.style.display = 'none';
+} else {
+    bloqueCliente.style.display = 'block';
+    document.getElementById('resumenCliente').textContent = clienteTexto;
+}
+
         document.getElementById('resumenCanal').textContent = canalTexto;
         document.getElementById('resumenMetodoPago').textContent = metodoPagoTexto;
         document.getElementById('resumenVendedor').textContent = vendedorTexto;
@@ -1422,7 +1432,10 @@
             return;
         }
         
-        if (!idCliente) { mostrarMensajeSistema('Seleccione un cliente', 'error'); return; }
+       if (tipoVenta !== 'express' && !idCliente) {
+    mostrarMensajeSistema('Seleccione un cliente', 'error');
+    return;
+}
         if (!idCanal) { mostrarMensajeSistema('Seleccione un canal de venta', 'error'); return; }
         if (!idMetodo) { mostrarMensajeSistema('Seleccione un metodo de pago', 'error'); return; }
         if (!fecha) { mostrarMensajeSistema('Seleccione una fecha', 'error'); return; }
@@ -1430,7 +1443,13 @@
         if (!idVendedor) { mostrarMensajeSistema('No hay vendedor asignado', 'error'); return; }
 
         try {
-            const compraData = { Num_Factura: parseInt(numFactura), Id_cliente: parseInt(idCliente), Id_Vendedor: parseInt(idVendedor), Id_Canal: parseInt(idCanal), Id_Metodo: parseInt(idMetodo), Fecha: fecha, Monto: total };
+
+console.log('TIPO VENTA:', tipoVenta);
+console.log('ID CLIENTE:', idCliente);
+
+            const compraData = { Num_Factura: parseInt(numFactura), Id_cliente: tipoVenta === 'express'
+    ? null
+    : parseInt(idCliente), Id_Vendedor: parseInt(idVendedor), Id_Canal: parseInt(idCanal), Id_Metodo: parseInt(idMetodo), Fecha: fecha, Monto: total };
             const resCompra = await fetch('/api/compras', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(compraData) });
             if (!resCompra.ok) throw new Error('Error al guardar la compra');
             for (const producto of productosSeleccionados) {
@@ -1460,7 +1479,18 @@
         await cargarMetodosPago();
         await cargarProductos();
         await cargarTrabajadores();
-        
+
+        if (tipoVenta === 'express') {
+
+    const bloqueCliente =
+        document.getElementById('bloqueCliente');
+
+    if (bloqueCliente) {
+        bloqueCliente.style.display = 'none';
+    }
+
+}
+
         actualizarEstadoCamara(false, 'Inactivo');
     }
 
