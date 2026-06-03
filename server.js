@@ -5,7 +5,7 @@
  * @version 3.0 - Con sistema QR para vendedores (PWA)
  * ============================================================================
  * 
- * 📌 PROCEDIMIENTOS ALMACENADOS UTILIZADOS EN ESTE SERVIDOR:
+ *  PROCEDIMIENTOS ALMACENADOS UTILIZADOS EN ESTE SERVIDOR:
  * ============================================================================
  * 
  * 1. sp_listar_categorias      → GET /api/categorias           → Lista todas las categorías
