@@ -103,6 +103,52 @@ h1 {
     transform: translateY(-2px);
 }
 
+/* Selector de fechas personalizado */
+.fecha-range-selector {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+    background: #f8f0f5;
+    padding: 15px 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+.fecha-range-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.fecha-range-group label {
+    font-weight: 600;
+    color: #A63C89;
+}
+
+.fecha-range-group input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.btn-aplicar-fecha {
+    background: linear-gradient(135deg, #A63C89, #8B5CF6);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-aplicar-fecha:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(166, 60, 137, 0.3);
+}
+
 /* Selector de período moderno */
 .stats-header {
     display: flex;
@@ -166,7 +212,7 @@ h1 {
 /* Tarjetas financieras */
 .financial-stats {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
     margin-bottom: 30px;
 }
@@ -179,6 +225,7 @@ h1 {
     box-shadow: 0 8px 20px rgba(0,0,0,0.08);
     border: 1px solid rgba(166, 60, 137, 0.15);
     transition: all 0.3s ease;
+    cursor: pointer;
 }
 
 .financial-card:hover {
@@ -199,7 +246,6 @@ h1 {
 }
 
 .financial-icon.income { background: linear-gradient(135deg, #28a745, #20c997); }
-.financial-icon.expense { background: linear-gradient(135deg, #dc3545, #e83e8c); }
 .financial-icon.profit { background: linear-gradient(135deg, #A63C89, #8B5CF6); }
 .financial-icon.average { background: linear-gradient(135deg, #17a2b8, #4facfe); }
 
@@ -223,49 +269,7 @@ h1 {
     margin-top: 5px;
 }
 
-/* Comparativa de períodos */
-.comparison-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.comparison-card {
-    background: white;
-    border-radius: 16px;
-    padding: 15px;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    border-left: 4px solid;
-}
-
-.comparison-card.current { border-left-color: #A63C89; }
-.comparison-card.previous { border-left-color: #6c757d; }
-.comparison-card.variation { border-left-color: #28a745; }
-
-.comparison-label {
-    font-size: 12px;
-    color: #888;
-    margin-bottom: 8px;
-}
-
-.comparison-value {
-    font-size: 22px;
-    font-weight: 700;
-    color: #2c3e50;
-}
-
-.comparison-variation {
-    font-size: 14px;
-    font-weight: 600;
-    margin-top: 5px;
-}
-
-.variation-up { color: #28a745; }
-.variation-down { color: #dc3545; }
-
-/* Gráficos múltiples */
+/* Gráficos */
 .charts-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -412,188 +416,115 @@ h1 {
     background: #fef8fc;
 }
 
-/* Tarjetas de tiempo (para otras secciones) */
-.time-stats {
+/* Perdidas resumen */
+.perdidas-resumen {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 35px;
-}
-
-.time-stat {
-    background: linear-gradient(135deg, white, #fef8fc);
-    border-radius: 16px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    border-top: 4px solid #A63C89;
-    transition: transform 0.3s ease;
-}
-
-.time-stat:hover {
-    transform: translateY(-5px);
-}
-
-.time-stat h4 {
-    color: #A63C89;
-    margin-bottom: 10px;
-    font-size: 15px;
-}
-
-.time-stat h4 i {
-    margin-right: 8px;
-}
-
-.time-value {
-    font-size: 28px;
-    font-weight: 700;
-    color: #333;
-}
-
-.time-stat p {
-    color: #666;
-    font-size: 13px;
-    margin-top: 5px;
-}
-
-/* Grid de estadísticas (respaldo) */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 25px;
     margin-bottom: 35px;
 }
 
-.stat-card {
+.perdida-stat-card {
     background: white;
     border-radius: 20px;
     padding: 25px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
-    border: 1px solid rgba(166, 60, 137, 0.1);
-    position: relative;
-    overflow: hidden;
-}
-
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: linear-gradient(135deg, #A63C89, #8B5CF6);
-}
-
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(166, 60, 137, 0.15);
-}
-
-.stat-card h3 {
-    color: #A63C89;
-    margin-bottom: 15px;
-    font-size: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    border-left: 5px solid;
+    transition: transform 0.3s ease;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 20px;
 }
 
-.stat-icon {
+.perdida-stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.perdida-stat-card.perdida { border-left-color: #e83e8c; }
+.perdida-stat-card.consumo { border-left-color: #20c997; }
+.perdida-stat-card.total { border-left-color: #A63C89; }
+
+.perdida-stat-card .stat-icon {
     width: 50px;
     height: 50px;
     border-radius: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 15px;
     font-size: 22px;
     color: white;
 }
 
-.icon-sales { background: linear-gradient(135deg, #667eea, #764ba2); }
-.icon-products { background: linear-gradient(135deg, #f093fb, #f5576c); }
-.icon-clients { background: linear-gradient(135deg, #4facfe, #00f2fe); }
-.icon-money { background: linear-gradient(135deg, #43e97b, #38f9d7); }
 .icon-perdidas { background: linear-gradient(135deg, #e83e8c, #ff6b6b); }
 .icon-consumo { background: linear-gradient(135deg, #20c997, #3bd3b4); }
+.icon-money { background: linear-gradient(135deg, #43e97b, #38f9d7); }
 
-.stat-value {
-    font-size: 28px;
-    font-weight: 700;
-    color: #2c3e50;
+.perdida-stat-card h3 {
+    color: #A63C89;
     margin-bottom: 8px;
+    font-size: 16px;
 }
 
-.stat-trend {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 600;
+.perdida-stat-card .stat-value {
+    font-size: 24px;
+    font-weight: 700;
 }
 
-.stat-trend.positive { color: #28a745; }
-.stat-trend.negative { color: #dc3545; }
+.valor-negativo { font-weight: 600; color: #dc3545; }
+.valor-consumo { font-weight: 600; color: #20c997; }
 
-.stat-subinfo {
-    font-size: 12px;
-    color: #888;
-    margin-top: 8px;
-}
-
-/* Product stats */
-.product-stats {
+/* Análisis comparativo */
+.analisis-comparativo {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 25px;
-    margin-bottom: 40px;
+    margin-bottom: 35px;
 }
 
-.product-stat {
-    background: linear-gradient(135deg, #A63C89, #8B5CF6);
-    color: white;
-    padding: 25px;
-    border-radius: 20px;
+.analisis-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     text-align: center;
     transition: transform 0.3s ease;
-    cursor: pointer;
 }
 
-.product-stat:hover {
-    transform: translateY(-5px);
+.analisis-card:hover {
+    transform: translateY(-3px);
 }
 
-.product-stat h4 {
-    margin-bottom: 12px;
-    font-size: 14px;
-    opacity: 0.9;
+.analisis-card h3 {
+    color: #A63C89;
+    margin-bottom: 15px;
+    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
 }
 
-.product-name {
-    font-size: 20px;
+.analisis-valor {
+    font-size: 32px;
     font-weight: 700;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    color: #2c3e50;
 }
 
-.product-quantity {
-    font-size: 28px;
-    font-weight: 800;
+.analisis-card p {
+    color: #666;
+    font-size: 13px;
 }
 
-/* Charts */
-.charts-container, .perdidas-charts-container {
+/* Perdidas charts */
+.perdidas-charts-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
     gap: 30px;
     margin-bottom: 40px;
 }
 
-.chart-card, .perdida-chart-card {
+.perdida-chart-card {
     background: white;
     border-radius: 20px;
     padding: 25px;
@@ -601,7 +532,7 @@ h1 {
     border: 1px solid rgba(166, 60, 137, 0.1);
 }
 
-.chart-card h3, .perdida-chart-card h3 {
+.perdida-chart-card h3 {
     color: #A63C89;
     margin-bottom: 20px;
     font-size: 18px;
@@ -610,7 +541,7 @@ h1 {
     gap: 10px;
 }
 
-.chart-container, .perdida-chart-container {
+.perdida-chart-container {
     height: 300px;
     position: relative;
 }
@@ -667,91 +598,6 @@ h1 {
     margin-top: 5px;
 }
 
-/* Perdidas resumen */
-.perdidas-resumen {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 25px;
-    margin-bottom: 35px;
-}
-
-.perdida-stat-card {
-    background: white;
-    border-radius: 20px;
-    padding: 25px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    border-left: 5px solid;
-    transition: transform 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.perdida-stat-card:hover {
-    transform: translateY(-5px);
-}
-
-.perdida-stat-card.perdida { border-left-color: #e83e8c; }
-.perdida-stat-card.consumo { border-left-color: #20c997; }
-.perdida-stat-card.total { border-left-color: #A63C89; }
-
-.perdida-stat-card .stat-icon {
-    margin-bottom: 0;
-}
-
-.perdida-stat-card h3 {
-    color: #A63C89;
-    margin-bottom: 8px;
-    font-size: 16px;
-}
-
-.perdida-stat-card .stat-value {
-    font-size: 24px;
-}
-
-/* Análisis comparativo */
-.analisis-comparativo {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 25px;
-    margin-bottom: 35px;
-}
-
-.analisis-card {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    text-align: center;
-    transition: transform 0.3s ease;
-}
-
-.analisis-card:hover {
-    transform: translateY(-3px);
-}
-
-.analisis-card h3 {
-    color: #A63C89;
-    margin-bottom: 15px;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.analisis-valor {
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: #2c3e50;
-}
-
-.analisis-card p {
-    color: #666;
-    font-size: 13px;
-}
-
 /* Tablas */
 .tabla-container {
     margin-bottom: 30px;
@@ -796,7 +642,6 @@ h1 {
     background-color: #f8f0f5;
 }
 
-/* Badges de estado */
 .estado-badge {
     padding: 5px 12px;
     border-radius: 20px;
@@ -825,10 +670,7 @@ h1 {
 .cantidad-baja { background: #f8d7da; color: #721c24; }
 
 .precio { font-weight: 600; color: #28a745; }
-.valor-negativo { font-weight: 600; color: #dc3545; }
-.valor-consumo { font-weight: 600; color: #20c997; }
 
-/* Botón mostrar todas */
 .mostrar-todas-btn {
     background: linear-gradient(135deg, #A63C89, #8B5CF6);
     color: white;
@@ -858,11 +700,7 @@ h1 {
     border: 2px dashed #ddd;
 }
 
-.clickable {
-    cursor: pointer;
-}
-
-/* ========== MODALES ========== */
+/* MODALES */
 .modal {
     display: none;
     position: fixed;
@@ -965,6 +803,49 @@ h1 {
     margin-top: 5px;
 }
 
+.modal-detail-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.detail-stat-card {
+    background: #f8f9fa;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+}
+
+.detail-stat-card h4 {
+    color: #A63C89;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.detail-stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.detail-stat-change {
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+.change-positive { color: #28a745; }
+.change-negative { color: #dc3545; }
+
+.modal-info-text {
+    background: #e8f0fe;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #2c3e50;
+}
+
 .modal-section {
     margin-top: 25px;
 }
@@ -977,7 +858,6 @@ h1 {
     gap: 8px;
 }
 
-/* Tablas dentro de modales */
 .tabla-detalle-container {
     overflow-x: auto;
     max-height: 300px;
@@ -1004,7 +884,6 @@ h1 {
     top: 0;
 }
 
-/* Top items (rankings) */
 .top-productos-container, .mejores-clientes-container {
     display: flex;
     flex-direction: column;
@@ -1046,224 +925,76 @@ h1 {
 .top-rank.rank-2 { background: linear-gradient(135deg, #c0c0c0, #a8a8a8); color: #555; }
 .top-rank.rank-3 { background: linear-gradient(135deg, #cd7f32, #b87333); color: white; }
 
-.top-info {
-    flex: 1;
+.currency-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f0f0f0;
+    padding: 5px 15px;
+    border-radius: 30px;
 }
 
-.top-name {
-    font-weight: bold;
-    font-size: 16px;
-    color: #2c3e50;
+.currency-option {
+    padding: 5px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
 }
 
-.top-detail {
-    font-size: 12px;
-    color: #6c757d;
+.currency-option.active {
+    background: #A63C89;
+    color: white;
 }
 
-.top-value {
-    font-weight: bold;
-    font-size: 18px;
-    color: #A63C89;
-    flex-shrink: 0;
+.currency-option:hover:not(.active) {
+    background: #ddd;
 }
 
 /* ========== MEDIA QUERIES ========== */
 @media (max-width: 1024px) {
-    .nc-container {
-        padding: 20px;
-    }
-    
-    h1 {
-        font-size: 28px;
-    }
-    
-    .financial-stats {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .charts-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .comparison-stats {
-        grid-template-columns: 1fr;
-    }
-    
-    .top-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .stats-grid {
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    }
-    
-    .charts-container, .perdidas-charts-container {
-        grid-template-columns: 1fr;
-    }
+    .nc-container { padding: 20px; }
+    h1 { font-size: 28px; }
+    .financial-stats { grid-template-columns: repeat(2, 1fr); }
+    .charts-grid { grid-template-columns: 1fr; }
+    .top-grid { grid-template-columns: 1fr; }
+    .perdidas-charts-container { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {
-    body {
-        padding: 10px;
-    }
-    
-    .nc-container {
-        padding: 15px;
-    }
-    
-    .dashboard-header {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    h1 {
-        font-size: 24px;
-    }
-    
-    .seccion-selector {
-        justify-content: center;
-    }
-    
-    .seccion-btn {
-        padding: 8px 16px;
-        font-size: 13px;
-    }
-    
-    .stats-header {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .periodo-selector-moderno {
-        justify-content: center;
-    }
-    
-    .periodo-option {
-        padding: 8px 16px;
-        font-size: 13px;
-    }
-    
-    .financial-stats {
-        grid-template-columns: 1fr;
-    }
-    
-    .financial-value {
-        font-size: 24px;
-    }
-    
-    .time-stats {
-        grid-template-columns: 1fr;
-    }
-    
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .product-stats {
-        grid-template-columns: 1fr;
-    }
-    
-    .charts-container, .perdidas-charts-container {
-        grid-template-columns: 1fr;
-    }
-    
-    .inventario-resumen, .perdidas-resumen, .analisis-comparativo {
-        grid-template-columns: 1fr;
-    }
-    
-    .inventario-tabla {
-        font-size: 12px;
-    }
-    
-    .inventario-tabla th, .inventario-tabla td {
-        padding: 8px;
-    }
-    
-    .modal-content {
-        margin: 5% auto;
-        width: 95%;
-    }
-    
-    .modal-header h2 {
-        font-size: 18px;
-    }
-    
-    .modal-stats {
-        grid-template-columns: 1fr;
-    }
-    
-    .top-item {
-        flex-wrap: wrap;
-        text-align: center;
-        justify-content: center;
-    }
-    
-    .top-rank {
-        width: 35px;
-        height: 35px;
-        font-size: 16px;
-    }
-    
-    .top-value {
-        font-size: 16px;
-    }
-    
-    .transactions-table {
-        font-size: 12px;
-    }
-    
-    .transactions-table th,
-    .transactions-table td {
-        padding: 8px;
-    }
+    body { padding: 10px; }
+    .nc-container { padding: 15px; }
+    .dashboard-header { flex-direction: column; text-align: center; }
+    h1 { font-size: 24px; }
+    .seccion-selector { justify-content: center; }
+    .seccion-btn { padding: 8px 16px; font-size: 13px; }
+    .stats-header { flex-direction: column; text-align: center; }
+    .periodo-selector-moderno { justify-content: center; }
+    .periodo-option { padding: 8px 16px; font-size: 13px; }
+    .financial-stats { grid-template-columns: 1fr; }
+    .financial-value { font-size: 24px; }
+    .charts-grid { grid-template-columns: 1fr; }
+    .top-grid { grid-template-columns: 1fr; }
+    .inventario-resumen, .perdidas-resumen, .analisis-comparativo { grid-template-columns: 1fr; }
+    .inventario-tabla { font-size: 12px; }
+    .inventario-tabla th, .inventario-tabla td { padding: 8px; }
+    .modal-content { margin: 5% auto; width: 95%; }
+    .modal-header h2 { font-size: 18px; }
+    .modal-stats, .modal-detail-stats { grid-template-columns: 1fr; }
+    .fecha-range-selector { flex-direction: column; align-items: stretch; }
+    .fecha-range-group { justify-content: space-between; }
+    .perdida-stat-card { flex-direction: column; text-align: center; }
+    .currency-selector { margin-top: 10px; justify-content: center; align-self: center; }
 }
 
 @media (max-width: 480px) {
-    .periodo-option {
-        padding: 6px 12px;
-        font-size: 11px;
-    }
-    
-    .periodo-option i {
-        font-size: 11px;
-    }
-    
-    .stat-value {
-        font-size: 22px;
-    }
-    
-    .product-name {
-        font-size: 16px;
-    }
-    
-    .product-quantity {
-        font-size: 22px;
-    }
-    
-    .resumen-value {
-        font-size: 24px;
-    }
-    
-    .modal-stat-value {
-        font-size: 22px;
-    }
-}
-
-@media (max-width: 768px) and (orientation: landscape) {
-    .modal-content {
-        max-height: 90vh;
-        margin: 1% auto;
-    }
-    
-    .tabla-detalle-container {
-        max-height: 200px;
-    }
+    .periodo-option { padding: 6px 12px; font-size: 11px; }
+    .stat-value { font-size: 22px; }
+    .resumen-value { font-size: 24px; }
+    .modal-stat-value { font-size: 22px; }
+    .detail-stat-value { font-size: 18px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.01ms !important;
-    }
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

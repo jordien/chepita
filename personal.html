@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Personal - Tienda Chepita</title>
+    <title>Gestion de Personal - Tienda Chepita</title>
     <link rel="stylesheet" href="personal.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -13,10 +13,10 @@
         <div class="personal-header">
             <div class="header-left">
                 <i class="fas fa-users"></i>
-                <h1>Gestión de Personal</h1>
+                <h1>Gestion de Personal</h1>
             </div>
             <button class="btn-back" onclick="window.location.href='menu_admin.html'">
-                <i class="fas fa-arrow-left"></i> Volver al Menú
+                <i class="fas fa-arrow-left"></i> Volver al Menu
             </button>
         </div>
 
@@ -26,19 +26,19 @@
             <form id="formTrabajador">
                 <div class="form-group">
                     <label><i class="fas fa-user"></i> Nombre Completo:</label>
-                    <input type="text" id="nombreCompleto" placeholder="Ej: María González Pérez" required>
+                    <input type="text" id="nombreCompleto" placeholder="Ej: Maria Gonzalez Perez" required>
                 </div>
 
                 <div class="form-group">
-                    <label><i class="fas fa-envelope"></i> Correo Electrónico:</label>
-                    <input type="email" id="email" placeholder="Ej: jordymartinez68@gmail.com" required>
-                    <small>Se enviará un enlace para que configure su contraseña</small>
+                    <label><i class="fas fa-envelope"></i> Correo Electronico:</label>
+                    <input type="email" id="email" placeholder="ejemplo@correo.com" required>
+                    <small>Se enviara un enlace para que configure su contrasena</small>
                 </div>
 
                 <div class="form-group">
-                    <label><i class="fas fa-phone"></i> Número de Celular:</label>
+                    <label><i class="fas fa-phone"></i> Numero de Celular:</label>
                     <input type="tel" id="celular" placeholder="Ej: 88901234" maxlength="8" required>
-                    <small>8 dígitos, solo números</small>
+                    <small>8 digitos, solo numeros</small>
                 </div>
 
                 <div class="form-group">
@@ -89,23 +89,23 @@
         </div>
     </div>
 
-    <!-- Modal de confirmación -->
+    <!-- Modal de confirmacion -->
     <div class="custom-modal-overlay" id="confirmModal">
         <div class="custom-modal">
-            <h3>⚠️ Confirmar acción</h3>
-            <p id="confirmMessage">¿Estás seguro de que deseas realizar esta acción?</p>
+            <h3>Confirmar accion</h3>
+            <p id="confirmMessage">¿Esta seguro de que desea realizar esta accion?</p>
             <div class="custom-modal-buttons">
-                <button class="custom-modal-btn confirm" id="confirmYes">Sí, continuar</button>
+                <button class="custom-modal-btn confirm" id="confirmYes">Si, continuar</button>
                 <button class="custom-modal-btn cancel" id="confirmNo">Cancelar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal de éxito -->
+    <!-- Modal de exito global -->
     <div class="success-modal-overlay" id="successModal">
         <div class="success-modal">
-            <h3>✅ ¡Éxito!</h3>
-            <p id="successMessage">Operación realizada exitosamente</p>
+            <h3>Exito</h3>
+            <p id="successMessage">Operacion realizada exitosamente</p>
             <button class="success-modal-btn" onclick="cerrarSuccessModal()">Aceptar</button>
         </div>
     </div>
@@ -113,7 +113,7 @@
     <!-- Modal de error -->
     <div class="error-modal-overlay" id="errorModal">
         <div class="error-modal">
-            <h3>❌ Error</h3>
+            <h3>Error</h3>
             <p id="errorMessage">Ha ocurrido un error</p>
             <button class="error-modal-btn" onclick="cerrarErrorModal()">Aceptar</button>
         </div>
@@ -121,53 +121,73 @@
 
     <!-- Modal para editar trabajador -->
     <div class="edit-modal-overlay" id="editModal">
-        <div class="edit-modal">
-            <h2><i class="fas fa-edit"></i> Editar Trabajador</h2>
+        <div class="edit-modal edit-modal-compact">
+            <div class="edit-modal-header">
+                <i class="fas fa-edit"></i>
+                <h2>Editar Trabajador</h2>
+                <button class="edit-modal-close" onclick="cerrarEditModal()">&times;</button>
+            </div>
             <input type="hidden" id="editId">
-            <div class="form-group">
-                <label>Nombre Completo:</label>
-                <input type="text" id="editNombre" placeholder="Nombre completo">
-            </div>
-            <div class="form-group">
-                <label>Correo Electrónico:</label>
-                <input type="email" id="editEmail" placeholder="correo@ejemplo.com">
-            </div>
-            <div class="form-group">
-                <label>Usuario:</label>
-                <input type="text" id="editUsuario" placeholder="nombre.usuario" readonly style="background: #f5f5f5;">
-                <small>El usuario se genera automáticamente y no se puede editar</small>
-            </div>
-            <div class="form-group">
-                <label>Número de Celular:</label>
-                <input type="tel" id="editCelular" maxlength="8" placeholder="8 dígitos">
-            </div>
-            <div class="form-group">
-                <label>Salario (C$):</label>
-                <input type="number" id="editSalario" step="0.01" placeholder="Salario">
-            </div>
-            <div class="form-group">
-                <label>Estado:</label>
-                <select id="editActivo">
-                    <option value="1">Activo</option>
-                    <option value="0">Inactivo</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Contraseña Temporal:</label>
-                <div class="password-info" style="background: #f0f0f0; padding: 10px; border-radius: 8px; font-size: 14px;">
-                    <i class="fas fa-info-circle"></i> 
-                    <span id="editPasswordStatus">Contraseña pendiente de configuración</span>
+            <div class="edit-form-row">
+                <div class="edit-form-group">
+                    <label><i class="fas fa-user"></i> Nombre</label>
+                    <input type="text" id="editNombre" placeholder="Nombre completo">
+                </div>
+                <div class="edit-form-group">
+                    <label><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="editEmail" placeholder="correo@ejemplo.com">
                 </div>
             </div>
+            <div class="edit-form-row">
+                <div class="edit-form-group">
+                    <label><i class="fas fa-user-tag"></i> Usuario</label>
+                    <input type="text" id="editUsuario" placeholder="nombre.usuario" readonly style="background: #f5f5f5;">
+                </div>
+                <div class="edit-form-group">
+                    <label><i class="fas fa-phone"></i> Celular</label>
+                    <input type="tel" id="editCelular" maxlength="8" placeholder="8 digitos">
+                </div>
+            </div>
+            <div class="edit-form-row">
+                <div class="edit-form-group">
+                    <label><i class="fas fa-dollar-sign"></i> Salario (C$)</label>
+                    <input type="number" id="editSalario" step="0.01" placeholder="Salario">
+                </div>
+                <div class="edit-form-group">
+                    <label><i class="fas fa-toggle-on"></i> Estado</label>
+                    <select id="editActivo">
+                        <option value="1">Activo</option>
+                        <option value="0">Inactivo</option>
+                    </select>
+                </div>
+            </div>
+            <div class="edit-form-group password-info-group">
+                <label><i class="fas fa-lock"></i> Contrasena</label>
+                <div class="password-info" id="editPasswordStatus">
+                    <i class="fas fa-info-circle"></i> 
+                    <span>Contrasena pendiente de configuracion</span>
+                </div>
+            </div>
+            
+            <!-- Mensaje de exito dentro del modal -->
+            <div id="editSuccessMessage" style="display: none; background: #dcfce7; color: #166534; padding: 12px; border-radius: 10px; margin: 0 24px 15px 24px; text-align: center; font-size: 14px;">
+                <i class="fas fa-check-circle"></i> <span id="editSuccessText">Trabajador actualizado exitosamente</span>
+            </div>
+            
             <div class="edit-modal-buttons">
-                <button class="edit-modal-save" onclick="actualizarTrabajador()">Guardar Cambios</button>
-                <button class="edit-modal-cancel" onclick="cerrarEditModal()">Cancelar</button>
+                <button class="edit-modal-save" onclick="actualizarTrabajador()">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+                <button class="edit-modal-cancel" onclick="cerrarEditModal()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
             </div>
         </div>
     </div>
 
     <script>
         let trabajadoresData = [];
+        let editSuccessTimeout = null;
 
         function mostrarConfirmacion(mensaje, accionSi) {
             document.getElementById('confirmMessage').innerText = mensaje;
@@ -218,9 +238,34 @@
 
         function cerrarEditModal() {
             document.getElementById('editModal').style.display = 'none';
+            // Limpiar mensaje de exito al cerrar
+            const successMsg = document.getElementById('editSuccessMessage');
+            successMsg.style.display = 'none';
+            if (editSuccessTimeout) {
+                clearTimeout(editSuccessTimeout);
+            }
+        }
+
+        function mostrarExitoEnEdit(mensaje) {
+            const successMsg = document.getElementById('editSuccessMessage');
+            const successText = document.getElementById('editSuccessText');
+            successText.innerText = mensaje;
+            successMsg.style.display = 'block';
+            
+            // Ocultar mensaje despues de 3 segundos
+            if (editSuccessTimeout) {
+                clearTimeout(editSuccessTimeout);
+            }
+            editSuccessTimeout = setTimeout(() => {
+                successMsg.style.display = 'none';
+            }, 3000);
         }
 
         function abrirEditModal(trabajador) {
+            // Ocultar mensaje de exito si estaba visible
+            const successMsg = document.getElementById('editSuccessMessage');
+            successMsg.style.display = 'none';
+            
             document.getElementById('editId').value = trabajador.Id_Trabajador;
             document.getElementById('editNombre').value = trabajador.NombreCompleto;
             document.getElementById('editEmail').value = trabajador.email || '';
@@ -229,13 +274,14 @@
             document.getElementById('editSalario').value = trabajador.Salario || '';
             document.getElementById('editActivo').value = trabajador.Activo;
             
-            // Mostrar estado de la contraseña
             const passwordStatus = document.getElementById('editPasswordStatus');
             if (trabajador.debe_cambiar_password === 1 || trabajador.debe_cambiar_password === true) {
-                passwordStatus.innerHTML = '<i class="fas fa-clock"></i> Contraseña temporal - Pendiente de configuración';
+                passwordStatus.innerHTML = '<i class="fas fa-clock"></i> <span>Contrasena temporal - Pendiente</span>';
+                passwordStatus.style.background = '#fff3e0';
                 passwordStatus.style.color = '#e67e22';
             } else {
-                passwordStatus.innerHTML = '<i class="fas fa-check-circle"></i> Contraseña ya configurada';
+                passwordStatus.innerHTML = '<i class="fas fa-check-circle"></i> <span>Contrasena ya configurada</span>';
+                passwordStatus.style.background = '#e8f5e9';
                 passwordStatus.style.color = '#27ae60';
             }
             
@@ -258,7 +304,7 @@
 
             } catch (error) {
                 console.error("Error cargando trabajadores:", error);
-                tabla.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #c00;">❌ Error al cargar los datos. Asegúrate que el servidor esté funcionando.</td></tr>`;
+                tabla.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #c00;">Error al cargar los datos. Asegurate que el servidor este funcionando</td></tr>`;
             }
         }
 
@@ -273,7 +319,7 @@
             });
 
             if (filteredData.length === 0) {
-                tabla.innerHTML = '<tr><td colspan="8" style="text-align: center;">📭 No se encontraron trabajadores.</td></tr>';
+                tabla.innerHTML = '<tr><td colspan="8" style="text-align: center;">No se encontraron trabajadores.</td></tr>';
                 return;
             }
 
@@ -285,9 +331,8 @@
                 const email = trabajador.email || 'No registrado';
                 const usuario = trabajador.nombre_usuario || 'No asignado';
                 
-                // Indicador de contraseña pendiente
                 const passwordPending = (trabajador.debe_cambiar_password === 1 || trabajador.debe_cambiar_password === true);
-                const passwordIcon = passwordPending ? '<i class="fas fa-clock" style="color: #e67e22;" title="Contraseña pendiente"></i>' : '<i class="fas fa-check-circle" style="color: #27ae60;" title="Contraseña configurada"></i>';
+                const passwordIcon = passwordPending ? '<i class="fas fa-clock" style="color: #e67e22;" title="Contrasena pendiente"></i>' : '<i class="fas fa-check-circle" style="color: #27ae60;" title="Contrasena configurada"></i>';
                 
                 const fila = `
                     <tr>
@@ -337,26 +382,30 @@
             }
 
             if (!email) {
-                mostrarError('El correo electrónico es requerido');
+                mostrarError('El correo electronico es requerido');
                 return;
             }
 
             if (!celular) {
-                mostrarError('El número de celular es requerido');
+                mostrarError('El numero de celular es requerido');
                 return;
             }
 
             if (celular.length !== 8 || !/^\d+$/.test(celular)) {
-                mostrarError('El número de celular debe tener 8 dígitos');
+                mostrarError('El numero de celular debe tener 8 digitos');
                 return;
             }
 
-            // Validar formato de email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                mostrarError('Ingrese un correo electrónico válido');
+                mostrarError('Ingrese un correo electronico valido');
                 return;
             }
+
+            const saveBtn = document.querySelector('.edit-modal-save');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+            saveBtn.disabled = true;
 
             try {
                 const respuesta = await fetch(`/api/trabajadores/${id}`, {
@@ -365,7 +414,7 @@
                     body: JSON.stringify({
                         NombreCompleto: nombre,
                         Celular: celular,
-                        email: email,  // CORREGIDO: 'email' minúscula
+                        email: email,
                         Salario: salario,
                         Activo: activo
                     })
@@ -377,13 +426,33 @@
                     throw new Error(resultado.error || 'Error al actualizar');
                 }
 
-                mostrarExito('Trabajador actualizado exitosamente', () => {
-                    cerrarEditModal();
-                    cargarTrabajadores();
-                });
+                // Actualizar los datos locales
+                const index = trabajadoresData.findIndex(t => t.Id_Trabajador == id);
+                if (index !== -1) {
+                    trabajadoresData[index].NombreCompleto = nombre;
+                    trabajadoresData[index].email = email;
+                    trabajadoresData[index].Celular = celular;
+                    trabajadoresData[index].Salario = salario;
+                    trabajadoresData[index].Activo = activo;
+                }
+                
+                // Actualizar la tabla
+                mostrarTrabajadores();
+                
+                // Mostrar mensaje de exito dentro del modal
+                mostrarExitoEnEdit('Trabajador actualizado exitosamente');
+                
+                // Actualizar el estado de la contrasena en el modal
+                const passwordStatus = document.getElementById('editPasswordStatus');
+                passwordStatus.innerHTML = '<i class="fas fa-check-circle"></i> <span>Contrasena ya configurada</span>';
+                passwordStatus.style.background = '#e8f5e9';
+                passwordStatus.style.color = '#27ae60';
 
             } catch (error) {
                 mostrarError(error.message || 'Error al actualizar el trabajador');
+            } finally {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
             }
         }
 
@@ -391,8 +460,8 @@
             const trabajador = trabajadoresData.find(t => t.Id_Trabajador === id);
             const esActivo = trabajador.Activo == 1;
             const mensaje = esActivo ? 
-                '¿Estás seguro de que deseas desactivar este trabajador?' : 
-                '¿Estás seguro de que deseas activar este trabajador?';
+                '¿Esta seguro de que desea desactivar este trabajador?' : 
+                '¿Esta seguro de que desea activar este trabajador?';
             
             mostrarConfirmacion(mensaje, async () => {
                 try {
@@ -431,36 +500,34 @@
             }
 
             if (!email) {
-                mostrarError('Por favor, ingrese el correo electrónico');
+                mostrarError('Por favor, ingrese el correo electronico');
                 return;
             }
 
-            // Validar formato de email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                mostrarError('Ingrese un correo electrónico válido (ejemplo: usuario@gmail.com)');
+                mostrarError('Ingrese un correo electronico valido (ejemplo: usuario@gmail.com)');
                 return;
             }
 
             if (!celular) {
-                mostrarError('Por favor, ingrese el número de celular');
+                mostrarError('Por favor, ingrese el numero de celular');
                 return;
             }
 
             if (celular.length !== 8 || !/^\d+$/.test(celular)) {
-                mostrarError('El número de celular debe tener 8 dígitos');
+                mostrarError('El numero de celular debe tener 8 digitos');
                 return;
             }
 
             if (!salario || salario <= 0) {
-                mostrarError('Por favor, ingrese un salario válido');
+                mostrarError('Por favor, ingrese un salario valido');
                 return;
             }
 
-            // Mostrar mensaje de carga
             const submitBtn = document.querySelector('#formTrabajador .btn-save');
             const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando y enviando email...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
             submitBtn.disabled = true;
 
             try {
@@ -470,7 +537,7 @@
                     body: JSON.stringify({
                         NombreCompleto: nombre,
                         Celular: celular,
-                        email: email,  // CORREGIDO: 'email' minúscula
+                        email: email,
                         Salario: salario,
                         Activo: activo
                     })
@@ -482,14 +549,7 @@
                     throw new Error(resultado.error || 'Error al guardar el trabajador');
                 }
 
-                let mensajeExito = 'Trabajador agregado exitosamente';
-                if (resultado.message && resultado.message.includes('email')) {
-                    mensajeExito = resultado.message;
-                } else {
-                    mensajeExito = 'Trabajador agregado. Se ha enviado un email para que configure su contraseña.';
-                }
-
-                mostrarExito(mensajeExito, () => {
+                mostrarExito('Trabajador agregado exitosamente. Se ha enviado un email para que configure su contrasena.', () => {
                     document.getElementById('formTrabajador').reset();
                     cargarTrabajadores();
                 });
@@ -501,24 +561,6 @@
                 submitBtn.disabled = false;
             }
         });
-
-        // Función para reenviar email de registro (opcional)
-        async function reenviarEmailRegistro(id) {
-            try {
-                const respuesta = await fetch(`/api/trabajadores/${id}/reenviar-email`, {
-                    method: 'POST'
-                });
-                const resultado = await respuesta.json();
-                
-                if (respuesta.ok) {
-                    mostrarExito('Se ha reenviado el email de registro al trabajador');
-                } else {
-                    mostrarError(resultado.error || 'Error al reenviar el email');
-                }
-            } catch (error) {
-                mostrarError('Error al reenviar el email');
-            }
-        }
 
         cargarTrabajadores();
     </script>
