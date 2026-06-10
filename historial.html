@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Historial de Compras - Tienda Chepita</title>
+    <title>Historial de Compras - Variedades Chepita</title>
     <link rel="stylesheet" href="historial.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
@@ -18,7 +18,13 @@
     </div>
 
     <div class="filtros">
-        <input type="text" id="busqueda" placeholder="Buscar por factura, cliente o fecha..." onkeyup="buscarEnTiempoReal()">
+        <input 
+            type="text" 
+            id="busqueda" 
+            placeholder="🔍 Buscar factura, cliente o fecha..." 
+            onkeyup="buscarEnTiempoReal()"
+            title="Busca por número de factura, nombre del cliente o fecha"
+            maxlength="100">
 
 <select id="tipoVentaSelect" onchange="filtrarEnTiempoReal()">
     <option value="">Todos los tipos</option>
@@ -73,6 +79,126 @@
     const API = "/api";
     let canales = [];
     let metodos = [];
+
+    // ==================== FUNCIONES DE VALIDACIÓN ====================
+    /**
+     * Normaliza y valida términos de búsqueda
+     * @param {string} termino - Término a normalizar
+     * @returns {string} Término normalizado
+     */
+    function normalizarTerminoBusqueda(termino) {
+        if (!termino || typeof termino !== 'string') return '';
+        
+        // Solo convertir a minúsculas y trimear
+        // Mantener números, espacios, "/" y "-" sin cambios
+        const resultado = termino.trim().toLowerCase();
+        console.log('📝 normalizarTerminoBusqueda:', termino, '→', resultado);
+        return resultado;
+    }
+
+    /**
+     * Valida si un número de factura coincide EXACTAMENTE con el término de búsqueda
+     * @param {number|string} numFactura - Número de factura
+     * @param {string} termino - Término de búsqueda (ya normalizado)
+     * @returns {boolean}
+     */
+    function validarFactura(numFactura, termino) {
+        if (!numFactura || !termino) return false;
+        try {
+            const facturaStr = numFactura.toString().trim();
+            
+            // Permitir búsqueda sin el # si el usuario lo pone
+            let terminoBusqueda = termino;
+            if (terminoBusqueda.startsWith('#')) {
+                terminoBusqueda = terminoBusqueda.substring(1); // Remover el #
+            }
+            
+            // Búsqueda EXACTA: el número de factura debe ser igual al término
+            const resultado = facturaStr === terminoBusqueda;
+            
+            if (resultado) {
+                console.log(`✓ Factura EXACTA: #${facturaStr} === "${terminoBusqueda}"`);
+            }
+            
+            return resultado;
+        } catch (e) {
+            console.error('Error en validarFactura:', e);
+            return false;
+        }
+    }
+
+    /**
+     * Valida si un cliente coincide con el término de búsqueda
+     * @param {string} cliente - Nombre del cliente
+     * @param {string} termino - Término de búsqueda
+     * @returns {boolean}
+     */
+    function validarCliente(cliente, termino) {
+        if (!cliente || !termino) return false;
+        try {
+            // Normalizar el cliente: minúsculas, remover acentos
+            const clienteNormalizado = cliente
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
+            
+            // El término ya viene normalizado
+            return clienteNormalizado.includes(termino.normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+        } catch (e) {
+            console.error('Error en validarCliente:', e);
+            return false;
+        }
+    }
+
+    /**
+     * Valida si una fecha coincide con el término de búsqueda (múltiples formatos)
+     * Solo busca en fecha si el término parece ser una fecha
+     * @param {string} fecha - Fecha en formato YYYY-MM-DD
+     * @param {string} termino - Término de búsqueda (ya normalizado)
+     * @returns {boolean}
+     */
+    function validarFecha(fecha, termino) {
+        if (!fecha || !termino) return false;
+        
+        // IMPORTANTE: Solo buscar en fecha si el término tiene pinta de ser una fecha
+        // Es decir: contiene "/" o "-" o es un año de 4 dígitos
+        const tieneBarra = termino.includes('/');
+        const tieneGuion = termino.includes('-');
+        const esAño = /^\d{4}$/.test(termino); // Solo dígitos, exactamente 4
+        
+        // Si no tiene formato de fecha, no buscar en fechas
+        if (!tieneBarra && !tieneGuion && !esAño) {
+            return false;
+        }
+        
+        try {
+            // Formato original (YYYY-MM-DD)
+            if (fecha.includes(termino)) return true;
+            
+            // Formato localizado (DD/MM/YYYY)
+            const fechaObj = new Date(fecha);
+            const fechaFormatada = fechaObj.toLocaleDateString('es-ES');
+            if (fechaFormatada.includes(termino)) return true;
+            
+            // Búsqueda por mes/año (MM/YYYY o YYYY-MM)
+            const mesAño = `${String(fechaObj.getMonth() + 1).padStart(2, '0')}/${fechaObj.getFullYear()}`;
+            if (mesAño.includes(termino)) return true;
+            
+            const mesAñoGuion = `${fechaObj.getFullYear()}-${String(fechaObj.getMonth() + 1).padStart(2, '0')}`;
+            if (mesAñoGuion.includes(termino)) return true;
+            
+            // Búsqueda por día/mes (DD/MM)
+            const diaMes = `${String(fechaObj.getDate()).padStart(2, '0')}/${String(fechaObj.getMonth() + 1).padStart(2, '0')}`;
+            if (diaMes.includes(termino)) return true;
+            
+            return false;
+        } catch (e) {
+            console.error('Error validando fecha:', e);
+            return false;
+        }
+    }
+
+    // ==================== FIN FUNCIONES DE VALIDACIÓN ====================
 
     async function cargarDatos() {
         try {
@@ -191,13 +317,32 @@ return tieneCliente
             
             let facturasArray = Object.values(facturas);
             
-            if (busqueda) {
-                facturasArray = facturasArray.filter(f => 
-                    f.NumFactura.toString().includes(busqueda) ||
-                    f.Cliente.toLowerCase().includes(busqueda) ||
-                    (f.Fecha && f.Fecha.includes(busqueda))
-                );
+            console.log('🔍 Búsqueda input:', busqueda);
+            console.log('📊 Facturas totales:', facturasArray.length);
+            
+          if (busqueda) {
+    const terminoBusqueda = normalizarTerminoBusqueda(busqueda);
+    
+    if (terminoBusqueda.length === 0) {
+        console.log('⚠️ Término vacío después de normalizar');
+    } else {
+        const facturasAntes = facturasArray.length;
+        
+        facturasArray = facturasArray.filter(f => {
+            const validaFactura = validarFactura(f.NumFactura, terminoBusqueda);
+            const validaCliente = validarCliente(f.Cliente, terminoBusqueda);
+            const validaFecha = validarFecha(f.Fecha, terminoBusqueda);
+            
+            if (validaFactura || validaCliente || validaFecha) {
+                console.log(`✓ #${f.NumFactura} coincide (factura:${validaFactura}, cliente:${validaCliente}, fecha:${validaFecha})`);
             }
+            
+            return validaFactura || validaCliente || validaFecha;
+        });
+        
+        console.log(`📊 Facturas después de búsqueda: ${facturasAntes} → ${facturasArray.length}`);
+    }
+}
             
             if (canalFiltro) {
                 const canalNombre = canales.find(c => c.Id_Canal == canalFiltro)?.Nombre_Canal;
@@ -210,17 +355,35 @@ return tieneCliente
             }
 
             if (tipoVentaFiltro) {
-
     facturasArray = facturasArray.filter(
         f => f.TipoVenta === tipoVentaFiltro
     );
-
 }
             
-            if (facturasArray.length === 0) {
-                resultadosDiv.innerHTML = '<tr><td colspan="8" class="hc-no-results">No se encontraron compras</td></tr>';
-                return;
-            }
+            // FILTRO CRÍTICO: Eliminar compras SIN productos
+            facturasArray = facturasArray.filter(f => f.productos && f.productos.length > 0);
+            
+            
+               if (facturasArray.length === 0) {
+    const busqueda = document.getElementById('busqueda').value.trim();
+    const tipoVenta = document.getElementById('tipoVentaSelect').value;
+    const canal = document.getElementById('canalSelect').value;
+    const metodo = document.getElementById('metodoSelect').value;
+    
+    let mensaje = 'No se encontraron compras';
+    
+    if (busqueda || tipoVenta || canal || metodo) {
+        mensaje = '⚠️ No se encontraron resultados. Intenta con:';
+        mensaje += '<br>• Número de factura completo o parcial';
+        mensaje += '<br>• Nombre del cliente (ej: Juan, María)';
+        mensaje += '<br>• Fecha (ej: 10/06/2026 o 2026-06)';
+        mensaje += '<br>• O limpia los filtros para ver todas';
+    }
+    
+    resultadosDiv.innerHTML = `<tr><td colspan="9" class="hc-no-results" style="padding: 20px; text-align: center; line-height: 1.6;">${mensaje}</td></tr>`;
+    return;
+}
+            
             
             let html = "";
             facturasArray.forEach(compra => {
@@ -277,7 +440,34 @@ return tieneCliente
 
     function buscarEnTiempoReal() {
         clearTimeout(window.busquedaTimeout);
-        window.busquedaTimeout = setTimeout(() => cargarCompras(), 500);
+        const inputBusqueda = document.getElementById('busqueda');
+        const terminoBusqueda = inputBusqueda.value.trim();
+        
+        // Validaciones visuales
+        if (terminoBusqueda.length === 0) {
+            inputBusqueda.style.borderColor = '';
+            window.busquedaTimeout = setTimeout(() => cargarCompras(), 500);
+            return;
+        }
+        
+        // Validación: si el usuario solo escribe números o fechas, mostrar validación
+        const soloNumeros = /^\d+$/.test(terminoBusqueda);
+        const soloEspacios = /^\s*$/.test(terminoBusqueda);
+        
+        if (soloEspacios) {
+            inputBusqueda.style.borderColor = '#ff9800';
+            return;
+        }
+        
+        // Color verde para indicar búsqueda activa
+        if (terminoBusqueda.length >= 1) {
+            inputBusqueda.style.borderColor = '#4CAF50';
+        }
+        
+        window.busquedaTimeout = setTimeout(() => {
+            cargarCompras();
+            inputBusqueda.style.borderColor = '';
+        }, 500);
     }
 
     function filtrarEnTiempoReal() {
@@ -285,12 +475,34 @@ return tieneCliente
     }
 
     function limpiarFiltros() {
-        document.getElementById('busqueda').value = '';
-        document.getElementById('canalSelect').value = '';
-        document.getElementById('metodoSelect').value = '';
-        document.getElementById('tipoVentaSelect').value = '';
+        // Validación 1: Obtener referencias a los elementos
+        const inputBusqueda = document.getElementById('busqueda');
+        const canalSelect = document.getElementById('canalSelect');
+        const metodoSelect = document.getElementById('metodoSelect');
+        const tipoVentaSelect = document.getElementById('tipoVentaSelect');
+        
+        // Validación 2: Limpiar todos los campos
+        if (inputBusqueda) {
+            inputBusqueda.value = '';
+            inputBusqueda.style.borderColor = '';
+        }
+        if (canalSelect) canalSelect.value = '';
+        if (metodoSelect) metodoSelect.value = '';
+        if (tipoVentaSelect) tipoVentaSelect.value = '';
+        
+        // Validación 3: Mostrar feedback visual
+        if (inputBusqueda) {
+            inputBusqueda.style.borderColor = '#4CAF50';
+            setTimeout(() => {
+                inputBusqueda.style.borderColor = '';
+            }, 500);
+        }
+        
+        // Validación 4: Recargar datos
         cargarCompras();
     }
+
+    
 
     async function verDetalles(numFactura) {
         const modal = document.getElementById('modalDetalles');
@@ -300,59 +512,76 @@ return tieneCliente
         content.innerHTML = '<div class="loading">Cargando detalles...</div>';
         
         try {
-            const respuesta = await fetch(`${API}/ventas`);
-            const compras = await respuesta.json();
+            // Usar el array de compras ya cargado
+            const compras = window.compras || [];
+            
+            // Encontrar todas las filas con esta factura
             const compraFiltrada = compras.filter(c => c.NumFactura == numFactura);
             
-            if (compraFiltrada.length > 0) {
-                const primera = compraFiltrada[0];
-                const fecha = primera.Fecha ? new Date(primera.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
-               const fechaVenta = new Date(primera.Fecha);
-const fechaExpress = new Date('2026-06-03');
+            if (compraFiltrada.length === 0) {
+                content.innerHTML = '<div class="hc-error">No se encontraron detalles</div>';
+                return;
+            }
+            
+            const primera = compraFiltrada[0];
+            const fecha = primera.Fecha ? new Date(primera.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
+            const fechaVenta = new Date(primera.Fecha);
+            const fechaExpress = new Date('2026-06-03');
 
-const tipoVenta =
-    fechaVenta < fechaExpress
-        ? 'normal'
-        : (
-            primera.Id_cliente
-                ? 'normal'
-                : 'express'
-        );
+            const tipoVenta =
+                fechaVenta < fechaExpress
+                    ? 'normal'
+                    : (
+                        primera.Id_cliente
+                            ? 'normal'
+                            : 'express'
+                    );
 
-const cliente =
-    tipoVenta === 'express'
-        ? null
-        : (`${primera.Nombre_Cliente || ''} ${primera.Apellido || ''}`.trim() || 'Cliente no especificado');
-                const vendedor = primera.Nombre_Vendedor || 'No asignado';
-                const canal = primera.Nombre_Canal || 'N/A';
-                const metodo = primera.Nombre_Metodo || 'N/A';
-                const montoTotal = parseFloat(primera.Monto) || 0;
-                
-                let productosHtml = '';
-                compraFiltrada.forEach(p => {
-                    if (p.Producto) {
-                        productosHtml += `<tr>
-                            <td>${escapeHtml(p.Producto)}</td>
-                            <td>${p.CantidadVendida || 0}</td>
-                            <td>C$ ${parseFloat(p.PrecioUnitario || 0).toFixed(2)}</td>
-                            <td>C$ ${parseFloat(p.Subtotal || 0).toFixed(2)}</td>
-                        </tr>`;
-                    }
+            const cliente =
+                tipoVenta === 'express'
+                    ? null
+                    : (`${primera.Nombre_Cliente || ''} ${primera.Apellido || ''}`.trim() || 'Cliente no especificado');
+            
+            const vendedor = primera.Nombre_Vendedor || 'No asignado';
+            const canal = primera.Nombre_Canal || 'N/A';
+            const metodo = primera.Nombre_Metodo || 'N/A';
+            const montoTotal = parseFloat(primera.Monto) || 0;
+            
+            // Con INNER JOIN en servidor, TODAS las filas tienen productos válidos
+            let productosHtml = '';
+            
+            // Filtrar solo los registros que tengan productos
+            const productosValidos = compraFiltrada.filter(p => p.Producto !== null && p.Producto !== undefined);
+            
+            if (productosValidos.length === 0) {
+                // Esto significa que la compra no tiene órdenes asociadas
+                productosHtml = `<tr><td colspan="4" style="text-align: center; padding: 20px; color: #d32f2f; font-weight: bold;">
+                    ⚠️ ERROR: Esta factura no tiene productos registrados en el sistema.
+                </td></tr>`;
+            } else {
+                productosValidos.forEach(p => {
+                    productosHtml += `<tr>
+                        <td>${escapeHtml(p.Producto)}</td>
+                        <td>${p.CantidadVendida || 0}</td>
+                        <td>C$ ${parseFloat(p.PrecioUnitario || 0).toFixed(2)}</td>
+                        <td>C$ ${parseFloat(p.Subtotal || 0).toFixed(2)}</td>
+                    </tr>`;
                 });
-                
-                let html = `
-                    <div class="modal-header">
-                        <h3>Detalles de la Compra</h3>
-                    </div>
-                    <div class="modal-actions">
-                        <button class="btn-descargar-pdf" onclick="descargarFacturaPDF(${numFactura})">
-                            Descargar Factura PDF
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="hc-detalle-header">
-                            <p><strong>Factura:</strong> #${primera.NumFactura}</p>
-                            ${
+            }
+            
+            let html = `
+                <div class="modal-header">
+                    <h3>Detalles de la Compra</h3>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-descargar-pdf" onclick="descargarFacturaPDF(${numFactura})">
+                        Descargar Factura PDF
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="hc-detalle-header">
+                        <p><strong>Factura:</strong> #${primera.NumFactura}</p>
+                        ${
 tipoVenta === 'normal'
 ? `
 <p>
@@ -362,41 +591,38 @@ ${escapeHtml(cliente)}
 `
 : ''
 }
-                            <p><strong>Fecha:</strong> ${escapeHtml(fecha)}</p>
-                            <p><strong>Canal:</strong> <span class="hc-badge hc-badge-canal">${escapeHtml(canal)}</span></p>
-                            <p><strong>Metodo de Pago:</strong> <span class="hc-badge hc-badge-metodo">${escapeHtml(metodo)}</span></p>
-                            <p><strong>Vendedor:</strong> <span class="vendedor-badge">${escapeHtml(vendedor)}</span></p>
-                        </div>
+                        <p><strong>Fecha:</strong> ${escapeHtml(fecha)}</p>
+                        <p><strong>Canal:</strong> <span class="hc-badge hc-badge-canal">${escapeHtml(canal)}</span></p>
+                        <p><strong>Metodo de Pago:</strong> <span class="hc-badge hc-badge-metodo">${escapeHtml(metodo)}</span></p>
+                        <p><strong>Vendedor:</strong> <span class="vendedor-badge">${escapeHtml(vendedor)}</span></p>
+                    </div>
 
-                        <h3 class="hc-subtitle">Productos</h3>
-                        <table class="hc-detalle-table">
-                            <thead>
-                                <tr>
-                                    <th>Producto</th>
-                                    <th>Cantidad</th>
-                                    <th>Precio Unitario</th>
-                                    <th>Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${productosHtml}
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="3"><strong>Total</strong></td>
-                                    <td><span class="hc-total">C$ ${montoTotal.toFixed(2)}</span></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                    <div class="custom-modal-buttons">
-                        <button class="custom-modal-btn cancel" onclick="cerrarModal()">Cerrar</button>
-                    </div>
-                `;
-                content.innerHTML = html;
-            } else {
-                content.innerHTML = '<div class="hc-error">No se encontraron detalles</div>';
-            }
+                    <h3 class="hc-subtitle">Productos</h3>
+                    <table class="hc-detalle-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unitario</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${productosHtml}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3"><strong>Total</strong></td>
+                                <td><span class="hc-total">C$ ${montoTotal.toFixed(2)}</span></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="custom-modal-buttons">
+                    <button class="custom-modal-btn cancel" onclick="cerrarModal()">Cerrar</button>
+                </div>
+            `;
+            content.innerHTML = html;
         } catch (error) {
             console.error('Error:', error);
             content.innerHTML = '<div class="hc-error">Error al cargar detalles</div>';
@@ -405,8 +631,8 @@ ${escapeHtml(cliente)}
 
     async function descargarFacturaPDF(numFactura) {
         try {
-            const respuesta = await fetch(`${API}/ventas`);
-            const compras = await respuesta.json();
+            // Usar el array de compras ya cargado
+            const compras = window.compras || [];
             const compraFiltrada = compras.filter(c => c.NumFactura == numFactura);
             
             if (compraFiltrada.length === 0) {
@@ -416,7 +642,8 @@ ${escapeHtml(cliente)}
             
             const primera = compraFiltrada[0];
             const fecha = primera.Fecha ? new Date(primera.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
-            const hora = primera.Fecha ? new Date(primera.Fecha).toLocaleTimeString('es-ES') : 'Sin hora';
+            // Hora actual cuando se descarga el PDF
+            const horaActual = new Date().toLocaleTimeString('es-ES');
             const cliente = `${primera.Nombre_Cliente || ''} ${primera.Apellido || ''}`.trim() || 'Cliente no especificado';
             const esVentaExpress =
     !primera.Nombre_Cliente ||
@@ -426,40 +653,42 @@ ${escapeHtml(cliente)}
             const metodo = primera.Nombre_Metodo || 'N/A';
             const montoTotal = parseFloat(primera.Monto) || 0;
             
+            // Con INNER JOIN en servidor, todos los registros tienen productos
             let productosHtml = '';
-            compraFiltrada.forEach(p => {
-                if (p.Producto) {
-                    productosHtml += `<tr>
-                        <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0;">${escapeHtml(p.Producto)}</td>
-                        <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: center;">${p.CantidadVendida || 0}</td>
-                        <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: right;">C$ ${parseFloat(p.PrecioUnitario || 0).toFixed(2)}</td>
-                        <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: right;">C$ ${parseFloat(p.Subtotal || 0).toFixed(2)}</td>
-                    </tr>`;
-                }
+            const productosValidos = compraFiltrada.filter(p => p.Producto !== null && p.Producto !== undefined);
+            
+            if (productosValidos.length === 0) {
+                alert('❌ Error: Esta factura no tiene productos registrados en el sistema. No se puede generar el PDF.');
+                return;
+            }
+            
+            productosValidos.forEach(p => {
+                productosHtml += `<tr>
+                    <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0;">${escapeHtml(p.Producto)}</td>
+                    <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: center;">${p.CantidadVendida || 0}</td>
+                    <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: right;">C$ ${parseFloat(p.PrecioUnitario || 0).toFixed(2)}</td>
+                    <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: right;">C$ ${parseFloat(p.Subtotal || 0).toFixed(2)}</td>
+                </tr>`;
             });
             
             const facturaHTML = `
                 <div class="factura-pdf" id="facturaParaPDF">
                     <div class="factura-header">
                         <div class="factura-logo" style="text-align: center;">
-                            <svg width="80" height="80" viewBox="0 0 100 100" style="margin: 0 auto;">
-                                <circle cx="50" cy="50" r="45" fill="#A63C89" opacity="0.15"/>
-                                <circle cx="50" cy="50" r="35" fill="#A63C89" opacity="0.3"/>
-                                <circle cx="50" cy="50" r="25" fill="#A63C89"/>
-                                <text x="50" y="58" text-anchor="middle" fill="white" font-size="24" font-weight="bold" font-family="Arial">C</text>
-                            </svg>
+                            <img src="imagenes/LOGOCHEPITA.png" alt="Variedades Chepita" style="width: 120px; height: 120px; object-fit: contain;">
                         </div>
-                        <div class="factura-titulo">Tienda Chepita</div>
+                        <div class="factura-titulo">Variedades Chepita</div>
                         <div class="factura-subtitulo">RUC: 1234567890001</div>
-                        <div class="factura-subtitulo">Direccion: Managua, Nicaragua</div>
-                        <div class="factura-subtitulo">Tel: +505 1234 5678</div>
+                        <div class="factura-subtitulo">Mercado Roberto Huembe - Calle Principal de los Comedores Populares Módulo E -353</div>
+                        <div class="factura-subtitulo">Managua, Nicaragua</div>
+                        <div class="factura-subtitulo">Tel: +505 8983 7034</div>
                     </div>
                     
                     <div class="factura-info">
                         <div>
                             <p><strong>Factura N°:</strong> ${primera.NumFactura}</p>
                             <p><strong>Fecha:</strong> ${fecha}</p>
-                            <p><strong>Hora:</strong> ${hora}</p>
+                            <p><strong>Hora:</strong> ${horaActual}</p>
                         </div>
                         <div>
                             ${!esVentaExpress ? `
@@ -493,7 +722,7 @@ ${escapeHtml(cliente)}
                     <div class="factura-footer">
                         <p>Gracias por su compra</p>
                         <p>Este documento es una factura comercial valida</p>
-                        <p>Tienda Chepita - Calidad y Confianza</p>
+                        <p>Variedades Chepita - Calidad y Confianza</p>
                     </div>
                 </div>
             `;
@@ -503,7 +732,7 @@ ${escapeHtml(cliente)}
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Factura #${numFactura} - Tienda Chepita</title>
+                    <title>Factura #${numFactura} - Variedades Chepita</title>
                     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
                     <style>
                         * {

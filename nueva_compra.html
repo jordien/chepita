@@ -1427,39 +1427,145 @@ if (tipoVenta === 'express') {
         const total = parseFloat(document.getElementById('totalInput').value);
         const idVendedor = document.getElementById('idVendedor').value;
 
+        // VALIDACIONES ESTRICTAS - Sin productos NO se guarda nada
+        if (productosSeleccionados.length === 0) { 
+            mostrarMensajeSistema('ERROR: Debe agregar al menos un producto antes de guardar', 'error'); 
+            return; 
+        }
+        
         if (!qrValidado || !vendedorValidado) {
             mostrarMensajeSistema('Debe escanear el QR de un vendedor valido', 'error');
             return;
         }
         
-       if (tipoVenta !== 'express' && !idCliente) {
-    mostrarMensajeSistema('Seleccione un cliente', 'error');
-    return;
-}
+        if (tipoVenta !== 'express' && !idCliente) {
+            mostrarMensajeSistema('Seleccione un cliente', 'error');
+            return;
+        }
+        
         if (!idCanal) { mostrarMensajeSistema('Seleccione un canal de venta', 'error'); return; }
         if (!idMetodo) { mostrarMensajeSistema('Seleccione un metodo de pago', 'error'); return; }
         if (!fecha) { mostrarMensajeSistema('Seleccione una fecha', 'error'); return; }
-        if (productosSeleccionados.length === 0) { mostrarMensajeSistema('Agregue al menos un producto', 'error'); return; }
         if (!idVendedor) { mostrarMensajeSistema('No hay vendedor asignado', 'error'); return; }
 
         try {
+            console.log('═══════════════════════════════════════════════');
+            console.log('INICIANDO GUARDADO DE COMPRA');
+            console.log('═══════════════════════════════════════════════');
+            console.log('Número de Factura:', numFactura);
+            console.log('Cantidad de productos:', productosSeleccionados.length);
+            console.log('Productos:', JSON.stringify(productosSeleccionados));
+            console.log('Total a guardar:', total);
 
-console.log('TIPO VENTA:', tipoVenta);
-console.log('ID CLIENTE:', idCliente);
-
-            const compraData = { Num_Factura: parseInt(numFactura), Id_cliente: tipoVenta === 'express'
-    ? null
-    : parseInt(idCliente), Id_Vendedor: parseInt(idVendedor), Id_Canal: parseInt(idCanal), Id_Metodo: parseInt(idMetodo), Fecha: fecha, Monto: total };
-            const resCompra = await fetch('/api/compras', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(compraData) });
-            if (!resCompra.ok) throw new Error('Error al guardar la compra');
-            for (const producto of productosSeleccionados) {
-                const ordenData = { Id_Producto: producto.id, NumFactura: parseInt(numFactura), CantidadVendida: producto.cantidad, Subtotal: producto.subtotal, Fecha: fecha, PrecioUnitario: producto.precio };
-                const resOrden = await fetch('/api/ordenes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(ordenData) });
-                if (!resOrden.ok) throw new Error('Error al guardar el detalle');
+            const compraData = { 
+                Num_Factura: parseInt(numFactura), 
+                Id_cliente: tipoVenta === 'express' ? null : parseInt(idCliente), 
+                Id_Vendedor: parseInt(idVendedor), 
+                Id_Canal: parseInt(idCanal), 
+                Id_Metodo: parseInt(idMetodo), 
+                Fecha: fecha, 
+                Monto: total 
+            };
+            
+            console.log('Enviando datos de compra:', JSON.stringify(compraData));
+            
+            const resCompra = await fetch('/api/compras', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(compraData) 
+            });
+            
+            if (!resCompra.ok) {
+                const errorData = await resCompra.json();
+                console.error('❌ Error al guardar compra:', errorData);
+                throw new Error('Error al guardar compra #' + numFactura + ': ' + (errorData.error || resCompra.statusText));
             }
-            mostrarMensajeSistema(`Venta guardada - Vendedor: ${vendedorValidado.nombre}`, 'success');
+            
+            console.log('✅ Compra guardada exitosamente');
+            console.log('───────────────────────────────────────────────');
+            
+            // GUARDAR CADA ORDEN - Si algo falla, detener TODO
+            let ordenesGuardadas = 0;
+            const ordenesConError = [];
+            
+            for (let i = 0; i < productosSeleccionados.length; i++) {
+                const producto = productosSeleccionados[i];
+                console.log(`\nGuardando producto ${i + 1}/${productosSeleccionados.length}:`);
+                console.log(`  - ID Producto: ${producto.id}`);
+                console.log(`  - Nombre: ${producto.nombre}`);
+                console.log(`  - Cantidad: ${producto.cantidad}`);
+                console.log(`  - Precio Unitario: ${producto.precio}`);
+                console.log(`  - Subtotal: ${producto.subtotal}`);
+                
+                // Validar datos del producto
+                if (!producto.id || producto.cantidad <= 0 || producto.precio <= 0) {
+                    const error = `Producto ${producto.nombre} tiene datos inválidos`;
+                    console.error('❌ ' + error);
+                    ordenesConError.push(error);
+                    continue;
+                }
+                
+                const ordenData = { 
+                    Id_Producto: parseInt(producto.id), 
+                    NumFactura: parseInt(numFactura), 
+                    CantidadVendida: parseInt(producto.cantidad), 
+                    Subtotal: parseFloat(producto.subtotal), 
+                    Fecha: fecha, 
+                    PrecioUnitario: parseFloat(producto.precio) 
+                };
+                
+                console.log('  Enviando:', JSON.stringify(ordenData));
+                
+                const resOrden = await fetch('/api/ordenes', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(ordenData) 
+                });
+                
+                if (!resOrden.ok) {
+                    const errorData = await resOrden.json();
+                    const mensajeError = `Error en producto "${producto.nombre}": ${errorData.error || resOrden.statusText}`;
+                    console.error('❌ ' + mensajeError);
+                    ordenesConError.push(mensajeError);
+                    continue;
+                }
+                
+                ordenesGuardadas++;
+                console.log(`  ✅ Orden ${ordenesGuardadas} guardada correctamente`);
+            }
+            
+            console.log('───────────────────────────────────────────────');
+            
+            // Si alguna orden falló, mostrar error
+            if (ordenesConError.length > 0) {
+                const resumen = `Se guardaron ${ordenesGuardadas}/${productosSeleccionados.length} productos. `;
+                const detalles = ordenesConError.join('\n');
+                console.error('❌ ERRORES ENCONTRADOS:', detalles);
+                mostrarMensajeSistema(resumen + 'Errores: ' + detalles[0], 'error');
+                return;
+            }
+            
+            // Si NO se guardaron TODOS los productos, es error
+            if (ordenesGuardadas !== productosSeleccionados.length) {
+                const error = `Fallo crítico: Se guardaron ${ordenesGuardadas}/${productosSeleccionados.length} productos`;
+                console.error('❌ ' + error);
+                mostrarMensajeSistema(error + '. No se completó la venta.', 'error');
+                return;
+            }
+            
+            console.log('═══════════════════════════════════════════════');
+            console.log('✅ VENTA COMPLETADA EXITOSAMENTE');
+            console.log(`Compra #${numFactura}: ${ordenesGuardadas} productos guardados`);
+            console.log('═══════════════════════════════════════════════');
+            
+            mostrarMensajeSistema(`✅ Venta #${numFactura} guardada exitosamente\n${ordenesGuardadas} productos registrados\nVendedor: ${vendedorValidado.nombre}`, 'success');
             setTimeout(() => window.location.replace('menu_caja.html'), 2000);
-        } catch (error) { mostrarMensajeSistema(error.message || 'Error al guardar la compra', 'error'); }
+            
+        } catch (error) { 
+            console.error('❌ ERROR CRÍTICO:', error);
+            console.error('Stack:', error.stack);
+            mostrarMensajeSistema('❌ Error crítico: ' + (error.message || 'No se pudo guardar la compra'), 'error'); 
+        }
     }
 
     function cerrarModalPagoEfectivo() { document.getElementById('modalPagoEfectivo').style.display = 'none'; }
