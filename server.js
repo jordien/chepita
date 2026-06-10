@@ -1794,73 +1794,146 @@ app.get('/api/ventas-detalle', (req, res) => {
     });
 });
 
+// ================= ENDPOINT TOP-PRODUCTOS CORREGIDO (CON CATEGORÍA) =================
 app.get('/api/top-productos', (req, res) => {
-    const { periodo = 'mes', limite = 10 } = req.query;
+    const { periodo = 'mes', limite = 10, fecha, desde, hasta, anio, mes } = req.query;
     
-    let fechaInicio = new Date();
-    switch(periodo) {
-        case 'dia': fechaInicio.setDate(fechaInicio.getDate() - 1); break;
-        case 'semana': fechaInicio.setDate(fechaInicio.getDate() - 7); break;
-        case 'mes': fechaInicio.setDate(fechaInicio.getDate() - 30); break;
-        case 'año': fechaInicio.setFullYear(fechaInicio.getFullYear() - 1); break;
-        default: fechaInicio.setDate(fechaInicio.getDate() - 30);
+    let whereCondition = '';
+    let params = [];
+    
+    if (fecha) {
+        whereCondition = 'WHERE DATE(c.Fecha) = ?';
+        params = [fecha];
+    } else if (desde && hasta) {
+        whereCondition = 'WHERE DATE(c.Fecha) BETWEEN ? AND ?';
+        params = [desde, hasta];
+    } else if (anio && mes) {
+        const primerDia = `${anio}-${String(mes).padStart(2, '0')}-01`;
+        const ultimoDia = new Date(parseInt(anio), parseInt(mes), 0).toISOString().split('T')[0];
+        whereCondition = 'WHERE DATE(c.Fecha) BETWEEN ? AND ?';
+        params = [primerDia, ultimoDia];
+    } else if (anio) {
+        whereCondition = 'WHERE YEAR(c.Fecha) = ?';
+        params = [anio];
+    } else {
+        let fechaInicio = new Date();
+        switch(periodo) {
+            case 'dia':
+                fechaInicio.setDate(fechaInicio.getDate() - 1);
+                break;
+            case 'semana':
+                fechaInicio.setDate(fechaInicio.getDate() - 7);
+                break;
+            case 'mes':
+                fechaInicio.setDate(fechaInicio.getDate() - 30);
+                break;
+            case 'año':
+                fechaInicio.setFullYear(fechaInicio.getFullYear() - 1);
+                break;
+            default:
+                fechaInicio.setDate(fechaInicio.getDate() - 30);
+        }
+        const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
+        whereCondition = 'WHERE c.Fecha >= ?';
+        params = [fechaInicioStr];
     }
-    const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
     
     const sql = `
         SELECT 
+            p.Id_Producto,
             p.Nombre as nombre,
-            SUM(o.CantidadVendida) as cantidad,
-            SUM(o.CantidadVendida * o.PrecioUnitario) as total_ventas
+            COALESCE(cat.Nombre, 'Sin categoría') as categoria,
+            COALESCE(SUM(o.CantidadVendida), 0) as cantidad,
+            COALESCE(SUM(o.Subtotal), 0) as total_ventas
         FROM orden o
         JOIN producto p ON o.Id_Producto = p.Id_Producto
+        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
         JOIN compra c ON o.NumFactura = c.Num_Factura
-        WHERE c.Fecha >= ?
-        GROUP BY p.Id_Producto
+        ${whereCondition}
+        GROUP BY p.Id_Producto, p.Nombre, cat.Nombre
+        HAVING cantidad > 0
         ORDER BY cantidad DESC
         LIMIT ?
     `;
     
-    db.query(sql, [fechaInicioStr, parseInt(limite)], (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
+    db.query(sql, [...params, parseInt(limite)], (err, results) => {
+        if (err) {
+            console.error('Error en /api/top-productos:', err);
+            return res.status(500).json({ error: err.message });
+        }
         res.json(results);
     });
 });
 
+// ================= ENDPOINT TOP-CLIENTES CORREGIDO =================
 app.get('/api/top-clientes', (req, res) => {
-    const { periodo = 'mes', limite = 10 } = req.query;
+    const { periodo = 'mes', limite = 10, fecha, desde, hasta, anio, mes } = req.query;
     
-    let fechaInicio = new Date();
-    switch(periodo) {
-        case 'dia': fechaInicio.setDate(fechaInicio.getDate() - 1); break;
-        case 'semana': fechaInicio.setDate(fechaInicio.getDate() - 7); break;
-        case 'mes': fechaInicio.setDate(fechaInicio.getDate() - 30); break;
-        case 'año': fechaInicio.setFullYear(fechaInicio.getFullYear() - 1); break;
-        default: fechaInicio.setDate(fechaInicio.getDate() - 30);
+    let whereCondition = '';
+    let params = [];
+    
+    if (fecha) {
+        whereCondition = 'AND DATE(c.Fecha) = ?';
+        params = [fecha];
+    } else if (desde && hasta) {
+        whereCondition = 'AND DATE(c.Fecha) BETWEEN ? AND ?';
+        params = [desde, hasta];
+    } else if (anio && mes) {
+        const primerDia = `${anio}-${String(mes).padStart(2, '0')}-01`;
+        const ultimoDia = new Date(parseInt(anio), parseInt(mes), 0).toISOString().split('T')[0];
+        whereCondition = 'AND DATE(c.Fecha) BETWEEN ? AND ?';
+        params = [primerDia, ultimoDia];
+    } else if (anio) {
+        whereCondition = 'AND YEAR(c.Fecha) = ?';
+        params = [anio];
+    } else {
+        let fechaInicio = new Date();
+        switch(periodo) {
+            case 'dia':
+                fechaInicio.setDate(fechaInicio.getDate() - 1);
+                break;
+            case 'semana':
+                fechaInicio.setDate(fechaInicio.getDate() - 7);
+                break;
+            case 'mes':
+                fechaInicio.setDate(fechaInicio.getDate() - 30);
+                break;
+            case 'año':
+                fechaInicio.setFullYear(fechaInicio.getFullYear() - 1);
+                break;
+            default:
+                fechaInicio.setDate(fechaInicio.getDate() - 30);
+        }
+        const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
+        whereCondition = 'AND c.Fecha >= ?';
+        params = [fechaInicioStr];
     }
-    const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
     
     const sql = `
         SELECT 
             CONCAT(COALESCE(cl.Nombre, 'Cliente'), ' ', COALESCE(cl.Apellido, '')) as nombre,
             COUNT(c.Num_Factura) as compras,
-            SUM(c.Monto) as total_compras,
-            COUNT(DISTINCT DATE(c.Fecha)) as visitas
+            COUNT(o.Id_Producto) as unidades_compradas
         FROM compra c
         LEFT JOIN clientes cl ON c.Id_cliente = cl.Id_cliente
-        WHERE c.Fecha >= ? AND c.Id_cliente IS NOT NULL
-        GROUP BY c.Id_cliente
-        ORDER BY total_compras DESC
+        LEFT JOIN orden o ON c.Num_Factura = o.NumFactura
+        WHERE c.Id_cliente IS NOT NULL ${whereCondition}
+        GROUP BY c.Id_cliente, cl.Nombre, cl.Apellido
+        HAVING compras > 0
+        ORDER BY compras DESC
         LIMIT ?
     `;
     
-    db.query(sql, [fechaInicioStr, parseInt(limite)], (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
+    db.query(sql, [...params, parseInt(limite)], (err, results) => {
+        if (err) {
+            console.error('Error en /api/top-clientes:', err);
+            return res.status(500).json({ error: err.message });
+        }
         res.json(results);
     });
 });
 
-// ================= INVENTARIO DETALLE Y PÉRDIDAS =================
+// ================= INVENTARIO DETALLE =================
 
 app.get('/api/inventario-detalle', (req, res) => {
     const sql = `
@@ -1873,7 +1946,7 @@ app.get('/api/inventario-detalle', (req, res) => {
             COALESCE(c.Nombre, 'Sin Categoria') as Categoria, 
             COALESCE(SUM(s.Cantidad), 0) as Stock, 
             COALESCE(SUM(o.CantidadVendida), 0) as TotalVendido, 
-            COALESCE(SUM(o.CantidadVendida * o.PrecioUnitario), 0) as TotalVentas 
+            COALESCE(SUM(o.Subtotal), 0) as TotalVentas 
         FROM producto p 
         LEFT JOIN categoria c ON p.Id_Categoria = c.Id_Categoria 
         LEFT JOIN estado e ON p.Id_Estado = e.Id_Estado 
@@ -1955,74 +2028,68 @@ app.get('/api/perdidas-estadisticas', (req, res) => {
             pr.Marca, 
             COALESCE(c.Nombre, 'Sin Categoria') as Categoria,
             SUM(m.Cantidad) as cantidad,
-            SUM(m.Cantidad * pr.Precio) as valor
+            m.Motivo
         FROM merma m
         JOIN perdida pd ON m.Id_Perdida = pd.Id_Perdida
         JOIN producto pr ON m.Id_Producto = pr.Id_Producto
         LEFT JOIN categoria c ON pr.Id_Categoria = c.Id_Categoria
         WHERE pd.Fecha >= ?
-        GROUP BY m.Id_Producto
+        GROUP BY m.Id_Producto, pr.Nombre, pr.Precio, pr.Marca, c.Nombre, m.Motivo
         ORDER BY cantidad DESC
     `;
     
-    const sqlConsumo = `
+    const sqlPerdidasPorCategoria = `
         SELECT 
-            pr.Nombre, 
-            pr.Precio, 
-            pr.Marca, 
-            COALESCE(c.Nombre, 'Sin Categoria') as Categoria,
-            SUM(ci.Cantidad) as cantidad,
-            SUM(ci.Cantidad * pr.Precio) as valor
+            COALESCE(c.Nombre, 'Sin Categoria') as categoria,
+            SUM(m.Cantidad) as cantidad
+        FROM merma m
+        JOIN perdida pd ON m.Id_Perdida = pd.Id_Perdida
+        JOIN producto pr ON m.Id_Producto = pr.Id_Producto
+        LEFT JOIN categoria c ON pr.Id_Categoria = c.Id_Categoria
+        WHERE pd.Fecha >= ?
+        GROUP BY c.Nombre
+        ORDER BY cantidad DESC
+    `;
+    
+    const sqlConsumoPorCategoria = `
+        SELECT 
+            COALESCE(c.Nombre, 'Sin Categoria') as categoria,
+            SUM(ci.Cantidad) as cantidad
         FROM consumo_interno ci
         JOIN producto pr ON ci.Id_Producto = pr.Id_Producto
         LEFT JOIN categoria c ON pr.Id_Categoria = c.Id_Categoria
         WHERE ci.Fecha >= ?
-        GROUP BY ci.Id_Producto
+        GROUP BY c.Nombre
         ORDER BY cantidad DESC
     `;
     
     const sqlTotales = `
         SELECT 
-            (SELECT COALESCE(SUM(m.Cantidad * pr.Precio), 0) FROM merma m JOIN perdida pd ON m.Id_Perdida = pd.Id_Perdida JOIN producto pr ON m.Id_Producto = pr.Id_Producto WHERE pd.Fecha >= ?) as total_perdidas,
             (SELECT COALESCE(SUM(m.Cantidad), 0) FROM merma m JOIN perdida pd ON m.Id_Perdida = pd.Id_Perdida WHERE pd.Fecha >= ?) as unidades_perdidas,
-            (SELECT COALESCE(SUM(ci.Cantidad * pr.Precio), 0) FROM consumo_interno ci JOIN producto pr ON ci.Id_Producto = pr.Id_Producto WHERE ci.Fecha >= ?) as total_consumo,
             (SELECT COALESCE(SUM(ci.Cantidad), 0) FROM consumo_interno ci WHERE ci.Fecha >= ?) as unidades_consumo
     `;
     
     Promise.all([
         db.promise().query(sqlPerdidas, [fechaInicioStr]),
-        db.promise().query(sqlConsumo, [fechaInicioStr]),
-        db.promise().query(sqlTotales, [fechaInicioStr, fechaInicioStr, fechaInicioStr, fechaInicioStr])
-    ]).then(([productosPerdidas, productosConsumo, totales]) => {
+        db.promise().query(sqlPerdidasPorCategoria, [fechaInicioStr]),
+        db.promise().query(sqlConsumoPorCategoria, [fechaInicioStr]),
+        db.promise().query(sqlTotales, [fechaInicioStr, fechaInicioStr])
+    ]).then(([productosPerdidas, perdidasCategoria, consumoCategoria, totales]) => {
         const productosConPerdidas = productosPerdidas[0].map(p => ({
             nombre: p.Nombre,
             categoria: p.Categoria,
             marca: p.Marca,
             precio: parseFloat(p.Precio) || 0,
             cantidad: parseInt(p.cantidad) || 0,
-            valor_total: parseFloat(p.valor) || 0
-        }));
-        
-        const productosConsumoPropio = productosConsumo[0].map(p => ({
-            nombre: p.Nombre,
-            categoria: p.Categoria,
-            marca: p.Marca,
-            precio: parseFloat(p.Precio) || 0,
-            cantidad: parseInt(p.cantidad) || 0,
-            valor_total: parseFloat(p.valor) || 0
+            motivo: p.Motivo || 'Sin motivo'
         }));
         
         res.json({
             productos_con_perdidas: productosConPerdidas,
-            productos_consumo_propio: productosConsumoPropio,
-            productos_mas_perdidas: productosConPerdidas.slice(0, 5),
-            produtos_mas_consumo: productosConsumoPropio.slice(0, 5),
-            total_perdidas: parseFloat(totales[0][0]?.total_perdidas) || 0,
+            perdidas_por_categoria: perdidasCategoria[0].map(c => ({ categoria: c.categoria, cantidad: parseInt(c.cantidad) || 0 })),
+            consumo_por_categoria: consumoCategoria[0].map(c => ({ categoria: c.categoria, cantidad: parseInt(c.cantidad) || 0 })),
             total_unidades_perdidas: parseInt(totales[0][0]?.unidades_perdidas) || 0,
-            total_consumo_propio: parseFloat(totales[0][0]?.total_consumo) || 0,
-            total_unidades_consumo: parseInt(totales[0][0]?.unidades_consumo) || 0,
-            perdidas_por_categoria: [],
-            consumo_por_categoria: []
+            total_unidades_consumo: parseInt(totales[0][0]?.unidades_consumo) || 0
         });
     }).catch(err => {
         console.error('Error en /api/perdidas-estadisticas:', err);
@@ -2348,7 +2415,6 @@ app.post('/api/registrar-uso-qr', (req, res) => {
 
 // ================= ENDPOINTS CORREGIDOS PARA DASHBOARD =================
 
-// Obtener años disponibles (solo con datos reales)
 app.get('/api/anios-disponibles', (req, res) => {
     const sql = `SELECT DISTINCT YEAR(Fecha) as anio FROM compra ORDER BY anio DESC`;
     db.query(sql, (err, results) => {
@@ -2357,65 +2423,75 @@ app.get('/api/anios-disponibles', (req, res) => {
     });
 });
 
-// Estadísticas para una fecha específica (día) - DATOS REALES
 app.get('/api/estadisticas-ventas-fecha', (req, res) => {
     const { fecha } = req.query;
     
     const sqlVentas = `
-        SELECT COALESCE(SUM(Monto), 0) as total_ventas, COUNT(*) as cantidad_ventas
-        FROM compra WHERE DATE(Fecha) = ?
+        SELECT COALESCE(SUM(o.CantidadVendida), 0) as total_unidades, COUNT(DISTINCT c.Num_Factura) as cantidad_ventas
+        FROM compra c
+        JOIN orden o ON c.Num_Factura = o.NumFactura
+        WHERE DATE(c.Fecha) = ?
+    `;
+    
+    const sqlVentasPorDia = `
+        SELECT DATE(c.Fecha) as fecha, COALESCE(SUM(o.CantidadVendida), 0) as total
+        FROM compra c
+        JOIN orden o ON c.Num_Factura = o.NumFactura
+        WHERE DATE(c.Fecha) = ?
+        GROUP BY DATE(c.Fecha)
     `;
     
     const sqlCategorias = `
-        SELECT c.Nombre as categoria, COALESCE(SUM(o.CantidadVendida * o.PrecioUnitario), 0) as total
+        SELECT cat.Nombre as categoria, COALESCE(SUM(o.CantidadVendida), 0) as total
         FROM orden o
         JOIN producto p ON o.Id_Producto = p.Id_Producto
-        JOIN categoria c ON p.Id_Categoria = c.Id_Categoria
-        JOIN compra co ON o.NumFactura = co.Num_Factura
-        WHERE DATE(co.Fecha) = ?
-        GROUP BY c.Id_Categoria
+        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
+        JOIN compra c ON o.NumFactura = c.Num_Factura
+        WHERE DATE(c.Fecha) = ?
+        GROUP BY cat.Id_Categoria
         ORDER BY total DESC
     `;
     
     const sqlTopProductos = `
-        SELECT p.Nombre as nombre, SUM(o.CantidadVendida) as cantidad, COALESCE(SUM(o.Subtotal), 0) as total_ventas
+        SELECT p.Nombre as nombre, COALESCE(cat.Nombre, 'Sin categoría') as categoria, SUM(o.CantidadVendida) as cantidad
         FROM orden o
         JOIN producto p ON o.Id_Producto = p.Id_Producto
+        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
         JOIN compra c ON o.NumFactura = c.Num_Factura
         WHERE DATE(c.Fecha) = ?
-        GROUP BY p.Id_Producto
+        GROUP BY p.Id_Producto, p.Nombre, cat.Nombre
         ORDER BY cantidad DESC
         LIMIT 5
     `;
     
     const sqlTopClientes = `
-        SELECT CONCAT(COALESCE(cl.Nombre, 'Cliente'), ' ', COALESCE(cl.Apellido, '')) as nombre,
-               COUNT(c.Num_Factura) as compras,
-               COALESCE(SUM(c.Monto), 0) as total_compras
+        SELECT CONCAT(COALESCE(cl.Nombre, 'Cliente'), ' ', COALESCE(cl.Apellido, '')) as nombre, COUNT(o.Id_Producto) as unidades_compradas
         FROM compra c
         LEFT JOIN clientes cl ON c.Id_cliente = cl.Id_cliente
+        LEFT JOIN orden o ON c.Num_Factura = o.NumFactura
         WHERE DATE(c.Fecha) = ? AND c.Id_cliente IS NOT NULL
-        GROUP BY c.Id_cliente
-        ORDER BY total_compras DESC
+        GROUP BY c.Id_cliente, cl.Nombre, cl.Apellido
+        ORDER BY unidades_compradas DESC
         LIMIT 5
     `;
     
     Promise.all([
         db.promise().query(sqlVentas, [fecha]),
+        db.promise().query(sqlVentasPorDia, [fecha]),
         db.promise().query(sqlCategorias, [fecha]),
         db.promise().query(sqlTopProductos, [fecha]),
         db.promise().query(sqlTopClientes, [fecha])
-    ]).then(([ventas, categorias, topProductos, topClientes]) => {
+    ]).then(([ventas, ventasPorDia, categorias, topProductos, topClientes]) => {
         res.json({
-            total_ventas: parseFloat(ventas[0][0]?.total_ventas) || 0,
             cantidad_ventas: parseInt(ventas[0][0]?.cantidad_ventas) || 0,
+            total_unidades: parseInt(ventas[0][0]?.total_unidades) || 0,
+            labels_dias: [fecha],
+            data_dias: [parseInt(ventas[0][0]?.total_unidades) || 0],
             categorias: categorias[0].map(v => v.categoria),
-            totales_categorias: categorias[0].map(v => parseFloat(v.total) || 0),
+            totales_categorias: categorias[0].map(v => parseInt(v.total) || 0),
             top_productos: topProductos[0],
             top_clientes: topClientes[0],
-            labels_dias: ['Ventas del día'],
-            data_dias: [parseFloat(ventas[0][0]?.total_ventas) || 0],
-            ventas_diarias: []
+            ventas_diarias: ventasPorDia[0].map(v => ({ fecha: v.fecha, total: parseInt(v.total) || 0 }))
         });
     }).catch(err => {
         console.error('Error en /api/estadisticas-ventas-fecha:', err);
@@ -2423,40 +2499,44 @@ app.get('/api/estadisticas-ventas-fecha', (req, res) => {
     });
 });
 
-// Estadísticas para rango de fechas (semana)
 app.get('/api/estadisticas-ventas-rango', (req, res) => {
     const { desde, hasta } = req.query;
     
     const sqlVentas = `
-        SELECT COALESCE(SUM(Monto), 0) as total_ventas, COUNT(*) as cantidad_ventas
-        FROM compra WHERE DATE(Fecha) BETWEEN ? AND ?
+        SELECT COALESCE(SUM(o.CantidadVendida), 0) as total_unidades, COUNT(DISTINCT c.Num_Factura) as cantidad_ventas
+        FROM compra c
+        JOIN orden o ON c.Num_Factura = o.NumFactura
+        WHERE DATE(c.Fecha) BETWEEN ? AND ?
     `;
     
     const sqlVentasDiarias = `
-        SELECT DATE(Fecha) as fecha, COALESCE(SUM(Monto), 0) as total, COUNT(*) as transacciones
-        FROM compra WHERE DATE(Fecha) BETWEEN ? AND ?
-        GROUP BY DATE(Fecha)
+        SELECT DATE(c.Fecha) as fecha, COALESCE(SUM(o.CantidadVendida), 0) as total
+        FROM compra c
+        JOIN orden o ON c.Num_Factura = o.NumFactura
+        WHERE DATE(c.Fecha) BETWEEN ? AND ?
+        GROUP BY DATE(c.Fecha)
         ORDER BY fecha
     `;
     
     const sqlCategorias = `
-        SELECT c.Nombre as categoria, COALESCE(SUM(o.CantidadVendida * o.PrecioUnitario), 0) as total
+        SELECT cat.Nombre as categoria, COALESCE(SUM(o.CantidadVendida), 0) as total
         FROM orden o
         JOIN producto p ON o.Id_Producto = p.Id_Producto
-        JOIN categoria c ON p.Id_Categoria = c.Id_Categoria
-        JOIN compra co ON o.NumFactura = co.Num_Factura
-        WHERE DATE(co.Fecha) BETWEEN ? AND ?
-        GROUP BY c.Id_Categoria
+        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
+        JOIN compra c ON o.NumFactura = c.Num_Factura
+        WHERE DATE(c.Fecha) BETWEEN ? AND ?
+        GROUP BY cat.Id_Categoria
         ORDER BY total DESC
     `;
     
     const sqlTopProductos = `
-        SELECT p.Nombre as nombre, SUM(o.CantidadVendida) as cantidad, COALESCE(SUM(o.Subtotal), 0) as total_ventas
+        SELECT p.Nombre as nombre, COALESCE(cat.Nombre, 'Sin categoría') as categoria, SUM(o.CantidadVendida) as cantidad
         FROM orden o
         JOIN producto p ON o.Id_Producto = p.Id_Producto
+        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
         JOIN compra c ON o.NumFactura = c.Num_Factura
         WHERE DATE(c.Fecha) BETWEEN ? AND ?
-        GROUP BY p.Id_Producto
+        GROUP BY p.Id_Producto, p.Nombre, cat.Nombre
         ORDER BY cantidad DESC
         LIMIT 5
     `;
@@ -2468,25 +2548,20 @@ app.get('/api/estadisticas-ventas-rango', (req, res) => {
         db.promise().query(sqlTopProductos, [desde, hasta])
     ]).then(([ventas, ventasDiarias, categorias, topProductos]) => {
         const ventasDiariasData = ventasDiarias[0];
-        const fechasFormateadas = ventasDiariasData.map(v => {
+        const labels = ventasDiariasData.map(v => {
             const fecha = new Date(v.fecha);
             return fecha.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' });
         });
         
         res.json({
-            total_ventas: parseFloat(ventas[0][0]?.total_ventas) || 0,
             cantidad_ventas: parseInt(ventas[0][0]?.cantidad_ventas) || 0,
-            ventas_diarias: ventasDiariasData.map(v => ({ 
-                fecha: v.fecha, 
-                total: parseFloat(v.total) || 0, 
-                transacciones: v.transacciones 
-            })),
+            total_unidades: parseInt(ventas[0][0]?.total_unidades) || 0,
+            ventas_diarias: ventasDiariasData.map(v => ({ fecha: v.fecha, total: parseInt(v.total) || 0 })),
             categorias: categorias[0].map(v => v.categoria),
-            totales_categorias: categorias[0].map(v => parseFloat(v.total) || 0),
+            totales_categorias: categorias[0].map(v => parseInt(v.total) || 0),
             top_productos: topProductos[0],
-            top_clientes: [],
-            labels_dias: fechasFormateadas,
-            data_dias: ventasDiariasData.map(v => parseFloat(v.total) || 0)
+            labels_dias: labels,
+            data_dias: ventasDiariasData.map(v => parseInt(v.total) || 0)
         });
     }).catch(err => {
         console.error('Error en /api/estadisticas-ventas-rango:', err);
@@ -2494,7 +2569,6 @@ app.get('/api/estadisticas-ventas-rango', (req, res) => {
     });
 });
 
-// Estadísticas para un mes específico
 app.get('/api/estadisticas-ventas-mes', (req, res) => {
     const { anio, mes } = req.query;
     
@@ -2502,35 +2576,40 @@ app.get('/api/estadisticas-ventas-mes', (req, res) => {
     const ultimoDia = new Date(parseInt(anio), parseInt(mes), 0).toISOString().split('T')[0];
     
     const sqlVentas = `
-        SELECT COALESCE(SUM(Monto), 0) as total_ventas, COUNT(*) as cantidad_ventas
-        FROM compra WHERE DATE(Fecha) BETWEEN ? AND ?
+        SELECT COALESCE(SUM(o.CantidadVendida), 0) as total_unidades, COUNT(DISTINCT c.Num_Factura) as cantidad_ventas
+        FROM compra c
+        JOIN orden o ON c.Num_Factura = o.NumFactura
+        WHERE DATE(c.Fecha) BETWEEN ? AND ?
     `;
     
     const sqlVentasDiarias = `
-        SELECT DAY(Fecha) as dia, COALESCE(SUM(Monto), 0) as total, COUNT(*) as transacciones
-        FROM compra WHERE DATE(Fecha) BETWEEN ? AND ?
-        GROUP BY DAY(Fecha)
+        SELECT DAY(c.Fecha) as dia, COALESCE(SUM(o.CantidadVendida), 0) as total
+        FROM compra c
+        JOIN orden o ON c.Num_Factura = o.NumFactura
+        WHERE DATE(c.Fecha) BETWEEN ? AND ?
+        GROUP BY DAY(c.Fecha)
         ORDER BY dia
     `;
     
     const sqlCategorias = `
-        SELECT c.Nombre as categoria, COALESCE(SUM(o.CantidadVendida * o.PrecioUnitario), 0) as total
+        SELECT cat.Nombre as categoria, COALESCE(SUM(o.CantidadVendida), 0) as total
         FROM orden o
         JOIN producto p ON o.Id_Producto = p.Id_Producto
-        JOIN categoria c ON p.Id_Categoria = c.Id_Categoria
-        JOIN compra co ON o.NumFactura = co.Num_Factura
-        WHERE DATE(co.Fecha) BETWEEN ? AND ?
-        GROUP BY c.Id_Categoria
+        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
+        JOIN compra c ON o.NumFactura = c.Num_Factura
+        WHERE DATE(c.Fecha) BETWEEN ? AND ?
+        GROUP BY cat.Id_Categoria
         ORDER BY total DESC
     `;
     
     const sqlTopProductos = `
-        SELECT p.Nombre as nombre, SUM(o.CantidadVendida) as cantidad, COALESCE(SUM(o.Subtotal), 0) as total_ventas
+        SELECT p.Nombre as nombre, COALESCE(cat.Nombre, 'Sin categoría') as categoria, SUM(o.CantidadVendida) as cantidad
         FROM orden o
         JOIN producto p ON o.Id_Producto = p.Id_Producto
+        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
         JOIN compra c ON o.NumFactura = c.Num_Factura
         WHERE DATE(c.Fecha) BETWEEN ? AND ?
-        GROUP BY p.Id_Producto
+        GROUP BY p.Id_Producto, p.Nombre, cat.Nombre
         ORDER BY cantidad DESC
         LIMIT 5
     `;
@@ -2542,20 +2621,17 @@ app.get('/api/estadisticas-ventas-mes', (req, res) => {
         db.promise().query(sqlTopProductos, [primerDia, ultimoDia])
     ]).then(([ventas, ventasDiarias, categorias, topProductos]) => {
         const diasData = ventasDiarias[0];
+        const labels = diasData.map(v => `Día ${v.dia}`);
         
         res.json({
-            total_ventas: parseFloat(ventas[0][0]?.total_ventas) || 0,
             cantidad_ventas: parseInt(ventas[0][0]?.cantidad_ventas) || 0,
-            ventas_diarias: diasData.map(v => ({ 
-                dia: v.dia, 
-                total: parseFloat(v.total) || 0, 
-                transacciones: v.transacciones 
-            })),
+            total_unidades: parseInt(ventas[0][0]?.total_unidades) || 0,
+            ventas_diarias: diasData.map(v => ({ dia: v.dia, total: parseInt(v.total) || 0 })),
             categorias: categorias[0].map(v => v.categoria),
-            totales_categorias: categorias[0].map(v => parseFloat(v.total) || 0),
+            totales_categorias: categorias[0].map(v => parseInt(v.total) || 0),
             top_productos: topProductos[0],
-            labels_dias: diasData.map(v => `Día ${v.dia}`),
-            data_dias: diasData.map(v => parseFloat(v.total) || 0)
+            labels_dias: labels,
+            data_dias: diasData.map(v => parseInt(v.total) || 0)
         });
     }).catch(err => {
         console.error('Error en /api/estadisticas-ventas-mes:', err);
@@ -2563,109 +2639,83 @@ app.get('/api/estadisticas-ventas-mes', (req, res) => {
     });
 });
 
-// Estadísticas para un año específico - DATOS REALES
 app.get('/api/estadisticas-ventas-anio', (req, res) => {
     const { anio } = req.query;
     
-    // Validar que el año tenga datos reales
-    const sqlVerificar = `SELECT COUNT(*) as total FROM compra WHERE YEAR(Fecha) = ?`;
+    const sqlVentas = `
+        SELECT COALESCE(SUM(o.CantidadVendida), 0) as total_unidades, COUNT(DISTINCT c.Num_Factura) as cantidad_ventas
+        FROM compra c
+        JOIN orden o ON c.Num_Factura = o.NumFactura
+        WHERE YEAR(c.Fecha) = ?
+    `;
     
-    db.query(sqlVerificar, [anio], (err, verifResults) => {
-        if (err) return res.status(500).json({ error: err.message });
-        
-        if (verifResults[0].total === 0) {
-            return res.json({
-                total_ventas: 0,
-                cantidad_ventas: 0,
-                ventas_diarias: [],
-                labels_dias: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-                data_dias: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                categorias: [],
-                totales_categorias: [],
-                top_productos: [],
-                top_clientes: []
-            });
-        }
-        
-        const sqlVentas = `
-            SELECT COALESCE(SUM(Monto), 0) as total_ventas, COUNT(*) as cantidad_ventas
-            FROM compra WHERE YEAR(Fecha) = ?
-        `;
-        
-        const sqlVentasMensuales = `
-            SELECT MONTH(Fecha) as mes, COALESCE(SUM(Monto), 0) as total, COUNT(*) as transacciones
-            FROM compra WHERE YEAR(Fecha) = ?
-            GROUP BY MONTH(Fecha)
-            ORDER BY mes
-        `;
-        
-        const sqlCategorias = `
-            SELECT c.Nombre as categoria, COALESCE(SUM(o.CantidadVendida * o.PrecioUnitario), 0) as total
-            FROM orden o
-            JOIN producto p ON o.Id_Producto = p.Id_Producto
-            JOIN categoria c ON p.Id_Categoria = c.Id_Categoria
-            JOIN compra co ON o.NumFactura = co.Num_Factura
-            WHERE YEAR(co.Fecha) = ?
-            GROUP BY c.Id_Categoria
-            ORDER BY total DESC
-        `;
-        
-        const sqlTopProductos = `
-            SELECT p.Nombre as nombre, SUM(o.CantidadVendida) as cantidad, COALESCE(SUM(o.Subtotal), 0) as total_ventas
-            FROM orden o
-            JOIN producto p ON o.Id_Producto = p.Id_Producto
-            JOIN compra c ON o.NumFactura = c.Num_Factura
-            WHERE YEAR(c.Fecha) = ?
-            GROUP BY p.Id_Producto
-            ORDER BY cantidad DESC
-            LIMIT 5
-        `;
-        
-        Promise.all([
-            db.promise().query(sqlVentas, [anio]),
-            db.promise().query(sqlVentasMensuales, [anio]),
-            db.promise().query(sqlCategorias, [anio]),
-            db.promise().query(sqlTopProductos, [anio])
-        ]).then(([ventas, ventasMensuales, categorias, topProductos]) => {
-            const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-            const dataMensual = Array(12).fill(0);
-            const ventasPorMes = ventasMensuales[0];
-            ventasPorMes.forEach(v => {
-                dataMensual[v.mes - 1] = parseFloat(v.total) || 0;
-            });
-            
-            const ventasDiariasArray = meses.map((mes, idx) => ({
-                fecha: `${mes} ${anio}`,
-                total: dataMensual[idx],
-                transacciones: 0
-            }));
-            
-            res.json({
-                total_ventas: parseFloat(ventas[0][0]?.total_ventas) || 0,
-                cantidad_ventas: parseInt(ventas[0][0]?.cantidad_ventas) || 0,
-                ventas_diarias: ventasDiariasArray,
-                categorias: categorias[0].map(v => v.categoria),
-                totales_categorias: categorias[0].map(v => parseFloat(v.total) || 0),
-                top_productos: topProductos[0],
-                top_clientes: [],
-                labels_dias: meses,
-                data_dias: dataMensual
-            });
-        }).catch(err => {
-            console.error('Error en /api/estadisticas-ventas-anio:', err);
-            res.status(500).json({ error: err.message });
+    const sqlVentasMensuales = `
+        SELECT MONTH(c.Fecha) as mes, COALESCE(SUM(o.CantidadVendida), 0) as total
+        FROM compra c
+        JOIN orden o ON c.Num_Factura = o.NumFactura
+        WHERE YEAR(c.Fecha) = ?
+        GROUP BY MONTH(c.Fecha)
+        ORDER BY mes
+    `;
+    
+    const sqlCategorias = `
+        SELECT cat.Nombre as categoria, COALESCE(SUM(o.CantidadVendida), 0) as total
+        FROM orden o
+        JOIN producto p ON o.Id_Producto = p.Id_Producto
+        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
+        JOIN compra c ON o.NumFactura = c.Num_Factura
+        WHERE YEAR(c.Fecha) = ?
+        GROUP BY cat.Id_Categoria
+        ORDER BY total DESC
+    `;
+    
+    const sqlTopProductos = `
+        SELECT p.Nombre as nombre, COALESCE(cat.Nombre, 'Sin categoría') as categoria, SUM(o.CantidadVendida) as cantidad
+        FROM orden o
+        JOIN producto p ON o.Id_Producto = p.Id_Producto
+        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
+        JOIN compra c ON o.NumFactura = c.Num_Factura
+        WHERE YEAR(c.Fecha) = ?
+        GROUP BY p.Id_Producto, p.Nombre, cat.Nombre
+        ORDER BY cantidad DESC
+        LIMIT 5
+    `;
+    
+    Promise.all([
+        db.promise().query(sqlVentas, [anio]),
+        db.promise().query(sqlVentasMensuales, [anio]),
+        db.promise().query(sqlCategorias, [anio]),
+        db.promise().query(sqlTopProductos, [anio])
+    ]).then(([ventas, ventasMensuales, categorias, topProductos]) => {
+        const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const dataMensual = Array(12).fill(0);
+        const ventasPorMes = ventasMensuales[0];
+        ventasPorMes.forEach(v => {
+            dataMensual[v.mes - 1] = parseInt(v.total) || 0;
         });
+        
+        res.json({
+            cantidad_ventas: parseInt(ventas[0][0]?.cantidad_ventas) || 0,
+            total_unidades: parseInt(ventas[0][0]?.total_unidades) || 0,
+            ventas_diarias: meses.map((mes, idx) => ({ fecha: `${mes} ${anio}`, total: dataMensual[idx] })),
+            categorias: categorias[0].map(v => v.categoria),
+            totales_categorias: categorias[0].map(v => parseInt(v.total) || 0),
+            top_productos: topProductos[0],
+            labels_dias: meses,
+            data_dias: dataMensual
+        });
+    }).catch(err => {
+        console.error('Error en /api/estadisticas-ventas-anio:', err);
+        res.status(500).json({ error: err.message });
     });
 });
 
-// Transacciones recientes REALES
 app.get('/api/ventas-recientes', (req, res) => {
     const sql = `
         SELECT c.Fecha, 
                CONCAT(COALESCE(cl.Nombre, 'Cliente'), ' ', COALESCE(cl.Apellido, '')) as cliente,
                COALESCE(p.Nombre, 'Producto') as producto, 
-               o.CantidadVendida as cantidad, 
-               o.Subtotal as total
+               o.CantidadVendida as cantidad
         FROM compra c
         LEFT JOIN clientes cl ON c.Id_cliente = cl.Id_cliente
         LEFT JOIN orden o ON c.Num_Factura = o.NumFactura
@@ -2677,90 +2727,6 @@ app.get('/api/ventas-recientes', (req, res) => {
     db.query(sql, (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(results);
-    });
-});
-
-// Pérdidas para una fecha específica
-app.get('/api/perdidas-estadisticas-fecha', (req, res) => {
-    const { fecha } = req.query;
-    
-    const sql = `
-        SELECT pr.Nombre, pr.Precio, SUM(m.Cantidad) as cantidad, SUM(m.Cantidad * pr.Precio) as valor
-        FROM merma m
-        JOIN perdida pd ON m.Id_Perdida = pd.Id_Perdida
-        JOIN producto pr ON m.Id_Producto = pr.Id_Producto
-        WHERE DATE(pd.Fecha) = ?
-        GROUP BY m.Id_Producto
-        ORDER BY cantidad DESC
-    `;
-    
-    db.query(sql, [fecha], (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
-        const total = results.reduce((sum, r) => sum + (parseFloat(r.valor) || 0), 0);
-        const unidades = results.reduce((sum, r) => sum + (parseInt(r.cantidad) || 0), 0);
-        res.json({ 
-            productos_con_perdidas: results, 
-            total_perdidas: total, 
-            total_unidades_perdidas: unidades,
-            total_consumo_propio: 0,
-            total_unidades_consumo: 0
-        });
-    });
-});
-
-// Pérdidas para un año específico
-app.get('/api/perdidas-estadisticas-anio', (req, res) => {
-    const { anio } = req.query;
-    
-    const sql = `
-        SELECT pr.Nombre, pr.Precio, SUM(m.Cantidad) as cantidad, SUM(m.Cantidad * pr.Precio) as valor
-        FROM merma m
-        JOIN perdida pd ON m.Id_Perdida = pd.Id_Perdida
-        JOIN producto pr ON m.Id_Producto = pr.Id_Producto
-        WHERE YEAR(pd.Fecha) = ?
-        GROUP BY m.Id_Producto
-        ORDER BY cantidad DESC
-    `;
-    
-    db.query(sql, [anio], (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
-        const total = results.reduce((sum, r) => sum + (parseFloat(r.valor) || 0), 0);
-        const unidades = results.reduce((sum, r) => sum + (parseInt(r.cantidad) || 0), 0);
-        res.json({ 
-            productos_con_perdidas: results, 
-            total_perdidas: total, 
-            total_unidades_perdidas: unidades,
-            total_consumo_propio: 0,
-            total_unidades_consumo: 0
-        });
-    });
-});
-
-// Pérdidas para rango de fechas
-app.get('/api/perdidas-estadisticas-rango', (req, res) => {
-    const { desde, hasta } = req.query;
-    
-    const sql = `
-        SELECT pr.Nombre, pr.Precio, SUM(m.Cantidad) as cantidad, SUM(m.Cantidad * pr.Precio) as valor
-        FROM merma m
-        JOIN perdida pd ON m.Id_Perdida = pd.Id_Perdida
-        JOIN producto pr ON m.Id_Producto = pr.Id_Producto
-        WHERE pd.Fecha BETWEEN ? AND ?
-        GROUP BY m.Id_Producto
-        ORDER BY cantidad DESC
-    `;
-    
-    db.query(sql, [desde, hasta], (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
-        const total = results.reduce((sum, r) => sum + (parseFloat(r.valor) || 0), 0);
-        const unidades = results.reduce((sum, r) => sum + (parseInt(r.cantidad) || 0), 0);
-        res.json({ 
-            productos_con_perdidas: results, 
-            total_perdidas: total, 
-            total_unidades_perdidas: unidades,
-            total_consumo_propio: 0,
-            total_unidades_consumo: 0
-        });
     });
 });
 
@@ -2796,8 +2762,7 @@ function crearProcedimientosSiNoExisten() {
                         ci.Id_Consumo_Interno,
                         p.Nombre AS Nombre_Producto,
                         ci.Cantidad,
-                        ci.Fecha,
-                        p.Precio
+                        ci.Fecha
                     FROM consumo_interno ci
                     JOIN producto p ON ci.Id_Producto = p.Id_Producto
                     ORDER BY ci.Fecha DESC;
@@ -2903,10 +2868,10 @@ app.listen(PORT, () => {
     ║  🔒 Admin: bcrypt + control de intentos                  
     ║  🔒 Admin: contraseña mínima 8 caracteres                
     ║  📱 QR Vendedores: SISTEMA ACTIVADO ✅                    
-    ║  📊 Nuevos endpoints para Dashboard:                     
-    ║     - /api/ventas-detalle (ventas por hora/día)          
-    ║     - /api/top-productos (ranking productos)             
-    ║     - /api/top-clientes (ranking clientes)               
+    ║  📊 Endpoints corregidos para Dashboard:                 
+    ║     - /api/top-productos (con categorías)                
+    ║     - /api/top-clientes (con unidades)                   
+    ║     - /api/perdidas-estadisticas (solo unidades)         
     ╚══════════════════════════════════════════════════════════╝
     `);
 });
