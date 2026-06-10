@@ -3,325 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda Chepita - Acceso</title>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <title>Chepita - Login</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="PAG.css">
-    <style>
-        .modal-mensaje {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            background: rgba(202,160,216,0.25);
-            backdrop-filter: blur(6px);
-        }
-
-        .modal-contenido {
-            background: white;
-            padding: 25px;
-            border-radius: 20px;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-            animation: fadeInModal 0.3s ease-out;
-            border-radius: 25px;
-            box-shadow: 0 20px 40px rgba(202,160,216,0.2);
-        }
-
-        @keyframes fadeInModal {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .modal-contenido h3 {
-            font-size: 22px;
-            margin-bottom: 15px;
-            color: #b57acb;
-        }
-
-        .modal-contenido h3.error {
-            color: #dc2626;
-        }
-
-        .modal-contenido h3.warning {
-            color: #f59e0b;
-        }
-
-        .modal-contenido input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 2px solid #f3d1e6;
-            border-radius: 14px;
-            font-size: 14px;
-            font-family: inherit;
-        }
-
-        .modal-contenido input:focus {
-            border-color: #caa0d8;
-            box-shadow: 0 0 0 3px rgba(202,160,216,0.2);
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-
-        .modal-btn {
-            background: linear-gradient(135deg, #e7b6d4, #caa0d8);
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .modal-btn:hover {
-            background: linear-gradient(135deg, #d9468f, #caa0d8);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 18px rgba(202,160,216,0.4);
-        }
-
-        .modal-btn.cancelar {
-            background: #f3e8ff;
-            color: #b57acb;
-        }
-
-        .modal-btn.cancelar:hover {
-            background: #e9d5ff;
-        }
-
-        .forgot-password {
-            text-align: center;
-            margin-top: 15px;
-        }
-
-        .forgot-password a {
-            color: #4f46e5;
-            font-size: 13px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .forgot-password a:hover {
-            text-decoration: underline;
-        }
-
-        .login-caja-form {
-            margin-top: 10px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #4a4a4a;
-            font-size: 13px;
-            letter-spacing: 1px;
-        }
-
-        .input-icon {
-            position: relative;
-        }
-
-        .input-icon i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #caa0d8;
-            font-size: 16px;
-        }
-
-        .input-icon input {
-            width: 100%;
-            padding: 12px 12px 12px 45px;
-            border: 2px solid #f3d1e6;
-            border-radius: 14px;
-            font-size: 14px;
-            font-family: inherit;
-            transition: all 0.3s;
-        }
-
-        .input-icon input:focus {
-            border-color: #caa0d8;
-            box-shadow: 0 0 0 3px rgba(202,160,216,0.2);
-            outline: none;
-        }
-
-        .btn-submit {
-            background: linear-gradient(135deg, #e7b6d4, #caa0d8);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-            width: 100%;
-        }
-
-        .btn-submit:hover {
-            background: linear-gradient(135deg, #d9468f, #caa0d8);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 18px rgba(202,160,216,0.4);
-        }
-
-        .error-message {
-            color: #e74c3c;
-            font-size: 13px;
-            margin-top: 12px;
-            text-align: center;
-            display: none;
-        }
-
-        .warning-message {
-            color: #f59e0b;
-            font-size: 13px;
-            margin-top: 12px;
-            text-align: center;
-            display: none;
-        }
-
-        .subtitle-login {
-            font-size: 13px;
-            color: #888;
-            margin-top: 5px;
-        }
-
-        .login-header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .login-header h3 {
-            color: #b57acb;
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-
-        .busqueda-trabajador-container {
-            position: relative;
-        }
-
-        .busqueda-trabajador-container input {
-            width: 100%;
-            padding: 12px 12px 12px 40px;
-            border: 2px solid #f3d1e6;
-            border-radius: 14px;
-            font-size: 14px;
-            font-family: inherit;
-            background: white;
-            transition: all 0.3s;
-        }
-
-        .busqueda-trabajador-container input:focus {
-            border-color: #caa0d8;
-            box-shadow: 0 0 0 3px rgba(202,160,216,0.2);
-            outline: none;
-        }
-
-        .busqueda-trabajador-container .fa-search {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #caa0d8;
-            font-size: 16px;
-        }
-
-        .sugerencias-container {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 2px solid #caa0d8;
-            border-top: none;
-            border-radius: 0 0 14px 14px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 100;
-            display: none;
-            box-shadow: 0 4px 12px rgba(202,160,216,0.2);
-        }
-
-        .sugerencias-container.mostrar {
-            display: block;
-        }
-
-        .sugerencia-item {
-            padding: 10px 15px;
-            cursor: pointer;
-            font-size: 14px;
-            color: #333;
-            transition: background 0.2s;
-        }
-
-        .sugerencia-item:hover {
-            background: linear-gradient(135deg, #f3d1e6, #e7b6d4);
-        }
-
-        .sugerencia-item.activo {
-            background: linear-gradient(135deg, #e7b6d4, #caa0d8);
-            color: white;
-        }
-
-        .sugerencias-container::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .sugerencias-container::-webkit-scrollbar-track {
-            background: #f3d1e6;
-        }
-
-        .sugerencias-container::-webkit-scrollbar-thumb {
-            background: #caa0d8;
-            border-radius: 3px;
-        }
-
-        .forgot-password-caja {
-            text-align: center;
-            margin-top: 15px;
-        }
-
-        .forgot-password-caja a {
-            color: #4f46e5;
-            font-size: 13px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .forgot-password-caja a:hover {
-            text-decoration: underline;
-        }
-    </style>
 </head>
 <body>
 
@@ -354,234 +39,104 @@
         </div>
         <div class="right-side">
             <div class="container">
-                <div id="stepProfile" class="step active">
-                    <div class="login-selection vertical">
-                        <button class="btn-login caja" onclick="selectProfile('caja')">
-                            <i class="fa-solid fa-cash-register"></i>
-                            <strong>CAJA</strong>
-                        </button>
-                        <button class="btn-login admin" onclick="selectProfile('admin')">
-                            <i class="fa-solid fa-user-shield"></i>
-                            <strong>ADMINISTRADOR</strong>
-                        </button>
+                <!-- Usuario seleccionado -->
+                <div id="selectedUser" class="selected-user">
+                    <i class="fa-solid fa-circle-user"></i>
+                    <div class="selected-user-info">
+                        <div class="selected-user-nombre" id="selectedNombre"></div>
+                        <div class="selected-user-rol" id="selectedRol"></div>
                     </div>
+                    <i class="fa-solid fa-xmark selected-user-clear" onclick="limpiarSeleccion()"></i>
                 </div>
 
-                <div id="stepLoginAdmin" class="step">
-                    <button class="back-btn" onclick="goBackToProfile()">← Volver</button>
-                    <div class="login-header">
-                        <div class="login-icon"></div>
-                        <h3>Acceso Administrador</h3>
-                    </div>
-                    <form id="loginAdminForm" onsubmit="return validateAdminLogin(event)">
-                        <div class="input-group">
-                            <label>USUARIO</label>
-                            <div class="input-icon">
-                                <i class="fa-solid fa-user"></i>
-                                <input type="text" id="adminUser" placeholder="Ingrese su usuario">
-                            </div>
+                <form id="loginForm" onsubmit="return handleLogin(event)">
+                    <div class="input-group">
+                        <label>BUSCAR USUARIO</label>
+                        <div class="search-wrapper">
+                            <input type="text" id="busquedaUsuario" placeholder="Escriba su nombre..." autocomplete="off">
+                            <div class="sugerencias-container" id="sugerenciasContainer"></div>
                         </div>
-                        <div class="input-group">
-                            <label>CONTRASEÑA</label>
-                            <div class="input-icon">
-                                <i class="fa-solid fa-lock"></i>
-                                <input type="password" id="adminPass" placeholder="Ingrese su contraseña">
-                            </div>
-                        </div>
-                        <button type="submit" class="btn-submit">Ingresar</button>
-                        <div id="adminError" class="error-message"></div>
-                    </form>
-                    <div class="forgot-password">
-                        <a onclick="mostrarModalRecuperar()">¿Olvidaste tu contraseña?</a>
+                        <input type="hidden" id="usuarioId">
+                        <input type="hidden" id="usuarioNombre">
+                        <input type="hidden" id="usuarioTipo">
                     </div>
-                </div>
 
-                <!-- Login CAJA con recuperación de contraseña -->
-                <div id="stepLoginCaja" class="step">
-                    <button class="back-btn" onclick="goBackToProfile()">← Volver</button>
-                    <div class="login-header">
-                        <div class="login-icon">
-                            <i class="fa-solid fa-cash-register" style="font-size: 40px; color: #b57acb;"></i>
+                    <div class="input-group">
+                        <label>CONTRASEÑA</label>
+                        <div class="input-icon">
+                            <input type="password" id="password" placeholder="Ingrese su contraseña">
                         </div>
-                        <h3>Acceso Caja</h3>
-                        <p class="subtitle-login">Seleccione su nombre e ingrese su contraseña</p>
                     </div>
-                    <form id="loginCajaForm" class="login-caja-form" onsubmit="return validateCajaLogin(event)">
-                        <div class="input-group">
-                            <label>BUSCAR TRABAJADOR</label>
-                            <div class="busqueda-trabajador-container">
-                                <i class="fa-solid fa-search"></i>
-                                <input type="text" id="busquedaTrabajador" placeholder="Escriba su nombre..." autocomplete="off">
-                                <div class="sugerencias-container" id="sugerenciasContainer"></div>
-                            </div>
-                            <input type="hidden" id="cajaTrabajadorId" value="">
-                            <input type="hidden" id="cajaTrabajadorNombre" value="">
-                            <input type="hidden" id="cajaTrabajadorUsuario" value="">
-                        </div>
 
-                        <div class="input-group">
-                            <label>CONTRASEÑA</label>
-                            <div class="input-icon">
-                                <i class="fa-solid fa-lock"></i>
-                                <input type="password" id="cajaPassword" placeholder="Ingrese su contraseña">
-                            </div>
-                        </div>
-                        <button type="submit" class="btn-submit">Iniciar Sesión</button>
-                        <div id="cajaError" class="error-message"></div>
-                        <div id="cajaWarning" class="warning-message"></div>
-                    </form>
-                    <div class="forgot-password-caja">
-                        <a onclick="mostrarModalRecuperarCaja()">¿Olvidaste tu contraseña?</a>
+                    <button type="submit" class="btn-submit" id="btnLogin">Iniciar Sesión</button>
+
+                    <div id="errorMessage" class="error-message"></div>
+                    <div id="warningMessage" class="warning-message"></div>
+
+                    <div class="forgot-link">
+                        <a onclick="abrirModalRecuperacion()">¿Olvidaste tu contraseña?</a>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- Modal de recuperación para ADMIN -->
-    <div id="modalRecuperar" class="modal-mensaje">
-        <div class="modal-contenido">
+    <!-- Modal de Recuperación UNIFICADO -->
+    <div id="modalRecuperacion" class="modal">
+        <div class="modal-content">
             <h3>Recuperar Contraseña</h3>
-            <div id="paso1Recuperacion">
-                <p>Seleccione el método de recuperación:</p>
-                <div class="modal-buttons" style="flex-direction: column; gap: 10px;">
-                    <button class="modal-btn" onclick="mostrarRecuperarPregunta()">Responder pregunta de seguridad</button>
-                    <button class="modal-btn" onclick="mostrarRecuperarEmail()">Recibir por correo electrónico</button>
-                    <button class="modal-btn cancelar" onclick="cerrarModalRecuperar()">Cancelar</button>
-                </div>
-            </div>
-            <div id="pasoPregunta" style="display:none;">
-                <div class="input-group">
-                    <label>USUARIO</label>
-                    <input type="text" id="recuperarUsuario" placeholder="Ingrese su usuario">
-                </div>
-                <div class="input-group">
-                    <label>RESPUESTA DE SEGURIDAD</label>
-                    <input type="text" id="recuperarRespuesta" placeholder="¿Cuál es el nombre de tu primera mascota?">
-                </div>
+            <div id="recuperacionPaso1">
+                <p>Ingresa tu correo electrónico registrado:</p>
+                <input type="email" id="recuperarEmail" placeholder="correo@ejemplo.com">
                 <div class="modal-buttons">
-                    <button class="modal-btn" onclick="recuperarPorPregunta()">Verificar</button>
-                    <button class="modal-btn cancelar" onclick="volverPaso1()">Volver</button>
+                    <button class="modal-btn primary" onclick="solicitarRecuperacion()">Enviar enlace</button>
+                    <button class="modal-btn secondary" onclick="cerrarModalRecuperacion()">Cancelar</button>
                 </div>
             </div>
-            <div id="pasoEmail" style="display:none;">
-                <div class="input-group">
-                    <label>CORREO ELECTRÓNICO</label>
-                    <input type="email" id="recuperarEmail" placeholder="Ingrese su correo registrado">
-                </div>
-                <div class="modal-buttons">
-                    <button class="modal-btn" onclick="recuperarPorEmail()">Enviar</button>
-                    <button class="modal-btn cancelar" onclick="volverPaso1()">Volver</button>
-                </div>
-            </div>
-            <div id="resultadoRecuperacion" style="display:none;">
+            <div id="recuperacionResultado" style="display: none;">
                 <p id="resultadoTexto"></p>
                 <div class="modal-buttons">
-                    <button class="modal-btn" onclick="cerrarModalRecuperar()">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de recuperación para CAJA -->
-    <div id="modalRecuperarCaja" class="modal-mensaje">
-        <div class="modal-contenido">
-            <h3>Recuperar Contraseña - Caja</h3>
-            <div id="paso1RecuperacionCaja">
-                <p>Ingresa tu correo electrónico registrado:</p>
-                <input type="email" id="recuperarEmailCaja" placeholder="correo@ejemplo.com">
-                <div class="modal-buttons" style="margin-top: 15px;">
-                    <button class="modal-btn" onclick="solicitarRecuperacionCaja()">Enviar enlace</button>
-                    <button class="modal-btn cancelar" onclick="cerrarModalRecuperarCaja()">Cancelar</button>
-                </div>
-            </div>
-            <div id="resultadoRecuperacionCaja" style="display:none;">
-                <p id="resultadoTextoCaja"></p>
-                <div class="modal-buttons">
-                    <button class="modal-btn" onclick="cerrarModalRecuperarCaja()">Cerrar</button>
+                    <button class="modal-btn primary" onclick="cerrarModalRecuperacion()">Cerrar</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let selectedProfile = null;
         let trabajadoresData = [];
         let sugerenciaActiva = -1;
+        let usuarioSeleccionado = null;
 
-        (function limpiarSesionAnterior() {
-            localStorage.clear();
-            sessionStorage.clear();
-        })();
+        localStorage.clear();
+        sessionStorage.clear();
 
-        function selectProfile(profile) {
-            selectedProfile = profile;
-            document.getElementById('stepProfile').classList.remove('active');
-            
-            if (profile === 'admin') {
-                document.getElementById('stepLoginAdmin').classList.add('active');
-                document.getElementById('adminUser').focus();
-            } else {
-                document.getElementById('stepLoginCaja').classList.add('active');
-                cargarTrabajadores();
-                document.getElementById('busquedaTrabajador').focus();
-            }
-            
-            document.getElementById('adminError').style.display = 'none';
-            document.getElementById('cajaError').style.display = 'none';
-            document.getElementById('cajaWarning').style.display = 'none';
-        }
+        const ADMIN_VIRTUAL = {
+            Id_Trabajador: 0,
+            NombreCompleto: "Administrador",
+            tipo: "admin",
+            usuario: "admin"
+        };
 
-        function goBackToProfile() {
-            selectedProfile = null;
-            document.getElementById('stepLoginAdmin').classList.remove('active');
-            document.getElementById('stepLoginCaja').classList.remove('active');
-            document.getElementById('stepProfile').classList.add('active');
-            
-            document.getElementById('adminUser').value = '';
-            document.getElementById('adminPass').value = '';
-            document.getElementById('busquedaTrabajador').value = '';
-            document.getElementById('cajaPassword').value = '';
-            document.getElementById('cajaTrabajadorId').value = '';
-            document.getElementById('cajaTrabajadorNombre').value = '';
-            document.getElementById('cajaTrabajadorUsuario').value = '';
-            document.getElementById('sugerenciasContainer').classList.remove('mostrar');
-            document.getElementById('cajaError').style.display = 'none';
-            document.getElementById('cajaWarning').style.display = 'none';
-            sugerenciaActiva = -1;
-        }
-
-        async function cargarTrabajadores() {
+        async function cargarUsuarios() {
             try {
                 const response = await fetch('/api/trabajadores/activos');
-                
-                if (!response.ok) {
-                    throw new Error('Error al cargar trabajadores');
-                }
-                
                 trabajadoresData = await response.json();
                 
-                const inputBusqueda = document.getElementById('busquedaTrabajador');
+                const input = document.getElementById('busquedaUsuario');
+                input.addEventListener('input', () => mostrarSugerencias(input.value));
+                input.addEventListener('keydown', manejarTecladoSugerencias);
                 
-                inputBusqueda.addEventListener('input', function() {
-                    mostrarSugerencias(this.value);
-                });
-                
-                inputBusqueda.addEventListener('keydown', function(e) {
-                    manejarTecladoSugerencias(e);
-                });
-                
-                document.addEventListener('click', function(e) {
+                document.addEventListener('click', (e) => {
                     const container = document.getElementById('sugerenciasContainer');
-                    const input = document.getElementById('busquedaTrabajador');
-                    if (e.target !== input && e.target !== container && !container.contains(e.target)) {
+                    const input = document.getElementById('busquedaUsuario');
+                    if (!container.contains(e.target) && e.target !== input) {
                         container.classList.remove('mostrar');
                         sugerenciaActiva = -1;
                     }
                 });
-                
             } catch (error) {
-                console.error("Error cargando trabajadores:", error);
+                console.error('Error cargando usuarios:', error);
+                trabajadoresData = [];
             }
         }
 
@@ -594,36 +149,49 @@
                 return;
             }
             
-            const coincidencias = trabajadoresData.filter(trabajador => 
-                trabajador.NombreCompleto.toLowerCase().includes(busqueda)
+            let coincidencias = [];
+            
+            if (busqueda === 'admin' || busqueda === 'administrador') {
+                coincidencias.push(ADMIN_VIRTUAL);
+            }
+            
+            const trabajadoresCoincidentes = trabajadoresData.filter(t => 
+                t.NombreCompleto.toLowerCase().includes(busqueda)
             );
+            coincidencias.push(...trabajadoresCoincidentes);
             
             if (coincidencias.length === 0) {
-                container.innerHTML = '<div class="sugerencia-item" style="color: #999; cursor: default;">Sin coincidencias</div>';
+                container.innerHTML = '<div class="sugerencia-item" style="color:#999; justify-content:center;">Sin coincidencias</div>';
                 container.classList.add('mostrar');
                 return;
             }
             
             let html = '';
-            coincidencias.forEach((trabajador, index) => {
-                html += `<div class="sugerencia-item" data-index="${index}" data-id="${trabajador.Id_Trabajador}" data-usuario="${trabajador.nombre_usuario || ''}" data-nombre="${trabajador.NombreCompleto.replace(/"/g, '&quot;')}">${trabajador.NombreCompleto}</div>`;
+            coincidencias.forEach((user) => {
+                const esAdmin = user.tipo === 'admin' || user.Id_Trabajador === 0;
+                const icono = esAdmin ? '<i class="fa-solid fa-crown"></i>' : '<i class="fa-solid fa-user"></i>';
+                const rol = esAdmin ? 'Administrador' : 'Vendedor';
+                html += `
+                    <div class="sugerencia-item" data-id="${user.Id_Trabajador || 0}" data-nombre="${user.NombreCompleto}" data-tipo="${esAdmin ? 'admin' : 'trabajador'}">
+                        <div class="sugerencia-icono">${icono}</div>
+                        <div class="sugerencia-info">
+                            <div class="sugerencia-nombre">${user.NombreCompleto}</div>
+                            <div class="sugerencia-rol">${rol}</div>
+                        </div>
+                    </div>
+                `;
             });
             
             container.innerHTML = html;
             container.classList.add('mostrar');
             
-            const items = container.querySelectorAll('.sugerencia-item[data-id]');
-            items.forEach(item => {
-                item.addEventListener('click', function() {
-                    seleccionarTrabajador(this);
-                });
+            document.querySelectorAll('.sugerencia-item[data-id]').forEach(item => {
+                item.addEventListener('click', () => seleccionarUsuario(item));
             });
         }
 
         function manejarTecladoSugerencias(e) {
-            const container = document.getElementById('sugerenciasContainer');
-            const items = container.querySelectorAll('.sugerencia-item[data-id]');
-            
+            const items = document.querySelectorAll('.sugerencia-item[data-id]');
             if (items.length === 0) return;
             
             switch(e.key) {
@@ -640,19 +208,19 @@
                 case 'Enter':
                     if (sugerenciaActiva >= 0 && sugerenciaActiva < items.length) {
                         e.preventDefault();
-                        seleccionarTrabajador(items[sugerenciaActiva]);
+                        seleccionarUsuario(items[sugerenciaActiva]);
                     }
                     break;
                 case 'Escape':
-                    container.classList.remove('mostrar');
+                    document.getElementById('sugerenciasContainer').classList.remove('mostrar');
                     sugerenciaActiva = -1;
                     break;
             }
         }
 
         function actualizarSugerenciaActiva(items) {
-            items.forEach((item, index) => {
-                if (index === sugerenciaActiva) {
+            items.forEach((item, idx) => {
+                if (idx === sugerenciaActiva) {
                     item.classList.add('activo');
                 } else {
                     item.classList.remove('activo');
@@ -660,326 +228,212 @@
             });
         }
 
-        function seleccionarTrabajador(elemento) {
-            const id = elemento.getAttribute('data-id');
+        function seleccionarUsuario(elemento) {
+            const id = parseInt(elemento.getAttribute('data-id'));
             const nombre = elemento.getAttribute('data-nombre');
-            const usuario = elemento.getAttribute('data-usuario');
+            const tipo = elemento.getAttribute('data-tipo');
             
-            document.getElementById('cajaTrabajadorId').value = id;
-            document.getElementById('cajaTrabajadorNombre').value = nombre;
-            document.getElementById('cajaTrabajadorUsuario').value = usuario;
-            document.getElementById('busquedaTrabajador').value = nombre;
+            usuarioSeleccionado = { id, nombre, tipo };
+            
+            document.getElementById('selectedNombre').textContent = nombre;
+            document.getElementById('selectedRol').textContent = tipo === 'admin' ? 'Administrador' : 'Vendedor';
+            document.getElementById('selectedUser').style.display = 'flex';
             
             document.getElementById('sugerenciasContainer').classList.remove('mostrar');
+            document.getElementById('busquedaUsuario').value = nombre;
             sugerenciaActiva = -1;
-            document.getElementById('cajaPassword').focus();
             
-            // Limpiar mensajes de error al seleccionar nuevo trabajador
-            document.getElementById('cajaError').style.display = 'none';
-            document.getElementById('cajaWarning').style.display = 'none';
+            document.getElementById('usuarioId').value = id;
+            document.getElementById('usuarioNombre').value = nombre;
+            document.getElementById('usuarioTipo').value = tipo;
+            
+            document.getElementById('password').focus();
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('warningMessage').style.display = 'none';
         }
 
-        async function validateAdminLogin(event) {
-            event.preventDefault();
-            
-            const usuario = document.getElementById('adminUser').value.trim();
-            const password = document.getElementById('adminPass').value;
-            const errorDiv = document.getElementById('adminError');
-            
-            if (!usuario || !password) {
-                errorDiv.textContent = 'Por favor, complete todos los campos';
-                errorDiv.style.display = 'block';
-                setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
-                return false;
-            }
-            
-            try {
-                const response = await fetch('/api/admin/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ usuario, password })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('tipoUsuario', 'admin');
-                    localStorage.setItem('adminUser', data.user);
-                    localStorage.setItem('sesionIniciada', 'true');
-                    window.location.replace("menu_admin.html");
-                    return true;
-                } else {
-                    errorDiv.textContent = data.message || 'Usuario o contraseña incorrectos';
-                    errorDiv.style.display = 'block';
-                    document.getElementById('adminPass').value = '';
-                    document.getElementById('adminPass').focus();
-                    setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
-                    return false;
-                }
-            } catch (error) {
-                console.error('Error en login:', error);
-                errorDiv.textContent = 'Error de conexión con el servidor';
-                errorDiv.style.display = 'block';
-                setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
-                return false;
-            }
+        function limpiarSeleccion() {
+            usuarioSeleccionado = null;
+            document.getElementById('selectedUser').style.display = 'none';
+            document.getElementById('busquedaUsuario').value = '';
+            document.getElementById('usuarioId').value = '';
+            document.getElementById('usuarioNombre').value = '';
+            document.getElementById('usuarioTipo').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('busquedaUsuario').focus();
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('warningMessage').style.display = 'none';
         }
 
-        async function validateCajaLogin(event) {
+        async function handleLogin(event) {
             event.preventDefault();
             
-            const trabajadorId = document.getElementById('cajaTrabajadorId').value;
-            const trabajadorNombre = document.getElementById('cajaTrabajadorNombre').value;
-            const trabajadorUsuario = document.getElementById('cajaTrabajadorUsuario').value;
-            const password = document.getElementById('cajaPassword').value;
-            const errorDiv = document.getElementById('cajaError');
-            const warningDiv = document.getElementById('cajaWarning');
+            const password = document.getElementById('password').value;
+            const tipo = document.getElementById('usuarioTipo').value;
+            const usuarioNombre = document.getElementById('usuarioNombre').value;
+            const errorDiv = document.getElementById('errorMessage');
+            const warningDiv = document.getElementById('warningMessage');
+            const btn = document.getElementById('btnLogin');
             
-            if (!trabajadorId) {
-                errorDiv.textContent = 'Por favor, seleccione un trabajador de la lista';
+            errorDiv.style.display = 'none';
+            warningDiv.style.display = 'none';
+            
+            if (!usuarioSeleccionado) {
+                errorDiv.textContent = 'Seleccione un usuario de la lista';
                 errorDiv.style.display = 'block';
-                setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
                 return false;
             }
             
             if (!password) {
-                errorDiv.textContent = 'Por favor, ingrese su contraseña';
+                errorDiv.textContent = 'Ingrese su contraseña';
                 errorDiv.style.display = 'block';
-                setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
                 return false;
             }
             
-            const submitBtn = document.querySelector('#stepLoginCaja .btn-submit');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verificando...';
-            submitBtn.disabled = true;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span> Verificando...';
+            btn.disabled = true;
             
             try {
-                const response = await fetch('/api/trabajadores/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombre_usuario: trabajadorNombre, password: password })
-                });
+                let response;
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('trabajador', JSON.stringify(data.trabajador));
-                    localStorage.setItem('tipoUsuario', 'caja');
-                    localStorage.setItem('sesionIniciada', 'true');
+                if (tipo === 'admin') {
+                    response = await fetch('/api/admin/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ usuario: 'admin', password: password })
+                    });
                     
-                    if (data.trabajador.debe_cambiar_password) {
-                        window.location.replace("cambiar-password-obligatorio.html");
-                    } else {
-                        window.location.replace("menu_caja.html");
-                    }
-                    return true;
-                } else {
-                    // Mostrar mensajes específicos según el contenido
-                    const mensaje = data.message || 'Contraseña incorrecta';
+                    const data = await response.json();
                     
-                    if (mensaje.includes('bloqueada') || mensaje.includes('Bloqueada')) {
-                        warningDiv.textContent = mensaje;
-                        warningDiv.style.display = 'block';
-                        errorDiv.style.display = 'none';
-                    } else if (mensaje.includes('intento') || mensaje.includes('quedan')) {
-                        warningDiv.textContent = mensaje;
-                        warningDiv.style.display = 'block';
-                        errorDiv.style.display = 'none';
+                    if (data.success) {
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('tipoUsuario', 'admin');
+                        localStorage.setItem('adminUser', data.user);
+                        localStorage.setItem('sesionIniciada', 'true');
+                        window.location.replace("menu_admin.html");
+                        return true;
                     } else {
-                        errorDiv.textContent = mensaje;
+                        errorDiv.textContent = data.message || 'Contraseña incorrecta';
                         errorDiv.style.display = 'block';
-                        warningDiv.style.display = 'none';
+                        document.getElementById('password').value = '';
+                        document.getElementById('password').focus();
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        return false;
                     }
+                } 
+                else {
+                    response = await fetch('/api/trabajadores/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nombre_usuario: usuarioNombre, password: password })
+                    });
                     
-                    document.getElementById('cajaPassword').value = '';
-                    document.getElementById('cajaPassword').focus();
-                    setTimeout(() => { 
-                        errorDiv.style.display = 'none'; 
-                        warningDiv.style.display = 'none'; 
-                    }, 4000);
+                    const data = await response.json();
                     
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                    return false;
+                    if (data.success) {
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('trabajador', JSON.stringify(data.trabajador));
+                        localStorage.setItem('tipoUsuario', 'caja');
+                        localStorage.setItem('sesionIniciada', 'true');
+                        
+                        if (data.trabajador.debe_cambiar_password) {
+                            window.location.replace("cambiar-password-obligatorio.html");
+                        } else {
+                            window.location.replace("menu_caja.html");
+                        }
+                        return true;
+                    } else {
+                        const mensaje = data.message || 'Contraseña incorrecta';
+                        if (mensaje.includes('bloqueada') || mensaje.includes('intento')) {
+                            warningDiv.textContent = mensaje;
+                            warningDiv.style.display = 'block';
+                        } else {
+                            errorDiv.textContent = mensaje;
+                            errorDiv.style.display = 'block';
+                        }
+                        document.getElementById('password').value = '';
+                        document.getElementById('password').focus();
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        return false;
+                    }
                 }
             } catch (error) {
-                console.error('Error en login de caja:', error);
-                errorDiv.textContent = 'Error de conexión con el servidor';
+                console.error('Error:', error);
+                errorDiv.textContent = 'Error de conexión';
                 errorDiv.style.display = 'block';
-                setTimeout(() => { errorDiv.style.display = 'none'; }, 4000);
-                
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
+                btn.innerHTML = originalText;
+                btn.disabled = false;
                 return false;
             }
         }
 
-        // ========== RECUPERACIÓN DE CONTRASEÑA PARA CAJA ==========
-        function mostrarModalRecuperarCaja() {
-            document.getElementById('paso1RecuperacionCaja').style.display = 'block';
-            document.getElementById('resultadoRecuperacionCaja').style.display = 'none';
-            document.getElementById('recuperarEmailCaja').value = '';
-            document.getElementById('modalRecuperarCaja').style.display = 'flex';
+        // ========== RECUPERACIÓN UNIFICADA ==========
+        function abrirModalRecuperacion() {
+            document.getElementById('recuperacionPaso1').style.display = 'block';
+            document.getElementById('recuperacionResultado').style.display = 'none';
+            document.getElementById('recuperarEmail').value = '';
+            document.getElementById('modalRecuperacion').style.display = 'flex';
         }
 
-        function cerrarModalRecuperarCaja() {
-            document.getElementById('modalRecuperarCaja').style.display = 'none';
+        function cerrarModalRecuperacion() {
+            document.getElementById('modalRecuperacion').style.display = 'none';
         }
 
-        async function solicitarRecuperacionCaja() {
-            const email = document.getElementById('recuperarEmailCaja').value.trim();
-            const resultadoDiv = document.getElementById('resultadoRecuperacionCaja');
-            const resultadoTexto = document.getElementById('resultadoTextoCaja');
+        async function solicitarRecuperacion() {
+            const email = document.getElementById('recuperarEmail').value.trim();
+            const resultadoDiv = document.getElementById('recuperacionResultado');
+            const resultadoTexto = document.getElementById('resultadoTexto');
             
             if (!email) {
-                resultadoTexto.innerHTML = 'Por favor, ingrese su correo electrónico.';
+                resultadoTexto.innerHTML = 'Ingrese su correo electrónico';
                 resultadoDiv.style.display = 'block';
-                document.getElementById('paso1RecuperacionCaja').style.display = 'none';
+                document.getElementById('recuperacionPaso1').style.display = 'none';
                 return;
             }
             
-            const btn = document.querySelector('#modalRecuperarCaja .modal-btn');
+            const btn = document.querySelector('#modalRecuperacion .modal-btn.primary');
             const originalText = btn.textContent;
             btn.textContent = 'Enviando...';
             btn.disabled = true;
             
             try {
-                const response = await fetch('/api/trabajadores/recuperar-password', {
+                // Usar el endpoint unificado
+                const response = await fetch('/api/recuperar-password-unificado', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
+                    body: JSON.stringify({ email: email })
                 });
                 
                 const data = await response.json();
+                resultadoTexto.innerHTML = data.message || 'Si el correo está registrado, recibirás un enlace';
                 
-                resultadoTexto.innerHTML = data.message;
                 resultadoDiv.style.display = 'block';
-                document.getElementById('paso1RecuperacionCaja').style.display = 'none';
-                
-                btn.textContent = originalText;
-                btn.disabled = false;
+                document.getElementById('recuperacionPaso1').style.display = 'none';
                 
             } catch (error) {
                 console.error('Error:', error);
                 resultadoTexto.innerHTML = 'Error de conexión con el servidor';
                 resultadoDiv.style.display = 'block';
-                document.getElementById('paso1RecuperacionCaja').style.display = 'none';
-                
+                document.getElementById('recuperacionPaso1').style.display = 'none';
+            } finally {
                 btn.textContent = originalText;
                 btn.disabled = false;
             }
         }
 
-        // ========== RECUPERACIÓN DE CONTRASEÑA PARA ADMIN ==========
-        function mostrarModalRecuperar() {
-            document.getElementById('paso1Recuperacion').style.display = 'block';
-            document.getElementById('pasoPregunta').style.display = 'none';
-            document.getElementById('pasoEmail').style.display = 'none';
-            document.getElementById('resultadoRecuperacion').style.display = 'none';
-            document.getElementById('modalRecuperar').style.display = 'flex';
-        }
-        
-        function cerrarModalRecuperar() {
-            document.getElementById('modalRecuperar').style.display = 'none';
-        }
-        
-        function volverPaso1() {
-            document.getElementById('pasoPregunta').style.display = 'none';
-            document.getElementById('pasoEmail').style.display = 'none';
-            document.getElementById('resultadoRecuperacion').style.display = 'none';
-            document.getElementById('paso1Recuperacion').style.display = 'block';
-        }
-        
-        function mostrarRecuperarPregunta() {
-            document.getElementById('paso1Recuperacion').style.display = 'none';
-            document.getElementById('pasoPregunta').style.display = 'block';
-            document.getElementById('recuperarUsuario').value = '';
-            document.getElementById('recuperarRespuesta').value = '';
-        }
-        
-        function mostrarRecuperarEmail() {
-            document.getElementById('paso1Recuperacion').style.display = 'none';
-            document.getElementById('pasoEmail').style.display = 'block';
-            document.getElementById('recuperarEmail').value = '';
-        }
-        
-        async function recuperarPorPregunta() {
-            const usuario = document.getElementById('recuperarUsuario').value.trim();
-            const respuesta = document.getElementById('recuperarRespuesta').value.trim();
-            const resultadoDiv = document.getElementById('resultadoRecuperacion');
-            const resultadoTexto = document.getElementById('resultadoTexto');
-            
-            if (!usuario || !respuesta) {
-                resultadoTexto.innerHTML = 'Por favor, complete todos los campos.';
-                resultadoDiv.style.display = 'block';
-                return;
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalRecuperacion');
+            if (event.target === modal) {
+                cerrarModalRecuperacion();
             }
-            
-            try {
-                const response = await fetch('/api/admin/recuperar-pregunta', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ usuario, respuesta })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    resultadoTexto.innerHTML = `Su contraseña es: <strong>${data.password}</strong><br><br>Guárdela en un lugar seguro.`;
-                    resultadoDiv.style.display = 'block';
-                    document.getElementById('pasoPregunta').style.display = 'none';
-                } else {
-                    resultadoTexto.innerHTML = (data.message || 'Respuesta incorrecta');
-                    resultadoDiv.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                resultadoTexto.innerHTML = 'Error de conexión con el servidor';
-                resultadoDiv.style.display = 'block';
-            }
-        }
-        
-        async function recuperarPorEmail() {
-            const email = document.getElementById('recuperarEmail').value.trim();
-            const resultadoDiv = document.getElementById('resultadoRecuperacion');
-            const resultadoTexto = document.getElementById('resultadoTexto');
-            
-            if (!email) {
-                resultadoTexto.innerHTML = 'Por favor, ingrese su correo electrónico.';
-                resultadoDiv.style.display = 'block';
-                return;
-            }
-            
-            try {
-                const response = await fetch('/api/admin/recuperar-email', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    resultadoTexto.innerHTML = `${data.message}<br><br>Revise su bandeja de entrada o correo no deseado.`;
-                    resultadoDiv.style.display = 'block';
-                    document.getElementById('pasoEmail').style.display = 'none';
-                } else {
-                    resultadoTexto.innerHTML = (data.message || 'Correo no registrado');
-                    resultadoDiv.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                resultadoTexto.innerHTML = 'Error de conexión con el servidor';
-                resultadoDiv.style.display = 'block';
-            }
-        }
-        
+        };
+
         function actualizarFechaHora() {
             const ahora = new Date();
-            const opcionesFecha = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            const opcionesFecha = { year: 'numeric', month: 'long', day: 'numeric' };
             const fechaStr = ahora.toLocaleDateString('es-ES', opcionesFecha);
             const horaStr = ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
             
@@ -989,17 +443,7 @@
         
         actualizarFechaHora();
         setInterval(actualizarFechaHora, 60000);
-        
-        window.onclick = function(event) {
-            const modalAdmin = document.getElementById('modalRecuperar');
-            const modalCaja = document.getElementById('modalRecuperarCaja');
-            if (event.target === modalAdmin) {
-                cerrarModalRecuperar();
-            }
-            if (event.target === modalCaja) {
-                cerrarModalRecuperarCaja();
-            }
-        };
+        cargarUsuarios();
     </script>
 </body>
 </html>

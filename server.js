@@ -2846,6 +2846,122 @@ app.get('/api/verificar-sesion', (req, res) => {
     res.json({ autenticado: true });
 });
 
+// ================= RECUPERACIÓN UNIFICADA (TRABAJADORES Y ADMIN) =================
+// Este endpoint busca el email en ambas tablas y envía el enlace correspondiente
+app.post('/api/recuperar-password-unificado', (req, res) => {
+    const { email } = req.body;
+    
+    if (!email || email.trim() === '') {
+        return res.status(400).json({ success: false, message: 'Por favor, ingrese su correo electrónico' });
+    }
+    
+    // Buscar en administradores primero
+    db.query(`SELECT id, usuario, email, 'admin' as tipo FROM usuarios_admin WHERE email = ?`, [email], (err, adminResults) => {
+        if (err) {
+            console.error('Error en recuperación admin:', err);
+            return res.status(500).json({ success: false, message: 'Error en el servidor' });
+        }
+        
+        if (adminResults.length > 0) {
+            const admin = adminResults[0];
+            const token = crypto.randomBytes(32).toString('hex');
+            const expiresAt = Date.now() + 3600000;
+            
+            resetTokens[token] = { email, expiresAt };
+            const resetLink = `http://localhost:3000/reset-password.html?token=${token}`;
+            
+            const mailOptions = {
+                from: 'Tienda Chepita <isabelchepita678@gmail.com>',
+                to: email,
+                subject: 'Recuperación de Contraseña - Tienda Chepita',
+                html: `
+                    <div style="font-family: Arial, sans-serif; border: 2px solid #A63C89; padding: 20px; border-radius: 10px;">
+                        <h2 style="color: #A63C89;">Recuperación de Contraseña</h2>
+                        <p>Hola <strong>${admin.usuario}</strong>,</p>
+                        <p>Hemos recibido una solicitud para restablecer tu contraseña.</p>
+                        <div style="text-align: center; margin: 25px 0;">
+                            <a href="${resetLink}" style="background-color: #A63C89; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">Restablecer Contraseña</a>
+                        </div>
+                        <p style="color: #666;">Este enlace es válido por 1 hora.</p>
+                        <hr>
+                        <p style="color: #999; font-size: 11px;">Tienda Chepita - Sistema de Gestión Comercial</p>
+                    </div>
+                `
+            };
+            
+            transporter.sendMail(mailOptions, (error) => {
+                if (error) {
+                    console.error('Error al enviar email admin:', error);
+                    return res.status(500).json({ success: false, message: 'Error al enviar el correo.' });
+                }
+                console.log(`✅ Email de recuperación enviado a ADMIN: ${email}`);
+                res.json({ success: true, message: 'Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.' });
+            });
+        } else {
+            // Buscar en trabajadores
+            db.query(`SELECT Id_Trabajador, NombreCompleto, email, 'trabajador' as tipo FROM trabajadores WHERE email = ? AND Activo = 1`, [email], (err, trabajadoresResults) => {
+                if (err) {
+                    console.error('Error en recuperación trabajador:', err);
+                    return res.status(500).json({ success: false, message: 'Error en el servidor' });
+                }
+                
+                if (trabajadoresResults.length > 0) {
+                    const trabajador = trabajadoresResults[0];
+                    const token = crypto.randomBytes(32).toString('hex');
+                    const expiraEn = new Date();
+                    expiraEn.setHours(expiraEn.getHours() + 1);
+                    
+                    db.query(`INSERT INTO trabajador_recuperacion_tokens (id_trabajador, token, expira_en) VALUES (?, ?, ?)`, 
+                        [trabajador.Id_Trabajador, token, expiraEn], (err) => {
+                        if (err) {
+                            console.error('Error guardando token trabajador:', err);
+                            return res.status(500).json({ success: false, message: 'Error en el servidor' });
+                        }
+                        
+                        const resetLink = `http://localhost:3000/trabajador-reset-password.html?token=${token}`;
+                        
+                        const mailOptions = {
+                            from: 'Tienda Chepita <isabelchepita678@gmail.com>',
+                            to: trabajador.email,
+                            subject: 'Recuperación de Contraseña - Tienda Chepita',
+                            html: `
+                                <div style="font-family: Arial, sans-serif; border: 2px solid #A63C89; padding: 20px; border-radius: 10px;">
+                                    <h2 style="color: #A63C89;">Recuperación de Contraseña</h2>
+                                    <p>Hola <strong>${trabajador.NombreCompleto}</strong>,</p>
+                                    <p>Hemos recibido una solicitud para restablecer tu contraseña.</p>
+                                    <div style="text-align: center; margin: 25px 0;">
+                                        <a href="${resetLink}" style="background-color: #A63C89; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">Restablecer Contraseña</a>
+                                    </div>
+                                    <p style="color: #666;">Este enlace es válido por 1 hora.</p>
+                                    <hr>
+                                    <p style="color: #999; font-size: 11px;">Tienda Chepita - Sistema de Gestión Comercial</p>
+                                </div>
+                            `
+                        };
+                        
+                        transporter.sendMail(mailOptions, (error) => {
+                            if (error) {
+                                console.error('Error al enviar email trabajador:', error);
+                                return res.status(500).json({ success: false, message: 'Error al enviar el correo.' });
+                            }
+                            console.log(`✅ Email de recuperación enviado a TRABAJADOR: ${email}`);
+                            res.json({ success: true, message: 'Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.' });
+                        });
+                    });
+                } else {
+                    // No se encontró en ninguna tabla
+                    console.log(`📧 Correo no registrado: ${email}`);
+                    res.json({ success: true, message: 'Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.' });
+                }
+            });
+        }
+    });
+});
+
+
+
+
+
 // ================= INICIO DEL SERVIDOR =================
 
 setTimeout(() => {
