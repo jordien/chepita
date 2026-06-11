@@ -688,6 +688,7 @@ ${escapeHtml(cliente)}
                         <div>
                             <p><strong>Factura N°:</strong> ${primera.NumFactura}</p>
                             <p><strong>Fecha:</strong> ${fecha}</p>
+                            <p><strong>Vendedor:</strong> ${escapeHtml(vendedor)}</p>
                             <p><strong>Hora:</strong> ${horaActual}</p>
                         </div>
                         <div>
@@ -695,7 +696,6 @@ ${escapeHtml(cliente)}
 <p><strong>Cliente:</strong> ${escapeHtml(cliente)}</p>
 ` : ''}
 
-<p><strong>Vendedor:</strong> ${escapeHtml(vendedor)}</p>
 <p><strong>Canal:</strong> ${escapeHtml(canal)}</p>
 <p><strong>Metodo de Pago:</strong> ${escapeHtml(metodo)}</p>
                         </div>
