@@ -957,9 +957,7 @@ app.get('/api/productos/bajo-stock', (req, res) => {
 // ================= PROVEEDORES =================
 
 app.get('/api/proveedores', (req, res) => {
-    console.log('GET /api/proveedores - Solicitado');
-    
-    const sql = `SELECT Id_Proveedor, Nombre, Empresa, Num_celular, Operador FROM proveedores ORDER BY Nombre`;
+    const sql = `SELECT Id_Proveedor, Nombre, Empresa, Num_celular, Operador, Numero_Empresa, Operador_Empresa, Direccion_Empresa, Fecha_Agregacion FROM proveedores ORDER BY Nombre`;
     
     db.query(sql, (err, results) => {
         if (err) {
@@ -967,14 +965,12 @@ app.get('/api/proveedores', (req, res) => {
             return res.status(500).json({ error: err.message });
         }
         
-        console.log(`✅ Proveedores encontrados: ${results.length}`);
         res.json(results);
     });
 });
 
 app.post('/api/proveedores', (req, res) => {
-    console.log('POST /api/proveedores - Body:', req.body);
-    const { Nombre, Empresa, Num_celular, Operador } = req.body;
+    const { Nombre, Empresa, Num_celular, Operador, Numero_Empresa, Operador_Empresa, Direccion_Empresa } = req.body;
     
     if (!Nombre || Nombre.trim() === '') {
         return res.status(400).json({ error: 'El nombre del proveedor es requerido' });
@@ -995,14 +991,13 @@ app.post('/api/proveedores', (req, res) => {
             return res.status(400).json({ error: 'Ya existe un proveedor con ese número de teléfono' });
         }
         
-        db.query(`INSERT INTO proveedores (Nombre, Empresa, Num_celular, Operador) VALUES (?, ?, ?, ?)`, 
-            [Nombre.trim(), Empresa.trim(), Num_celular.trim(), Operador || null], 
+        db.query(`INSERT INTO proveedores (Nombre, Empresa, Num_celular, Operador, Numero_Empresa, Operador_Empresa, Direccion_Empresa) VALUES (?, ?, ?, ?, ?, ?, ?)`, 
+            [Nombre.trim(), Empresa.trim(), Num_celular.trim(), Operador || null, Numero_Empresa || null, Operador_Empresa || null, Direccion_Empresa || null], 
             (err, result) => {
                 if (err) {
                     console.error('Error insertando proveedor:', err);
                     return res.status(500).json({ error: err.sqlMessage });
                 }
-                console.log('POST /api/proveedores - Proveedor creado ID:', result.insertId);
                 res.json({ message: "Proveedor creado exitosamente", Id_Proveedor: result.insertId });
             }
         );
@@ -1011,9 +1006,7 @@ app.post('/api/proveedores', (req, res) => {
 
 app.put('/api/proveedores/:id', (req, res) => {
     const { id } = req.params;
-    const { Nombre, Empresa, Num_celular, Operador } = req.body;
-    
-    console.log(`PUT /api/proveedores/${id} - Body:`, req.body);
+    const { Nombre, Empresa, Num_celular, Operador, Numero_Empresa, Operador_Empresa, Direccion_Empresa } = req.body;
     
     if (!Nombre || Nombre.trim() === '') {
         return res.status(400).json({ error: 'El nombre del proveedor es requerido' });
@@ -1034,8 +1027,8 @@ app.put('/api/proveedores/:id', (req, res) => {
             return res.status(400).json({ error: 'Ya existe otro proveedor con ese número de teléfono' });
         }
         
-        db.query(`UPDATE proveedores SET Nombre = ?, Empresa = ?, Num_celular = ?, Operador = ? WHERE Id_Proveedor = ?`, 
-            [Nombre.trim(), Empresa.trim(), Num_celular.trim(), Operador || null, id], 
+        db.query(`UPDATE proveedores SET Nombre = ?, Empresa = ?, Num_celular = ?, Operador = ?, Numero_Empresa = ?, Operador_Empresa = ?, Direccion_Empresa = ? WHERE Id_Proveedor = ?`, 
+            [Nombre.trim(), Empresa.trim(), Num_celular.trim(), Operador || null, Numero_Empresa || null, Operador_Empresa || null, Direccion_Empresa || null, id], 
             (err, result) => {
                 if (err) {
                     console.error('Error actualizando proveedor:', err);
@@ -1044,7 +1037,6 @@ app.put('/api/proveedores/:id', (req, res) => {
                 if (result.affectedRows === 0) {
                     return res.status(404).json({ error: "Proveedor no encontrado" });
                 }
-                console.log(`PUT /api/proveedores/${id} - Proveedor actualizado`);
                 res.json({ message: "Proveedor actualizado correctamente" });
             }
         );
@@ -1053,8 +1045,6 @@ app.put('/api/proveedores/:id', (req, res) => {
 
 app.delete('/api/proveedores/:id', (req, res) => {
     const { id } = req.params;
-    
-    console.log(`DELETE /api/proveedores/${id} - Solicitado`);
     
     db.query(`SELECT * FROM abastecimiento WHERE Id_Proveedor = ?`, [id], (err, results) => {
         if (err) {
