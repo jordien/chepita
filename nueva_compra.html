@@ -375,7 +375,7 @@
                     </div>
                 </div>
 
-                <div class="nc-group">
+                <div class="nc-group" id="bloqueCanal">
                     <label class="nc-required">Canal de Venta</label>
                     <div class="nc-input-group">
                         <select id="canal" name="id_canal" required>
@@ -1268,6 +1268,14 @@ if (tipoVenta === 'express') {
     document.getElementById('resumenCliente').textContent = clienteTexto;
 }
 
+const bloqueCanalResumen = document.getElementById('resumenCanal').parentElement;
+    if (tipoVenta === 'express') {
+        bloqueCanalResumen.style.display = 'none';
+    } else {
+        bloqueCanalResumen.style.display = 'block';
+        document.getElementById('resumenCanal').textContent = canalTexto;
+    }
+
         document.getElementById('resumenCanal').textContent = canalTexto;
         document.getElementById('resumenMetodoPago').textContent = metodoPagoTexto;
         document.getElementById('resumenVendedor').textContent = vendedorTexto;
@@ -1443,7 +1451,15 @@ if (tipoVenta === 'express') {
             return;
         }
         
-        if (!idCanal) { mostrarMensajeSistema('Seleccione un canal de venta', 'error'); return; }
+// Saltar validación de canal si es venta express
+if (tipoVenta !== 'express') {
+    if (!idCanal) { 
+        mostrarMensajeSistema('Seleccione un canal de venta', 'error'); 
+        return; 
+    }
+}
+
+       
         if (!idMetodo) { mostrarMensajeSistema('Seleccione un metodo de pago', 'error'); return; }
         if (!fecha) { mostrarMensajeSistema('Seleccione una fecha', 'error'); return; }
         if (!idVendedor) { mostrarMensajeSistema('No hay vendedor asignado', 'error'); return; }
@@ -1461,7 +1477,7 @@ if (tipoVenta === 'express') {
                 Num_Factura: parseInt(numFactura), 
                 Id_cliente: tipoVenta === 'express' ? null : parseInt(idCliente), 
                 Id_Vendedor: parseInt(idVendedor), 
-                Id_Canal: parseInt(idCanal), 
+             Id_Canal: tipoVenta === 'express' ? null : parseInt(idCanal), 
                 Id_Metodo: parseInt(idMetodo), 
                 Fecha: fecha, 
                 Monto: total 
@@ -1595,6 +1611,21 @@ if (tipoVenta === 'express') {
         bloqueCliente.style.display = 'none';
     }
 
+ // Ocultar canal de venta
+    const bloqueCanal = document.getElementById('bloqueCanal');
+    if (bloqueCanal) {
+        bloqueCanal.style.display = 'none';
+        
+        // ✅ QUITAR EL REQUIRED para que no bloquee
+        const selectCanal = document.getElementById('canal');
+        if (selectCanal) {
+            selectCanal.removeAttribute('required');
+            // Asignar un valor por defecto (ID 1)
+            if (selectCanal.options.length > 0) {
+                selectCanal.value = selectCanal.options[0].value;
+            }
+        }
+    }
 }
 
         actualizarEstadoCamara(false, 'Inactivo');

@@ -1556,9 +1556,11 @@ app.post('/api/compras', (req, res) => {
         return res.status(400).json({ error: 'Id_Vendedor es obligatorio y debe ser un número' });
     }
     
-    if (!Id_Canal || isNaN(Id_Canal)) {
-        console.error('❌ Id_Canal inválido:', Id_Canal);
-        return res.status(400).json({ error: 'Id_Canal es obligatorio y debe ser un número' });
+   if (Id_Canal !== null && Id_Canal !== undefined && Id_Canal !== '') {
+        if (isNaN(Id_Canal)) {
+            console.error('❌ Id_Canal inválido:', Id_Canal);
+            return res.status(400).json({ error: 'Id_Canal debe ser un número' });
+        }
     }
     
     if (!Id_Metodo || isNaN(Id_Metodo)) {
