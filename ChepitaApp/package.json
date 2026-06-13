@@ -1,0 +1,18 @@
+{
+  "name": "chepita-vendedor",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "expo": "~50.0.0",
+    "expo-secure-store": "~12.0.0",
+    "react": "18.2.0",
+    "react-native": "0.73.6",
+    "react-native-svg": "14.1.0",
+    "react-native-qrcode-svg": "^6.3.0",
+    "react-native-countdown-circle-timer": "^3.2.1"
+  }
+}
