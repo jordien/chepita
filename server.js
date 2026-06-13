@@ -957,9 +957,7 @@ app.get('/api/productos/bajo-stock', (req, res) => {
 // ================= PROVEEDORES =================
 
 app.get('/api/proveedores', (req, res) => {
-    console.log('GET /api/proveedores - Solicitado');
-    
-    const sql = `SELECT Id_Proveedor, Nombre, Empresa, Num_celular, Operador FROM proveedores ORDER BY Nombre`;
+    const sql = `SELECT Id_Proveedor, Nombre, Empresa, Num_celular, Operador, Numero_Empresa, Operador_Empresa, Direccion_Empresa, Fecha_Agregacion FROM proveedores ORDER BY Nombre`;
     
     db.query(sql, (err, results) => {
         if (err) {
@@ -967,14 +965,12 @@ app.get('/api/proveedores', (req, res) => {
             return res.status(500).json({ error: err.message });
         }
         
-        console.log(`✅ Proveedores encontrados: ${results.length}`);
         res.json(results);
     });
 });
 
 app.post('/api/proveedores', (req, res) => {
-    console.log('POST /api/proveedores - Body:', req.body);
-    const { Nombre, Empresa, Num_celular, Operador } = req.body;
+    const { Nombre, Empresa, Num_celular, Operador, Numero_Empresa, Operador_Empresa, Direccion_Empresa } = req.body;
     
     if (!Nombre || Nombre.trim() === '') {
         return res.status(400).json({ error: 'El nombre del proveedor es requerido' });
@@ -995,14 +991,13 @@ app.post('/api/proveedores', (req, res) => {
             return res.status(400).json({ error: 'Ya existe un proveedor con ese número de teléfono' });
         }
         
-        db.query(`INSERT INTO proveedores (Nombre, Empresa, Num_celular, Operador) VALUES (?, ?, ?, ?)`, 
-            [Nombre.trim(), Empresa.trim(), Num_celular.trim(), Operador || null], 
+        db.query(`INSERT INTO proveedores (Nombre, Empresa, Num_celular, Operador, Numero_Empresa, Operador_Empresa, Direccion_Empresa) VALUES (?, ?, ?, ?, ?, ?, ?)`, 
+            [Nombre.trim(), Empresa.trim(), Num_celular.trim(), Operador || null, Numero_Empresa || null, Operador_Empresa || null, Direccion_Empresa || null], 
             (err, result) => {
                 if (err) {
                     console.error('Error insertando proveedor:', err);
                     return res.status(500).json({ error: err.sqlMessage });
                 }
-                console.log('POST /api/proveedores - Proveedor creado ID:', result.insertId);
                 res.json({ message: "Proveedor creado exitosamente", Id_Proveedor: result.insertId });
             }
         );
@@ -1011,9 +1006,7 @@ app.post('/api/proveedores', (req, res) => {
 
 app.put('/api/proveedores/:id', (req, res) => {
     const { id } = req.params;
-    const { Nombre, Empresa, Num_celular, Operador } = req.body;
-    
-    console.log(`PUT /api/proveedores/${id} - Body:`, req.body);
+    const { Nombre, Empresa, Num_celular, Operador, Numero_Empresa, Operador_Empresa, Direccion_Empresa } = req.body;
     
     if (!Nombre || Nombre.trim() === '') {
         return res.status(400).json({ error: 'El nombre del proveedor es requerido' });
@@ -1034,8 +1027,8 @@ app.put('/api/proveedores/:id', (req, res) => {
             return res.status(400).json({ error: 'Ya existe otro proveedor con ese número de teléfono' });
         }
         
-        db.query(`UPDATE proveedores SET Nombre = ?, Empresa = ?, Num_celular = ?, Operador = ? WHERE Id_Proveedor = ?`, 
-            [Nombre.trim(), Empresa.trim(), Num_celular.trim(), Operador || null, id], 
+        db.query(`UPDATE proveedores SET Nombre = ?, Empresa = ?, Num_celular = ?, Operador = ?, Numero_Empresa = ?, Operador_Empresa = ?, Direccion_Empresa = ? WHERE Id_Proveedor = ?`, 
+            [Nombre.trim(), Empresa.trim(), Num_celular.trim(), Operador || null, Numero_Empresa || null, Operador_Empresa || null, Direccion_Empresa || null, id], 
             (err, result) => {
                 if (err) {
                     console.error('Error actualizando proveedor:', err);
@@ -1044,7 +1037,6 @@ app.put('/api/proveedores/:id', (req, res) => {
                 if (result.affectedRows === 0) {
                     return res.status(404).json({ error: "Proveedor no encontrado" });
                 }
-                console.log(`PUT /api/proveedores/${id} - Proveedor actualizado`);
                 res.json({ message: "Proveedor actualizado correctamente" });
             }
         );
@@ -1053,8 +1045,6 @@ app.put('/api/proveedores/:id', (req, res) => {
 
 app.delete('/api/proveedores/:id', (req, res) => {
     const { id } = req.params;
-    
-    console.log(`DELETE /api/proveedores/${id} - Solicitado`);
     
     db.query(`SELECT * FROM abastecimiento WHERE Id_Proveedor = ?`, [id], (err, results) => {
         if (err) {
@@ -1504,12 +1494,14 @@ app.get('/api/ventas', (req, res) => {
             COALESCE(cl.Apellido, '') AS Apellido,
             COALESCE(ca.Nombre_Canal, 'No especificado') AS Nombre_Canal,
             COALESCE(mp.Nombre_Metodo, 'No especificado') AS Nombre_Metodo,
-            COALESCE(p.Nombre, 'Producto no disponible') AS Producto,
-            COALESCE(o.CantidadVendida, 0) AS CantidadVendida,
-            COALESCE(o.PrecioUnitario, 0) AS PrecioUnitario,
-            COALESCE(o.Subtotal, 0) AS Subtotal,
+            p.Nombre AS Producto,
+            o.CantidadVendida,
+            o.PrecioUnitario,
+            o.Subtotal,
             c.Id_Vendedor,
-            t.NombreCompleto AS Nombre_Vendedor
+            c.Id_cliente,
+            t.NombreCompleto AS Nombre_Vendedor,
+            o.NumFactura AS Orden_NumFactura
         FROM compra c
         LEFT JOIN clientes cl ON c.Id_cliente = cl.Id_cliente
         LEFT JOIN canal ca ON c.Id_Canal = ca.Id_Canal
@@ -1517,16 +1509,20 @@ app.get('/api/ventas', (req, res) => {
         LEFT JOIN orden o ON c.Num_Factura = o.NumFactura
         LEFT JOIN producto p ON o.Id_Producto = p.Id_Producto
         LEFT JOIN trabajadores t ON c.Id_Vendedor = t.Id_Trabajador
-        ORDER BY c.Fecha DESC, c.Num_Factura DESC
+        ORDER BY c.Fecha DESC, c.Num_Factura DESC, o.NumFactura ASC
     `;
     
     db.query(sql, (err, results) => {
         if (err) {
-            console.error('Error en GET /api/ventas:', err);
+            console.error('❌ Error en GET /api/ventas:', err);
             return res.status(500).json({ error: err.sqlMessage });
         }
-        console.log(`GET /api/ventas - Enviando ${results.length} registros`);
-        res.json(results);
+        
+        // Filtrar: solo devolver compras que TENGAN órdenes válidas
+        // Si Producto es NULL, significa que esta factura NO tiene órdenes
+        const comprasConOrdenes = results.filter(r => r.Producto !== null);
+        
+        res.json(comprasConOrdenes);
     });
 });
 
@@ -1547,26 +1543,147 @@ app.get('/api/metodos-pago', (req, res) => {
 app.post('/api/compras', (req, res) => {
     const { Num_Factura, Id_cliente, Id_Vendedor, Id_Canal, Id_Metodo, Fecha, Monto, Cajero } = req.body;
     
-    const sql = `INSERT INTO compra (Num_Factura, Id_cliente, Id_Vendedor, Id_Canal, Id_Metodo, Fecha, Monto, Cajero) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-    db.query(sql, [Num_Factura, Id_cliente, Id_Vendedor, Id_Canal, Id_Metodo, Fecha, Monto, Cajero || null], (err, result) => {
-        if (err) {
-            console.error('Error en POST /api/compras:', err);
-            return res.status(500).json({ error: err.sqlMessage });
+    console.log('💳 POST /api/compras recibido:', { Num_Factura, Id_cliente, Id_Vendedor, Id_Canal, Id_Metodo, Fecha, Monto });
+    
+    // VALIDACIÓN ESTRICTA
+    if (!Num_Factura) {
+        console.error('❌ Falta Num_Factura');
+        return res.status(400).json({ error: 'Num_Factura es obligatoria' });
+    }
+    
+    if (!Id_Vendedor || isNaN(Id_Vendedor)) {
+        console.error('❌ Id_Vendedor inválido:', Id_Vendedor);
+        return res.status(400).json({ error: 'Id_Vendedor es obligatorio y debe ser un número' });
+    }
+    
+   if (Id_Canal !== null && Id_Canal !== undefined && Id_Canal !== '') {
+        if (isNaN(Id_Canal)) {
+            console.error('❌ Id_Canal inválido:', Id_Canal);
+            return res.status(400).json({ error: 'Id_Canal debe ser un número' });
         }
-        res.json({ message: "Compra guardada", Num_Factura: Num_Factura });
+    }
+    
+    if (!Id_Metodo || isNaN(Id_Metodo)) {
+        console.error('❌ Id_Metodo inválido:', Id_Metodo);
+        return res.status(400).json({ error: 'Id_Metodo es obligatorio y debe ser un número' });
+    }
+    
+    if (!Fecha) {
+        console.error('❌ Falta Fecha');
+        return res.status(400).json({ error: 'Fecha es obligatoria' });
+    }
+    
+    if (Monto === undefined || isNaN(Monto) || parseFloat(Monto) <= 0) {
+        console.error('❌ Monto inválido:', Monto);
+        return res.status(400).json({ error: 'Monto debe ser un número mayor a 0' });
+    }
+    
+    console.log('✅ Validación de datos completada');
+    
+    const sql = `INSERT INTO compra (Num_Factura, Id_cliente, Id_Vendedor, Id_Canal, Id_Metodo, Fecha, Monto, Cajero) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    
+    db.query(sql, [Num_Factura, Id_cliente || null, Id_Vendedor, Id_Canal, Id_Metodo, Fecha, Monto, Cajero || null], (err, result) => {
+        if (err) {
+            console.error('❌ Error al insertar compra:', err);
+            if (err.code === 'ER_DUP_ENTRY') {
+                return res.status(400).json({ error: 'La factura #' + Num_Factura + ' ya existe en el sistema' });
+            }
+            return res.status(500).json({ error: 'Error al guardar compra: ' + err.message });
+        }
+        
+        console.log('✅ Compra insertada - ID:', result.insertId, '| Factura #:', Num_Factura);
+        res.json({ 
+            message: "Compra guardada exitosamente", 
+            Num_Factura: Num_Factura, 
+            compraId: result.insertId,
+            monto: Monto
+        });
     });
 });
 
 app.post('/api/ordenes', (req, res) => {
     const { Id_Producto, NumFactura, CantidadVendida, Subtotal, Fecha, PrecioUnitario } = req.body;
     
-    const sql = `INSERT INTO orden (Id_Producto, NumFactura, CantidadVendida, Subtotal, Fecha, PrecioUnitario) VALUES (?, ?, ?, ?, ?, ?)`;
-    db.query(sql, [Id_Producto, NumFactura, CantidadVendida, Subtotal, Fecha, PrecioUnitario], (err, result) => {
-        if (err) return res.status(500).json({ error: err.sqlMessage });
+    console.log('📝 POST /api/ordenes recibido:', { Id_Producto, NumFactura, CantidadVendida, Subtotal, Fecha, PrecioUnitario });
+    
+    // VALIDACIÓN ESTRICTA
+    if (!Id_Producto) {
+        console.error('❌ Falta Id_Producto');
+        return res.status(400).json({ error: 'Id_Producto es obligatorio' });
+    }
+    
+    if (!NumFactura) {
+        console.error('❌ Falta NumFactura');
+        return res.status(400).json({ error: 'NumFactura es obligatorio' });
+    }
+    
+    if (!CantidadVendida || isNaN(CantidadVendida) || parseInt(CantidadVendida) <= 0) {
+        console.error('❌ CantidadVendida inválida:', CantidadVendida);
+        return res.status(400).json({ error: 'CantidadVendida debe ser un número mayor a 0' });
+    }
+    
+    if (Subtotal === undefined || isNaN(Subtotal) || parseFloat(Subtotal) < 0) {
+        console.error('❌ Subtotal inválido:', Subtotal);
+        return res.status(400).json({ error: 'Subtotal es obligatorio y debe ser un número válido' });
+    }
+    
+    if (!Fecha) {
+        console.error('❌ Falta Fecha');
+        return res.status(400).json({ error: 'Fecha es obligatoria' });
+    }
+    
+    if (PrecioUnitario === undefined || isNaN(PrecioUnitario) || parseFloat(PrecioUnitario) <= 0) {
+        console.error('❌ PrecioUnitario inválido:', PrecioUnitario);
+        return res.status(400).json({ error: 'PrecioUnitario debe ser un número mayor a 0' });
+    }
+    
+    // Verificar que el producto existe
+    const checkProductoSql = 'SELECT Id_Producto FROM producto WHERE Id_Producto = ?';
+    db.query(checkProductoSql, [Id_Producto], (err, results) => {
+        if (err) {
+            console.error('❌ Error al verificar producto:', err);
+            return res.status(500).json({ error: 'Error al verificar producto: ' + err.message });
+        }
         
-        db.query(`UPDATE stock SET Cantidad = Cantidad - ? WHERE Id_Producto = ?`, [CantidadVendida, Id_Producto], (err2) => {
-            if (err2) return res.status(500).json({ error: err2.sqlMessage });
-            res.json({ message: "Orden guardada" });
+        if (!results || results.length === 0) {
+            console.error('❌ Producto no existe:', Id_Producto);
+            return res.status(400).json({ error: 'El producto #' + Id_Producto + ' no existe en la base de datos' });
+        }
+        
+        console.log('✅ Producto verificado:', Id_Producto);
+        
+        // Insertar orden
+        const insertSql = `INSERT INTO orden (Id_Producto, NumFactura, CantidadVendida, Subtotal, Fecha, PrecioUnitario) 
+                          VALUES (?, ?, ?, ?, ?, ?)`;
+        
+        db.query(insertSql, [Id_Producto, NumFactura, CantidadVendida, Subtotal, Fecha, PrecioUnitario], (err, result) => {
+            if (err) {
+                console.error('❌ Error al insertar orden:', err);
+                return res.status(500).json({ error: 'Error al guardar orden: ' + err.message });
+            }
+            
+            console.log('✅ Orden insertada - ID:', result.insertId);
+            
+            // Actualizar stock
+            const updateStockSql = `UPDATE stock SET Cantidad = Cantidad - ? WHERE Id_Producto = ?`;
+            
+            db.query(updateStockSql, [CantidadVendida, Id_Producto], (err2, result2) => {
+                if (err2) {
+                    console.error('⚠️  Advertencia: Error al actualizar stock:', err2);
+                    // No lanzar error aquí, la orden ya se guardó
+                    return res.status(500).json({ error: 'Orden guardada pero error al actualizar stock: ' + err2.message });
+                }
+                
+                console.log(`✅ Stock actualizado - Producto: ${Id_Producto}, Cantidad reducida: ${CantidadVendida}`);
+                res.json({ 
+                    message: "Orden guardada exitosamente", 
+                    orderId: result.insertId,
+                    producto: Id_Producto,
+                    factura: NumFactura,
+                    cantidad: CantidadVendida
+                });
+            });
         });
     });
 });

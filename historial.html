@@ -3,9 +3,253 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Historial de Compras - Tienda Chepita</title>
+    <title>Historial de Compras - Variedades Chepita</title>
     <link rel="stylesheet" href="historial.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        /* Estilos adicionales para consistencia */
+        .badge-express {
+            background-color: #ff9800;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .badge-normal {
+            background-color: #4CAF50;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .hc-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .hc-badge-canal {
+            background-color: #2196F3;
+            color: white;
+        }
+        .hc-badge-metodo {
+            background-color: #9C27B0;
+            color: white;
+        }
+        .vendedor-badge {
+            background-color: #607D8B;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .btn-detalles {
+            background-color: #A63C89;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+        .btn-detalles:hover {
+            background-color: #8B2E6E;
+        }
+        .btn-volver-top {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn-volver-top:hover {
+            background-color: #5a6268;
+        }
+        .btn-admin {
+            background-color: #A63C89;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn-admin:hover {
+            background-color: #8B2E6E;
+        }
+        .btn-delete-mode {
+            background-color: #dc3545;
+        }
+        .btn-delete-mode:hover {
+            background-color: #c82333;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .hc-error {
+            text-align: center;
+            padding: 20px;
+            color: #dc3545;
+        }
+        .hc-no-results {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .filtros {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filtros input, .filtros select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .filtros input {
+            flex: 1;
+            min-width: 200px;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .custom-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .custom-modal {
+            background-color: white;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .modal-ancha {
+            max-width: 900px;
+        }
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            background-color: white;
+        }
+        .modal-body {
+            padding: 20px;
+        }
+        .modal-actions {
+            padding: 0 20px;
+            margin-top: 10px;
+            text-align: right;
+        }
+        .btn-descargar-pdf {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .custom-modal-buttons {
+            padding: 20px;
+            border-top: 1px solid #e2e8f0;
+            text-align: right;
+        }
+        .custom-modal-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+        .custom-modal-btn.cancel {
+            background-color: #6c757d;
+            color: white;
+        }
+        .hc-detalle-header {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .hc-detalle-header p {
+            margin: 5px 0;
+        }
+        .hc-subtitle {
+            margin: 20px 0 10px 0;
+            color: #333;
+        }
+        .hc-detalle-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .hc-detalle-table th, .hc-detalle-table td {
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+            text-align: left;
+        }
+        .hc-detalle-table th {
+            background-color: #f1f5f9;
+        }
+        .hc-total {
+            font-weight: bold;
+            color: #A63C89;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
 
@@ -18,13 +262,19 @@
     </div>
 
     <div class="filtros">
-        <input type="text" id="busqueda" placeholder="Buscar por factura, cliente o fecha..." onkeyup="buscarEnTiempoReal()">
+        <input 
+            type="text" 
+            id="busqueda" 
+            placeholder="🔍 Buscar factura, cliente o fecha..." 
+            onkeyup="buscarEnTiempoReal()"
+            title="Busca por número de factura, nombre del cliente o fecha"
+            maxlength="100">
 
-<select id="tipoVentaSelect" onchange="filtrarEnTiempoReal()">
-    <option value="">Todos los tipos</option>
-    <option value="normal">Normal</option>
-    <option value="express">Express</option>
-</select>
+        <select id="tipoVentaSelect" onchange="filtrarEnTiempoReal()">
+            <option value="">Todos los tipos</option>
+            <option value="normal">Normal</option>
+            <option value="express">Express</option>
+        </select>
 
         <select id="canalSelect" onchange="filtrarEnTiempoReal()">
             <option value="">Todos los canales</option>
@@ -47,7 +297,7 @@
                     <th>Tipo de Venta</th>
                     <th>Cliente</th>
                     <th>Fecha</th>
-                    <th>Canal</th>
+                    <th id="canalHeader">Canal</th>
                     <th>Metodo de Pago</th>
                     <th>Monto Total</th>
                     <th>Vendedor</th>
@@ -55,7 +305,7 @@
                 </tr>
             </thead>
             <tbody id="resultadosCompras">
-                <tr><td colspan="8" class="loading">Cargando compras...</td></tr>
+                <tr><td colspan="9" class="loading">Cargando compras...</td></tr>
             </tbody>
         </table>
     </div>
@@ -74,10 +324,76 @@
     let canales = [];
     let metodos = [];
 
+    // ==================== FUNCIONES DE VALIDACIÓN ====================
+    function normalizarTerminoBusqueda(termino) {
+        if (!termino || typeof termino !== 'string') return '';
+        const resultado = termino.trim().toLowerCase();
+        console.log('📝 normalizarTerminoBusqueda:', termino, '→', resultado);
+        return resultado;
+    }
+
+    function validarFactura(numFactura, termino) {
+        if (!numFactura || !termino) return false;
+        try {
+            const facturaStr = numFactura.toString().trim();
+            let terminoBusqueda = termino;
+            if (terminoBusqueda.startsWith('#')) {
+                terminoBusqueda = terminoBusqueda.substring(1);
+            }
+            const resultado = facturaStr === terminoBusqueda;
+            if (resultado) {
+                console.log(`✓ Factura EXACTA: #${facturaStr} === "${terminoBusqueda}"`);
+            }
+            return resultado;
+        } catch (e) {
+            console.error('Error en validarFactura:', e);
+            return false;
+        }
+    }
+
+    function validarCliente(cliente, termino) {
+        if (!cliente || !termino) return false;
+        try {
+            const clienteNormalizado = cliente
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
+            return clienteNormalizado.includes(termino.normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+        } catch (e) {
+            console.error('Error en validarCliente:', e);
+            return false;
+        }
+    }
+
+    function validarFecha(fecha, termino) {
+        if (!fecha || !termino) return false;
+        const tieneBarra = termino.includes('/');
+        const tieneGuion = termino.includes('-');
+        const esAño = /^\d{4}$/.test(termino);
+        if (!tieneBarra && !tieneGuion && !esAño) {
+            return false;
+        }
+        try {
+            if (fecha.includes(termino)) return true;
+            const fechaObj = new Date(fecha);
+            const fechaFormatada = fechaObj.toLocaleDateString('es-ES');
+            if (fechaFormatada.includes(termino)) return true;
+            const mesAño = `${String(fechaObj.getMonth() + 1).padStart(2, '0')}/${fechaObj.getFullYear()}`;
+            if (mesAño.includes(termino)) return true;
+            const mesAñoGuion = `${fechaObj.getFullYear()}-${String(fechaObj.getMonth() + 1).padStart(2, '0')}`;
+            if (mesAñoGuion.includes(termino)) return true;
+            const diaMes = `${String(fechaObj.getDate()).padStart(2, '0')}/${String(fechaObj.getMonth() + 1).padStart(2, '0')}`;
+            if (diaMes.includes(termino)) return true;
+            return false;
+        } catch (e) {
+            console.error('Error validando fecha:', e);
+            return false;
+        }
+    }
+
     async function cargarDatos() {
         try {
             console.log('Cargando datos...');
-            
             const [canalesRes, metodosRes] = await Promise.all([
                 fetch(`${API}/canales`),
                 fetch(`${API}/metodos-pago`)
@@ -106,28 +422,26 @@
             await cargarCompras();
         } catch (error) {
             console.error('Error en cargarDatos:', error);
-            document.getElementById('resultadosCompras').innerHTML = '<tr><td colspan="8" class="hc-error">Error al cargar los datos</td></tr>';
+            document.getElementById('resultadosCompras').innerHTML = '<tr><td colspan="9" class="hc-error">Error al cargar los datos</td></tr>';
         }
     }
 
     async function cargarCompras() {
         const resultadosDiv = document.getElementById('resultadosCompras');
-        resultadosDiv.innerHTML = '<tr><td colspan="8" class="loading">Cargando compras...</td></tr>';
+        resultadosDiv.innerHTML = '<tr><td colspan="9" class="loading">Cargando compras...</td></tr>';
         
         try {
             const respuesta = await fetch(`${API}/ventas`);
-            
             if (!respuesta.ok) {
                 throw new Error(`Error HTTP: ${respuesta.status}`);
             }
             
             window.compras = await respuesta.json();
-const compras = window.compras;
-            console.log(compras);
+            const compras = window.compras;
             console.log('Ventas recibidas:', compras.length);
             
             if (!compras || compras.length === 0) {
-                resultadosDiv.innerHTML = '<tr><td colspan="8" class="hc-no-results">No hay compras registradas</td></tr>';
+                resultadosDiv.innerHTML = '<tr><td colspan="9" class="hc-no-results">No hay compras registradas</td></tr>';
                 return;
             }
             
@@ -140,30 +454,21 @@ const compras = window.compras;
                 if (!facturas[numFactura]) {
                     facturas[numFactura] = {
                         NumFactura: numFactura,
-                       TipoVenta: (() => {
-
-    const fechaVenta = new Date(venta.Fecha);
-    const fechaExpress = new Date('2026-06-03');
-
-    if (fechaVenta < fechaExpress) {
-        return 'normal';
-    }
-
-   const tieneCliente =
-    venta.Nombre_Cliente &&
-    venta.Nombre_Cliente.trim() !== '' &&
-    venta.Nombre_Cliente !== 'Cliente no registrado';
-
-return tieneCliente
-    ? 'normal'
-    : 'express';
-
-})(),
+                        TipoVenta: (() => {
+                            const fechaVenta = new Date(venta.Fecha);
+                            const fechaExpress = new Date('2026-06-03');
+                            if (fechaVenta < fechaExpress) {
+                                return 'normal';
+                            }
+                            const tieneCliente = venta.Nombre_Cliente &&
+                                venta.Nombre_Cliente.trim() !== '' &&
+                                venta.Nombre_Cliente !== 'Cliente no registrado';
+                            return tieneCliente ? 'normal' : 'express';
+                        })(),
                         Fecha: venta.Fecha,
-                        Cliente:
-    venta.Nombre_Cliente === 'Cliente no registrado'
-        ? '--'
-        : `${venta.Nombre_Cliente || ''} ${venta.Apellido || ''}`.trim(),
+                        Cliente: venta.Nombre_Cliente === 'Cliente no registrado'
+                            ? '--'
+                            : `${venta.Nombre_Cliente || ''} ${venta.Apellido || ''}`.trim(),
                         Canal: venta.Nombre_Canal,
                         Metodo: venta.Nombre_Metodo,
                         Monto: parseFloat(venta.Monto) || 0,
@@ -185,18 +490,21 @@ return tieneCliente
             // Aplicar filtros
             const busqueda = document.getElementById('busqueda').value.toLowerCase();
             const canalFiltro = document.getElementById('canalSelect').value;
-            const tipoVentaFiltro =
-    document.getElementById('tipoVentaSelect').value;
+            const tipoVentaFiltro = document.getElementById('tipoVentaSelect').value;
             const metodoFiltro = document.getElementById('metodoSelect').value;
             
             let facturasArray = Object.values(facturas);
             
             if (busqueda) {
-                facturasArray = facturasArray.filter(f => 
-                    f.NumFactura.toString().includes(busqueda) ||
-                    f.Cliente.toLowerCase().includes(busqueda) ||
-                    (f.Fecha && f.Fecha.includes(busqueda))
-                );
+                const terminoBusqueda = normalizarTerminoBusqueda(busqueda);
+                if (terminoBusqueda.length > 0) {
+                    facturasArray = facturasArray.filter(f => {
+                        const validaFactura = validarFactura(f.NumFactura, terminoBusqueda);
+                        const validaCliente = validarCliente(f.Cliente, terminoBusqueda);
+                        const validaFecha = validarFecha(f.Fecha, terminoBusqueda);
+                        return validaFactura || validaCliente || validaFecha;
+                    });
+                }
             }
             
             if (canalFiltro) {
@@ -210,45 +518,50 @@ return tieneCliente
             }
 
             if (tipoVentaFiltro) {
-
-    facturasArray = facturasArray.filter(
-        f => f.TipoVenta === tipoVentaFiltro
-    );
-
-}
+                facturasArray = facturasArray.filter(f => f.TipoVenta === tipoVentaFiltro);
+            }
+            
+            // Filtrar compras sin productos
+            facturasArray = facturasArray.filter(f => f.productos && f.productos.length > 0);
             
             if (facturasArray.length === 0) {
-                resultadosDiv.innerHTML = '<tr><td colspan="8" class="hc-no-results">No se encontraron compras</td></tr>';
+                const busquedaVal = document.getElementById('busqueda').value.trim();
+                const tipoVentaVal = document.getElementById('tipoVentaSelect').value;
+                const canalVal = document.getElementById('canalSelect').value;
+                const metodoVal = document.getElementById('metodoSelect').value;
+                
+                let mensaje = 'No se encontraron compras';
+                if (busquedaVal || tipoVentaVal || canalVal || metodoVal) {
+                    mensaje = '⚠️ No se encontraron resultados. Intenta con:<br>• Número de factura completo o parcial<br>• Nombre del cliente (ej: Juan, María)<br>• Fecha (ej: 10/06/2026 o 2026-06)<br>• O limpia los filtros para ver todas';
+                }
+                resultadosDiv.innerHTML = `<tr><td colspan="9" class="hc-no-results" style="padding: 20px; text-align: center; line-height: 1.6;">${mensaje}</td></tr>`;
                 return;
             }
             
             let html = "";
             facturasArray.forEach(compra => {
                 const fecha = compra.Fecha ? new Date(compra.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
-                const clienteNombre =
-    compra.TipoVenta === 'express'
-        ? '--'
-        : (compra.Cliente || 'Cliente no especificado');
+                const clienteNombre = compra.TipoVenta === 'express'
+                    ? '--'
+                    : (compra.Cliente || 'Cliente no especificado');
                 const vendedor = compra.Vendedor || 'No asignado';
-
+                
+                // MOSTRAR CANAL SOLO SI LA VENTA ES NORMAL
+                const mostrarCanal = compra.TipoVenta === 'normal';
+                const canalHtml = mostrarCanal 
+                    ? `<td><span class="hc-badge hc-badge-canal">${escapeHtml(compra.Canal || 'N/A')}</span></td>`
+                    : `<td style="text-align: center; color: #999;">--</td>`;
+                
                 html += `<tr>
                     <td>#${escapeHtml(compra.NumFactura)}</td>
                     <td>
-    <span class="${
-        compra.TipoVenta === 'express'
-            ? 'badge-express'
-            : 'badge-normal'
-    }">
-        ${
-            compra.TipoVenta === 'express'
-                ? 'Express'
-                : 'Normal'
-        }
-    </span>
-</td>
+                        <span class="${compra.TipoVenta === 'express' ? 'badge-express' : 'badge-normal'}">
+                            ${compra.TipoVenta === 'express' ? 'Express' : 'Normal'}
+                        </span>
+                    </td>
                     <td>${escapeHtml(clienteNombre)}</td>
                     <td>${escapeHtml(fecha)}</td>
-                    <td><span class="hc-badge hc-badge-canal">${escapeHtml(compra.Canal || 'N/A')}</span></td>
+                    ${canalHtml}
                     <td><span class="hc-badge hc-badge-metodo">${escapeHtml(compra.Metodo || 'N/A')}</span></td>
                     <td>C$ ${compra.Monto.toFixed(2)}</td>
                     <td><span class="vendedor-badge">${escapeHtml(vendedor)}</span></td>
@@ -264,7 +577,7 @@ return tieneCliente
             
         } catch (error) {
             console.error('Error cargando compras:', error);
-            resultadosDiv.innerHTML = '<tr><td colspan="8" class="hc-error">Error al cargar los datos</td></tr>';
+            resultadosDiv.innerHTML = '<tr><td colspan="9" class="hc-error">Error al cargar los datos</td></tr>';
         }
     }
 
@@ -277,7 +590,29 @@ return tieneCliente
 
     function buscarEnTiempoReal() {
         clearTimeout(window.busquedaTimeout);
-        window.busquedaTimeout = setTimeout(() => cargarCompras(), 500);
+        const inputBusqueda = document.getElementById('busqueda');
+        const terminoBusqueda = inputBusqueda.value.trim();
+        
+        if (terminoBusqueda.length === 0) {
+            inputBusqueda.style.borderColor = '';
+            window.busquedaTimeout = setTimeout(() => cargarCompras(), 500);
+            return;
+        }
+        
+        const soloEspacios = /^\s*$/.test(terminoBusqueda);
+        if (soloEspacios) {
+            inputBusqueda.style.borderColor = '#ff9800';
+            return;
+        }
+        
+        if (terminoBusqueda.length >= 1) {
+            inputBusqueda.style.borderColor = '#4CAF50';
+        }
+        
+        window.busquedaTimeout = setTimeout(() => {
+            cargarCompras();
+            inputBusqueda.style.borderColor = '';
+        }, 500);
     }
 
     function filtrarEnTiempoReal() {
@@ -285,10 +620,26 @@ return tieneCliente
     }
 
     function limpiarFiltros() {
-        document.getElementById('busqueda').value = '';
-        document.getElementById('canalSelect').value = '';
-        document.getElementById('metodoSelect').value = '';
-        document.getElementById('tipoVentaSelect').value = '';
+        const inputBusqueda = document.getElementById('busqueda');
+        const canalSelect = document.getElementById('canalSelect');
+        const metodoSelect = document.getElementById('metodoSelect');
+        const tipoVentaSelect = document.getElementById('tipoVentaSelect');
+        
+        if (inputBusqueda) {
+            inputBusqueda.value = '';
+            inputBusqueda.style.borderColor = '';
+        }
+        if (canalSelect) canalSelect.value = '';
+        if (metodoSelect) metodoSelect.value = '';
+        if (tipoVentaSelect) tipoVentaSelect.value = '';
+        
+        if (inputBusqueda) {
+            inputBusqueda.style.borderColor = '#4CAF50';
+            setTimeout(() => {
+                inputBusqueda.style.borderColor = '';
+            }, 500);
+        }
+        
         cargarCompras();
     }
 
@@ -300,103 +651,89 @@ return tieneCliente
         content.innerHTML = '<div class="loading">Cargando detalles...</div>';
         
         try {
-            const respuesta = await fetch(`${API}/ventas`);
-            const compras = await respuesta.json();
+            const compras = window.compras || [];
             const compraFiltrada = compras.filter(c => c.NumFactura == numFactura);
             
-            if (compraFiltrada.length > 0) {
-                const primera = compraFiltrada[0];
-                const fecha = primera.Fecha ? new Date(primera.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
-               const fechaVenta = new Date(primera.Fecha);
-const fechaExpress = new Date('2026-06-03');
-
-const tipoVenta =
-    fechaVenta < fechaExpress
-        ? 'normal'
-        : (
-            primera.Id_cliente
-                ? 'normal'
-                : 'express'
-        );
-
-const cliente =
-    tipoVenta === 'express'
-        ? null
-        : (`${primera.Nombre_Cliente || ''} ${primera.Apellido || ''}`.trim() || 'Cliente no especificado');
-                const vendedor = primera.Nombre_Vendedor || 'No asignado';
-                const canal = primera.Nombre_Canal || 'N/A';
-                const metodo = primera.Nombre_Metodo || 'N/A';
-                const montoTotal = parseFloat(primera.Monto) || 0;
-                
-                let productosHtml = '';
-                compraFiltrada.forEach(p => {
-                    if (p.Producto) {
-                        productosHtml += `<tr>
-                            <td>${escapeHtml(p.Producto)}</td>
-                            <td>${p.CantidadVendida || 0}</td>
-                            <td>C$ ${parseFloat(p.PrecioUnitario || 0).toFixed(2)}</td>
-                            <td>C$ ${parseFloat(p.Subtotal || 0).toFixed(2)}</td>
-                        </tr>`;
-                    }
-                });
-                
-                let html = `
-                    <div class="modal-header">
-                        <h3>Detalles de la Compra</h3>
-                    </div>
-                    <div class="modal-actions">
-                        <button class="btn-descargar-pdf" onclick="descargarFacturaPDF(${numFactura})">
-                            Descargar Factura PDF
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="hc-detalle-header">
-                            <p><strong>Factura:</strong> #${primera.NumFactura}</p>
-                            ${
-tipoVenta === 'normal'
-? `
-<p>
-<strong>Cliente:</strong>
-${escapeHtml(cliente)}
-</p>
-`
-: ''
-}
-                            <p><strong>Fecha:</strong> ${escapeHtml(fecha)}</p>
-                            <p><strong>Canal:</strong> <span class="hc-badge hc-badge-canal">${escapeHtml(canal)}</span></p>
-                            <p><strong>Metodo de Pago:</strong> <span class="hc-badge hc-badge-metodo">${escapeHtml(metodo)}</span></p>
-                            <p><strong>Vendedor:</strong> <span class="vendedor-badge">${escapeHtml(vendedor)}</span></p>
-                        </div>
-
-                        <h3 class="hc-subtitle">Productos</h3>
-                        <table class="hc-detalle-table">
-                            <thead>
-                                <tr>
-                                    <th>Producto</th>
-                                    <th>Cantidad</th>
-                                    <th>Precio Unitario</th>
-                                    <th>Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${productosHtml}
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="3"><strong>Total</strong></td>
-                                    <td><span class="hc-total">C$ ${montoTotal.toFixed(2)}</span></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                    <div class="custom-modal-buttons">
-                        <button class="custom-modal-btn cancel" onclick="cerrarModal()">Cerrar</button>
-                    </div>
-                `;
-                content.innerHTML = html;
-            } else {
+            if (compraFiltrada.length === 0) {
                 content.innerHTML = '<div class="hc-error">No se encontraron detalles</div>';
+                return;
             }
+            
+            const primera = compraFiltrada[0];
+            const fecha = primera.Fecha ? new Date(primera.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
+            const fechaVenta = new Date(primera.Fecha);
+            const fechaExpress = new Date('2026-06-03');
+
+            const tipoVenta = fechaVenta < fechaExpress ? 'normal' : (primera.Id_cliente ? 'normal' : 'express');
+            const cliente = tipoVenta === 'express' ? null : (`${primera.Nombre_Cliente || ''} ${primera.Apellido || ''}`.trim() || 'Cliente no especificado');
+            const vendedor = primera.Nombre_Vendedor || 'No asignado';
+            const canal = primera.Nombre_Canal || 'N/A';
+            const metodo = primera.Nombre_Metodo || 'N/A';
+            const montoTotal = parseFloat(primera.Monto) || 0;
+            
+            let productosHtml = '';
+            const productosValidos = compraFiltrada.filter(p => p.Producto !== null && p.Producto !== undefined);
+            
+            if (productosValidos.length === 0) {
+                productosHtml = `<tr><td colspan="4" style="text-align: center; padding: 20px; color: #d32f2f; font-weight: bold;">
+                    ⚠️ ERROR: Esta factura no tiene productos registrados en el sistema.
+                </td></tr>`;
+            } else {
+                productosValidos.forEach(p => {
+                    productosHtml += `<tr>
+                        <td>${escapeHtml(p.Producto)}</td>
+                        <td>${p.CantidadVendida || 0}</td>
+                        <td>C$ ${parseFloat(p.PrecioUnitario || 0).toFixed(2)}</td>
+                        <td>C$ ${parseFloat(p.Subtotal || 0).toFixed(2)}</td>
+                    </tr>`;
+                });
+            }
+            
+            let html = `
+                <div class="modal-header">
+                    <h3>Detalles de la Compra</h3>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-descargar-pdf" onclick="descargarFacturaPDF(${numFactura})">
+                        Descargar Factura PDF
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="hc-detalle-header">
+                        <p><strong>Factura:</strong> #${primera.NumFactura}</p>
+                        ${tipoVenta === 'normal' ? `<p><strong>Cliente:</strong> ${escapeHtml(cliente)}</p>` : ''}
+                        <p><strong>Fecha:</strong> ${escapeHtml(fecha)}</p>
+                        ${tipoVenta === 'normal' ? `<p><strong>Canal:</strong> <span class="hc-badge hc-badge-canal">${escapeHtml(canal)}</span></p>` : ''}
+                        <p><strong>Metodo de Pago:</strong> <span class="hc-badge hc-badge-metodo">${escapeHtml(metodo)}</span></p>
+                        <p><strong>Vendedor:</strong> <span class="vendedor-badge">${escapeHtml(vendedor)}</span></p>
+                    </div>
+
+                    <h3 class="hc-subtitle">Productos</h3>
+                    <table class="hc-detalle-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unitario</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${productosHtml}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3"><strong>Total</strong></td>
+                                <td><span class="hc-total">C$ ${montoTotal.toFixed(2)}</span></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="custom-modal-buttons">
+                    <button class="custom-modal-btn cancel" onclick="cerrarModal()">Cerrar</button>
+                </div>
+            `;
+            content.innerHTML = html;
         } catch (error) {
             console.error('Error:', error);
             content.innerHTML = '<div class="hc-error">Error al cargar detalles</div>';
@@ -405,8 +742,7 @@ ${escapeHtml(cliente)}
 
     async function descargarFacturaPDF(numFactura) {
         try {
-            const respuesta = await fetch(`${API}/ventas`);
-            const compras = await respuesta.json();
+            const compras = window.compras || [];
             const compraFiltrada = compras.filter(c => c.NumFactura == numFactura);
             
             if (compraFiltrada.length === 0) {
@@ -416,59 +752,55 @@ ${escapeHtml(cliente)}
             
             const primera = compraFiltrada[0];
             const fecha = primera.Fecha ? new Date(primera.Fecha).toLocaleDateString('es-ES') : 'Sin fecha';
-            const hora = primera.Fecha ? new Date(primera.Fecha).toLocaleTimeString('es-ES') : 'Sin hora';
+            const horaActual = new Date().toLocaleTimeString('es-ES');
             const cliente = `${primera.Nombre_Cliente || ''} ${primera.Apellido || ''}`.trim() || 'Cliente no especificado';
-            const esVentaExpress =
-    !primera.Nombre_Cliente ||
-    primera.Nombre_Cliente === 'Cliente no registrado';
+            const esVentaExpress = !primera.Nombre_Cliente || primera.Nombre_Cliente === 'Cliente no registrado';
             const vendedor = primera.Nombre_Vendedor || 'No asignado';
             const canal = primera.Nombre_Canal || 'N/A';
             const metodo = primera.Nombre_Metodo || 'N/A';
             const montoTotal = parseFloat(primera.Monto) || 0;
             
+            const productosValidos = compraFiltrada.filter(p => p.Producto !== null && p.Producto !== undefined);
+            
+            if (productosValidos.length === 0) {
+                alert('❌ Error: Esta factura no tiene productos registrados en el sistema. No se puede generar el PDF.');
+                return;
+            }
+            
             let productosHtml = '';
-            compraFiltrada.forEach(p => {
-                if (p.Producto) {
-                    productosHtml += `<tr>
-                        <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0;">${escapeHtml(p.Producto)}</td>
-                        <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: center;">${p.CantidadVendida || 0}</td>
-                        <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: right;">C$ ${parseFloat(p.PrecioUnitario || 0).toFixed(2)}</td>
-                        <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: right;">C$ ${parseFloat(p.Subtotal || 0).toFixed(2)}</td>
-                    </tr>`;
-                }
+            productosValidos.forEach(p => {
+                productosHtml += `<tr>
+                    <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0;">${escapeHtml(p.Producto)}</td>
+                    <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: center;">${p.CantidadVendida || 0}</td>
+                    <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: right;">C$ ${parseFloat(p.PrecioUnitario || 0).toFixed(2)}</td>
+                    <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: right;">C$ ${parseFloat(p.Subtotal || 0).toFixed(2)}</td>
+                </tr>`;
             });
             
             const facturaHTML = `
                 <div class="factura-pdf" id="facturaParaPDF">
                     <div class="factura-header">
                         <div class="factura-logo" style="text-align: center;">
-                            <svg width="80" height="80" viewBox="0 0 100 100" style="margin: 0 auto;">
-                                <circle cx="50" cy="50" r="45" fill="#A63C89" opacity="0.15"/>
-                                <circle cx="50" cy="50" r="35" fill="#A63C89" opacity="0.3"/>
-                                <circle cx="50" cy="50" r="25" fill="#A63C89"/>
-                                <text x="50" y="58" text-anchor="middle" fill="white" font-size="24" font-weight="bold" font-family="Arial">C</text>
-                            </svg>
+                            <img src="imagenes/LOGOCHEPITA.png" alt="Variedades Chepita" style="width: 120px; height: 120px; object-fit: contain;">
                         </div>
-                        <div class="factura-titulo">Tienda Chepita</div>
+                        <div class="factura-titulo">Variedades Chepita</div>
                         <div class="factura-subtitulo">RUC: 1234567890001</div>
-                        <div class="factura-subtitulo">Direccion: Managua, Nicaragua</div>
-                        <div class="factura-subtitulo">Tel: +505 1234 5678</div>
+                        <div class="factura-subtitulo">Mercado Roberto Huembe - Calle Principal de los Comedores Populares Módulo E -353</div>
+                        <div class="factura-subtitulo">Managua, Nicaragua</div>
+                        <div class="factura-subtitulo">Tel: +505 8983 7034</div>
                     </div>
                     
                     <div class="factura-info">
                         <div>
                             <p><strong>Factura N°:</strong> ${primera.NumFactura}</p>
                             <p><strong>Fecha:</strong> ${fecha}</p>
-                            <p><strong>Hora:</strong> ${hora}</p>
+                            <p><strong>Vendedor:</strong> ${escapeHtml(vendedor)}</p>
+                            <p><strong>Hora:</strong> ${horaActual}</p>
                         </div>
                         <div>
-                            ${!esVentaExpress ? `
-<p><strong>Cliente:</strong> ${escapeHtml(cliente)}</p>
-` : ''}
-
-<p><strong>Vendedor:</strong> ${escapeHtml(vendedor)}</p>
-<p><strong>Canal:</strong> ${escapeHtml(canal)}</p>
-<p><strong>Metodo de Pago:</strong> ${escapeHtml(metodo)}</p>
+                            ${!esVentaExpress ? `<p><strong>Cliente:</strong> ${escapeHtml(cliente)}</p>` : ''}
+                            ${!esVentaExpress ? `<p><strong>Canal:</strong> ${escapeHtml(canal)}</p>` : ''}
+                            <p><strong>Metodo de Pago:</strong> ${escapeHtml(metodo)}</p>
                         </div>
                     </div>
                     
@@ -493,7 +825,7 @@ ${escapeHtml(cliente)}
                     <div class="factura-footer">
                         <p>Gracias por su compra</p>
                         <p>Este documento es una factura comercial valida</p>
-                        <p>Tienda Chepita - Calidad y Confianza</p>
+                        <p>Variedades Chepita - Calidad y Confianza</p>
                     </div>
                 </div>
             `;
@@ -503,7 +835,7 @@ ${escapeHtml(cliente)}
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Factura #${numFactura} - Tienda Chepita</title>
+                    <title>Factura #${numFactura} - Variedades Chepita</title>
                     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
                     <style>
                         * {
@@ -621,7 +953,6 @@ ${escapeHtml(cliente)}
                 </html>
             `);
             ventana.document.close();
-            
         } catch (error) {
             console.error('Error generando factura:', error);
             alert('Error al generar la factura');

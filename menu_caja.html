@@ -8,40 +8,6 @@
     <link rel="stylesheet" href="menu_caja.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .modal-mensaje {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(6px);
-        }
-        .modal-contenido {
-            background: white;
-            padding: 25px;
-            border-radius: 20px;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-        }
-        .modal-btn {
-            background: linear-gradient(135deg, #e7b6d4, #caa0d8);
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 40px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        .modal-btn.cancelar {
-            background: #f3e8ff;
-            color: #b57acb;
-        }
         .loading-overlay {
             display: none;
             position: fixed;
@@ -70,34 +36,8 @@
     </style>
 </head>
 
-<div id="modalTipoVenta" class="modal-mensaje">
-    <div class="modal-contenido">
-
-        <h3>Seleccione el tipo de venta</h3>
-
-        <div style="display:flex;flex-direction:column;gap:15px;margin-top:20px;">
-
-            <button class="modal-btn"
-                    onclick="abrirVentaNormal()">
-                Venta Normal
-            </button>
-
-            <button class="modal-btn"
-                    onclick="abrirVentaExpress()">
-                Venta Express
-            </button>
-
-            <button class="modal-btn cancelar"
-                    onclick="cerrarModalTipoVenta()">
-                Cancelar
-            </button>
-
-        </div>
-
-    </div>
-</div>
-
 <body>
+
 <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-spinner"></div>
     <p style="margin-top: 15px; color: #caa0d8;">Cargando...</p>
@@ -116,8 +56,12 @@
             <img src="imagenes/marcas/logo4.png">
         </div>
     </div>
-    <div class="clock-box" id="currentDate"></div>
+    <div class="top-bar-right">
+        <div class="clock-box" id="topBarDate"></div>
+        <div class="clock-box" id="topBarTime"></div>
+    </div>
 </header>
+
 <div class="admin-container">
 
     <div class="admin-header">
@@ -125,21 +69,18 @@
             <i class="fas fa-cash-register"></i>
             <span>Cajero</span>
         </div>
-        <div class="header-date" id="headerDate"></div>
-    </div>
-
-    <div class="main-title">
-        <h1>TIENDA CHEPITA</h1>
-        <p class="subtitle">Panel de Caja</p>
-    </div>
-
-    <div class="welcome-card">
-        <div class="welcome-icon">
-            <i class="fas fa-user"></i>
+        <div class="main-title-inline">
+            <h1>TIENDA CHEPITA</h1>
+            <p class="subtitle">Panel de Caja</p>
         </div>
-        <div class="welcome-text">
-            <h3 id="nombreCajero">Cargando...</h3>
-            <p id="infoUsuario">Seleccione una opción para continuar</p>
+        <div class="welcome-card-header">
+            <div class="welcome-icon-small">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="welcome-text">
+                <h3 id="nombreCajero">Cargando...</h3>
+                <p id="infoUsuario">Bienvenida al sistema</p>
+            </div>
         </div>
     </div>
 
@@ -171,6 +112,69 @@
         </div>
     </div>
 
+    <!-- SECCIÓN TIPO DE VENTA (se despliega al hacer clic en Nueva Venta) -->
+    <div class="tipo-venta-section" id="tipoVentaSection">
+        <div class="tipo-venta-header">
+            <i class="fas fa-magic"></i>
+            <div>
+                <h2>Seleccione el tipo de venta</h2>
+                <p>Elija la modalidad que mejor se adapte a su operación</p>
+            </div>
+        </div>
+
+        <div class="tipo-venta-grid">
+
+            <!-- Venta Normal -->
+            <div class="tipo-venta-card" onclick="abrirVentaNormal()">
+                <div class="tipo-venta-left">
+                    <div class="tipo-icon tipo-normal">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="tipo-info">
+                        <h3>Venta Normal</h3>
+                        <p>Registra completo del cliente, productos y datos de la venta.</p>
+                        <span class="tipo-badge">Ideal para clientes frecuentes.</span>
+                    </div>
+                </div>
+                <div class="tipo-venta-right">
+                    <ul class="tipo-features">
+                        <li><i class="fas fa-check-circle"></i> Registro de cliente</li>
+                        <li><i class="fas fa-check-circle"></i> Datos completos</li>
+                    </ul>
+                    <div class="tipo-arrow tipo-arrow-normal">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Venta Express -->
+            <div class="tipo-venta-card tipo-express" onclick="abrirVentaExpress()">
+                <div class="tipo-venta-left">
+                    <div class="tipo-icon tipo-express-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="tipo-info">
+                        <h3 class="express-title">Venta Express</h3>
+                        <p>Venta rápida sin registrar información del cliente.</p>
+                        <span class="tipo-badge tipo-badge-express">Ideal para clientes con prisa.</span>
+                    </div>
+                </div>
+                <div class="tipo-venta-right">
+                    <ul class="tipo-features tipo-features-express">
+                        <li><i class="fas fa-check-circle"></i> Sin registro de cliente</li>
+                        <li><i class="fas fa-check-circle"></i> Menos pasos</li>
+                        <li><i class="fas fa-check-circle"></i> Más rápida</li>
+                        <li><i class="fas fa-check-circle"></i> Atención inmediata</li>
+                    </ul>
+                    <div class="tipo-arrow tipo-arrow-express">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
     <div class="logout-section">
         <button class="btn-logout" onclick="mostrarModalCerrarJornada()">
             <i class="fas fa-sign-out-alt"></i>
@@ -184,14 +188,15 @@
     </div>
 </div>
 
-<div id="modalMensaje" class="modal-mensaje"> 
-    <div class="modal-contenido"> 
-        <h3 id="modalTitulo"></h3> 
-        <p id="modalTexto"></p> 
-        <div class="modal-buttons" id="modalBotones"> 
-            <button class="modal-btn" onclick="cerrarModal()">Aceptar</button> 
-        </div> 
-    </div> 
+<!-- Modal genérico -->
+<div id="modalMensaje" class="modal-mensaje">
+    <div class="modal-contenido">
+        <h3 id="modalTitulo"></h3>
+        <p id="modalTexto"></p>
+        <div class="modal-buttons" id="modalBotones">
+            <button class="modal-btn" onclick="cerrarModal()">Aceptar</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -199,24 +204,24 @@
         const overlay = document.getElementById('loadingOverlay');
         if (overlay) overlay.style.display = 'flex';
     }
-    
+
     function ocultarLoading() {
         const overlay = document.getElementById('loadingOverlay');
         if (overlay) overlay.style.display = 'none';
     }
-    
+
     // ========== VERIFICACIÓN DE SESIÓN ==========
     (function verificarSesionAlInicio() {
         const token = localStorage.getItem('token');
         const trabajadorStr = localStorage.getItem('trabajador');
-        
+
         if (!token || !trabajadorStr || trabajadorStr === 'null' || trabajadorStr === 'undefined') {
             localStorage.clear();
             sessionStorage.clear();
             window.location.replace('PAG.html');
             return;
         }
-        
+
         fetch('/api/verificar-sesion-trabajador', {
             method: 'GET',
             headers: {
@@ -242,160 +247,137 @@
         });
     })();
 
-    // ========== BLOQUEAR BOTÓN ATRÁS - QUE NO SALGA DE MENU CAJA ==========
+    // ========== BLOQUEAR BOTÓN ATRÁS ==========
     (function bloquearBotonAtras() {
-        // Esta es la solución más simple y efectiva
-        // Cada vez que se intenta ir atrás, se añade un nuevo estado hacia adelante
-        
-        // Crear un montón de estados falsos en el historial
         for (let i = 0; i < 100; i++) {
             history.pushState(null, null, location.href);
         }
-        
-        // Escuchar el evento de ir atrás
-        window.addEventListener('popstate', function() {
-            // Verificar sesión
+        window.addEventListener('popstate', function () {
             if (!localStorage.getItem('token') || !localStorage.getItem('trabajador')) {
                 window.location.replace('PAG.html');
                 return;
             }
-            
-            // En lugar de dejar que el navegador vaya atrás,
-            // forzamos un nuevo estado hacia adelante
-            // Esto hace que el botón "atrás" no haga nada visible
             history.go(1);
-            
-            // También agregamos un nuevo estado para mantener el buffer
             setTimeout(() => {
                 history.pushState(null, null, location.href);
             }, 10);
         });
     })();
 
-    function mostrarModal(titulo, texto, tipo) {
-        const modal = document.getElementById('modalMensaje');
-        const tituloElem = document.getElementById('modalTitulo');
-        const textoElem = document.getElementById('modalTexto');
-        const botonesDiv = document.getElementById('modalBotones');
-        
-        tituloElem.textContent = titulo;
-        textoElem.textContent = texto;
-        botonesDiv.innerHTML = '<button class="modal-btn" onclick="cerrarModal()">Aceptar</button>';
-        modal.style.display = 'flex';
+    // ========== MODALES ==========
+    function mostrarModal(titulo, texto) {
+        document.getElementById('modalTitulo').textContent = titulo;
+        document.getElementById('modalTexto').textContent = texto;
+        document.getElementById('modalBotones').innerHTML = '<button class="modal-btn" onclick="cerrarModal()">Aceptar</button>';
+        document.getElementById('modalMensaje').style.display = 'flex';
     }
-    
+
     function mostrarModalConfirmacion(titulo, texto, accionSi) {
-        const modal = document.getElementById('modalMensaje');
-        const tituloElem = document.getElementById('modalTitulo');
-        const textoElem = document.getElementById('modalTexto');
-        const botonesDiv = document.getElementById('modalBotones');
-        
-        tituloElem.textContent = titulo;
-        textoElem.textContent = texto;
-        
-        botonesDiv.innerHTML = `
+        document.getElementById('modalTitulo').textContent = titulo;
+        document.getElementById('modalTexto').textContent = texto;
+        document.getElementById('modalBotones').innerHTML = `
             <button class="modal-btn" id="btnConfirmarSi">Sí, continuar</button>
             <button class="modal-btn cancelar" id="btnConfirmarNo">Cancelar</button>
         `;
-        
-        document.getElementById('btnConfirmarSi').onclick = function() {
+        document.getElementById('btnConfirmarSi').onclick = function () {
             cerrarModal();
             if (accionSi) accionSi();
         };
-        document.getElementById('btnConfirmarNo').onclick = function() {
-            cerrarModal();
-        };
-        
-        modal.style.display = 'flex';
+        document.getElementById('btnConfirmarNo').onclick = cerrarModal;
+        document.getElementById('modalMensaje').style.display = 'flex';
     }
-    
+
     function cerrarModal() {
         document.getElementById('modalMensaje').style.display = 'none';
     }
-    
+
+    // ========== INFO CAJERO ==========
     function cargarInfoCajero() {
         const trabajadorStr = localStorage.getItem('trabajador');
-        
         if (trabajadorStr && trabajadorStr !== 'null' && trabajadorStr !== 'undefined') {
             try {
                 const trabajador = JSON.parse(trabajadorStr);
                 document.getElementById('nombreCajero').textContent = trabajador.nombre || 'Trabajador';
-                document.getElementById('infoUsuario').innerHTML = `<i class="fas fa-user-circle"></i> Bienvenido/a`;
+                document.getElementById('infoUsuario').textContent = 'Bienvenida al sistema';
             } catch (e) {
                 console.error('Error parseando trabajador:', e);
                 document.getElementById('nombreCajero').textContent = 'Error al cargar datos';
-                setTimeout(function() {
-                    window.location.replace('PAG.html');
-                }, 2000);
+                setTimeout(() => window.location.replace('PAG.html'), 2000);
             }
         } else {
             document.getElementById('nombreCajero').textContent = 'Sesión no iniciada';
-            mostrarModal('Sesión no iniciada', 'Por favor, inicie sesión nuevamente.', 'error');
-            setTimeout(function() {
-                window.location.replace('PAG.html');
-            }, 2000);
+            mostrarModal('Sesión no iniciada', 'Por favor, inicie sesión nuevamente.');
+            setTimeout(() => window.location.replace('PAG.html'), 2000);
         }
     }
-    
+
+    // ========== TIPO DE VENTA (inline, sin modal overlay) ==========
     function iniciarVenta() {
-    document.getElementById('modalTipoVenta').style.display = 'flex';
-}
+        const section = document.getElementById('tipoVentaSection');
+        const isVisible = section.classList.contains('visible');
+        if (isVisible) {
+            section.classList.remove('visible');
+        } else {
+            section.classList.add('visible');
+            setTimeout(() => {
+                section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 50);
+        }
+    }
 
-function cerrarModalTipoVenta() {
-    document.getElementById('modalTipoVenta').style.display = 'none';
-}
+    function abrirVentaNormal() {
+        localStorage.setItem('tipoVenta', 'normal');
+        window.location.href = 'nueva_compra.html';
+    }
 
-function abrirVentaNormal() {
-    localStorage.setItem('tipoVenta', 'normal');
-    window.location.href = 'nueva_compra.html';
-}
+    function abrirVentaExpress() {
+        localStorage.setItem('tipoVenta', 'express');
+        window.location.href = 'nueva_compra.html';
+    }
 
-function abrirVentaExpress() {
-    localStorage.setItem('tipoVenta', 'express');
-    window.location.href = 'nueva_compra.html';
-}
-    
+    // ========== INVENTARIO ==========
     function consultarInventario() {
         mostrarLoading();
         window.location.replace('inventario_caja.html');
     }
-    
+
+    // ========== CERRAR JORNADA ==========
     function mostrarModalCerrarJornada() {
-        mostrarModalConfirmacion('Cerrar Jornada', '¿Está seguro que desea cerrar la jornada? Se cerrará su sesión.', function() {
-            localStorage.clear();
-            sessionStorage.clear();
-            window.location.replace('PAG.html');
-        });
-    }
-    
-    function mostrarFecha() {
-        const fecha = new Date();
-        const options = { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric',
-            weekday: 'long'
-        };
-        const fechaFormateada = fecha.toLocaleDateString('es-ES', options);
-        const dateElements = document.querySelectorAll('#currentDate, #headerDate');
-        dateElements.forEach(element => {
-            if (element) {
-                element.innerHTML = `<i class="fas fa-calendar-alt"></i> ${fechaFormateada}`;
+        mostrarModalConfirmacion(
+            'Cerrar Jornada',
+            '¿Está seguro que desea cerrar la jornada? Se cerrará su sesión.',
+            function () {
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.replace('PAG.html');
             }
-        });
+        );
     }
-    
-    window.onload = function() {
+
+    // ========== RELOJ Y FECHA ==========
+    function actualizarReloj() {
+        const ahora = new Date();
+        const opcFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const fecha = ahora.toLocaleDateString('es-ES', opcFecha);
+        const hora = ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+
+        const dateEl = document.getElementById('topBarDate');
+        const timeEl = document.getElementById('topBarTime');
+        if (dateEl) dateEl.innerHTML = `<i class="fas fa-calendar-alt"></i> ${fecha}`;
+        if (timeEl) timeEl.innerHTML = `<i class="fas fa-clock"></i> ${hora}`;
+    }
+
+    // ========== INIT ==========
+    window.onload = function () {
         cargarInfoCajero();
-        mostrarFecha();
+        actualizarReloj();
+        setInterval(actualizarReloj, 1000);
         ocultarLoading();
     };
-    
-    window.onclick = function(event) {
+
+    window.onclick = function (event) {
         const modal = document.getElementById('modalMensaje');
-        if (event.target === modal) {
-            cerrarModal();
-        }
+        if (event.target === modal) cerrarModal();
     };
 </script>
 </body>

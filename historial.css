@@ -64,6 +64,16 @@ body {
     transform: scale(1.05);
 }
 
+.filtros-header {
+    padding: 15px 30px 0;
+    background: #f8fafc;
+}
+
+.filtros-header p {
+    margin: 0;
+    padding: 0;
+}
+
 .filtros {
     display: flex;
     gap: 15px;
@@ -91,7 +101,24 @@ body {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.filtro-categoria-wrapper {
+/* Validaciones para el input de búsqueda */
+#busqueda {
+    transition: all 0.3s ease;
+}
+
+#busqueda[style*="borderColor: rgb(76, 175, 80)"] {
+    background-color: #f1f8f6;
+}
+
+#busqueda[style*="borderColor: rgb(255, 152, 0)"] {
+    background-color: #fff3e0;
+}
+
+.filtros small {
+    width: 100%;
+    margin-top: 5px;
+    text-align: left;
+}
     display: flex;
     flex: 1;
     gap: 5px;

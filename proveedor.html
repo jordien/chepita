@@ -5,380 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Proveedores</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: url("imagenes/FONDO.png") no-repeat center center fixed;
-            background-size: cover;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .prov-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-            backdrop-filter: blur(6px);
-            overflow: hidden;
-        }
-
-        .prov-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 30px;
-            background: linear-gradient(135deg, #A63C89, #7B2C6B);
-            color: white;
-        }
-
-        .prov-header h1 {
-            margin: 0;
-            font-weight: 700;
-            font-size: 1.8rem;
-        }
-
-        .prov-back-btn-top {
-            background: white;
-            color: #A63C89;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .prov-back-btn-top:hover {
-            background: #f3e5f5;
-        }
-
-        .prov-actions {
-            display: flex;
-            gap: 15px;
-            padding: 20px 30px;
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .prov-add-btn {
-            background: linear-gradient(135deg, #10b981, #0d9488);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 14px;
-            border: none;
-            cursor: pointer;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .prov-add-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .prov-search-group {
-            flex: 2;
-            min-width: 200px;
-        }
-
-        #buscarProveedor {
-            padding: 10px 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 14px;
-            width: 100%;
-            font-family: 'Poppins', sans-serif;
-            box-sizing: border-box;
-        }
-
-        #buscarProveedor:focus {
-            outline: none;
-            border-color: #A63C89;
-        }
-
-        .table-container {
-            padding: 20px 30px 30px;
-            overflow-x: auto;
-        }
-
-        .prov-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .prov-table th {
-            background: #f1f5f9;
-            padding: 14px 16px;
-            text-align: left;
-            font-weight: 700;
-            color: #1e293b;
-            font-size: 13px;
-            border-bottom: 2px solid #e2e8f0;
-        }
-
-        .prov-table td {
-            padding: 10px 16px;
-            vertical-align: middle;
-            border-bottom: 1px solid #e2e8f0;
-            color: #334155;
-            font-size: 14px;
-        }
-
-        .prov-table tbody tr:hover {
-            background: #f8fafc;
-        }
-
-        .estado-activo {
-            background: #dcfce7;
-            color: #166534;
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .estado-inactivo {
-            background: #fee2e2;
-            color: #991b1b;
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .edit-btn {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 6px 14px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .edit-btn:hover {
-            transform: translateY(-1px);
-        }
-
-        /* MODAL - ESTA ES LA PARTE IMPORTANTE */
-        .prov-modal-overlay {
-            display: none !important;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-        }
-
-        .prov-modal-overlay.active {
-            display: flex !important;
-        }
-
-        .prov-modal {
-            background: white;
-            padding: 30px;
-            border-radius: 24px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 85vh;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-        }
-
-        .prov-modal h2 {
-            color: #1e293b;
-            font-weight: 700;
-            text-align: center;
-        }
-
-        .prov-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .prov-group label {
-            font-weight: 600;
-            color: #334155;
-            font-size: 14px;
-        }
-
-        .prov-group input,
-        .prov-group select {
-            padding: 12px 14px;
-            border-radius: 12px;
-            border: 2px solid #e2e8f0;
-            font-size: 14px;
-            width: 100%;
-            font-family: 'Poppins', sans-serif;
-            box-sizing: border-box;
-        }
-
-        .prov-group input:focus,
-        .prov-group select:focus {
-            outline: none;
-            border-color: #A63C89;
-        }
-
-        .prov-group small {
-            font-size: 11px;
-            color: #6c757d;
-        }
-
-        .prov-modal-save {
-            padding: 12px;
-            background: linear-gradient(135deg, #A63C89, #7B2C6B);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 15px;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .prov-modal-cancel {
-            padding: 12px;
-            background: #e2e8f0;
-            color: #1e293b;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 15px;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .error-border {
-            border-color: #ef4444 !important;
-        }
-
-        .valid-border {
-            border-color: #10b981 !important;
-        }
-
-        /* MODALES SECUNDARIOS */
-        .custom-modal-overlay,
-        .success-modal-overlay,
-        .error-modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            justify-content: center;
-            align-items: center;
-            z-index: 10001;
-        }
-
-        .custom-modal,
-        .success-modal,
-        .error-modal {
-            background: white;
-            padding: 28px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        .custom-modal h3,
-        .success-modal h3,
-        .error-modal h3 {
-            margin-bottom: 15px;
-            font-weight: 700;
-        }
-
-        .custom-modal p,
-        .success-modal p,
-        .error-modal p {
-            margin-bottom: 20px;
-            color: #4b5563;
-        }
-
-        .custom-modal-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-
-        .custom-modal-btn {
-            padding: 10px 24px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .custom-modal-btn.confirm {
-            background: #A63C89;
-            color: white;
-        }
-
-        .custom-modal-btn.cancel {
-            background: #e2e8f0;
-            color: #1e293b;
-        }
-
-        .success-modal-btn,
-        .error-modal-btn {
-            padding: 10px 24px;
-            background: #A63C89;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #6c757d;
-        }
-
-        body.modal-open {
-            overflow: hidden;
-        }
-
-        @media (max-width: 768px) {
-            body { padding: 12px; }
-            .prov-header { flex-direction: column; gap: 12px; text-align: center; }
-            .prov-header h1 { font-size: 1.5rem; }
-            .prov-back-btn-top { width: 100%; }
-            .prov-actions { flex-direction: column; padding: 15px 20px; }
-            .prov-search-group { width: 100%; }
-            .table-container { padding: 15px; }
-            .prov-table th, .prov-table td { padding: 8px 12px; font-size: 12px; }
-            .prov-modal { padding: 20px; width: 95%; }
-        }
-    </style>
+    <link rel="stylesheet" href="proveedor.css">
 </head>
 <body>
     <div class="prov-container">
@@ -395,23 +22,9 @@
         </div>
 
         <div class="table-container">
-            <table class="prov-table">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Empresa</th>
-                        <th>Telefono</th>
-                        <th>Operador</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaProveedores">
-                    <tr>
-                        <td colspan="6" class="loading">Cargando proveedores...<\/td>
-                    </tr>
-                </tbody>
-            </table>
+            <div id="tablaProveedores" class="prov-cards-container">
+                <div class="loading" style="grid-column:1/-1;text-align:center;padding:40px;">Cargando proveedores...</div>
+            </div>
         </div>
     </div>
 
@@ -419,12 +32,12 @@
     <div id="modalProveedor" class="prov-modal-overlay">
         <div class="prov-modal">
             <h2 id="modalTitle">Agregar Proveedor</h2>
-            
             <input type="hidden" id="editIdProveedor" value="">
 
             <div class="prov-group">
                 <label>Nombre Completo</label>
-                <input type="text" id="provNombre" placeholder="Nombre completo" onkeypress="soloLetrasYEspacios(event)" oninput="validarNombreCompleto(this)">
+                <input type="text" id="provNombre" placeholder="Nombre completo"
+                    onkeypress="soloLetrasYEspacios(event)" oninput="validarNombreCompleto(this)">
                 <small>Maximo 70 caracteres. Cada palabra hasta 12 caracteres. Solo letras</small>
             </div>
 
@@ -435,7 +48,8 @@
 
             <div class="prov-group">
                 <label>Telefono (8 digitos)</label>
-                <input type="tel" id="provTelefono" placeholder="Numero de telefono" maxlength="8" onkeypress="soloNumeros(event)" oninput="validarTelefonoYOperador(this)">
+                <input type="tel" id="provTelefono" placeholder="Numero de telefono"
+                    maxlength="8" onkeypress="soloNumeros(event)" oninput="validarTelefonoYOperador(this)">
                 <small>Debe tener al menos 3 digitos diferentes</small>
             </div>
 
@@ -448,7 +62,28 @@
                 </select>
             </div>
 
-            <div class="prov-group" id="estadoGroup" style="display: none;">
+            <div class="prov-group">
+                <label>Teléfono de la Empresa</label>
+                <input type="tel" id="provNumeroEmpresa" placeholder="Teléfono de contacto de la empresa"
+                    maxlength="8" onkeypress="soloNumeros(event)" oninput="validarTelefonoEmpresa(this)">
+                <small>Debe tener exactamente 8 dígitos y al menos 3 dígitos diferentes</small>
+            </div>
+
+            <div class="prov-group">
+                <label>Operador de la Empresa</label>
+                <select id="tipoOperadorEmpresa">
+                    <option value="">Seleccione un operador</option>
+                    <option value="Claro">Claro</option>
+                    <option value="Tigo">Tigo</option>
+                </select>
+            </div>
+
+            <div class="prov-group">
+                <label>Dirección de la Empresa</label>
+                <input type="text" id="provDireccionEmpresa" placeholder="Dirección completa de la empresa">
+            </div>
+
+            <div class="prov-group" id="estadoGroup" style="display:none;">
                 <label>Estado del Proveedor</label>
                 <select id="estadoProveedor">
                     <option value="Activo">Activo</option>
@@ -478,7 +113,7 @@
         <div class="success-modal">
             <h3>Exito</h3>
             <p id="successMessage">Operacion realizada exitosamente</p>
-            <button class="success-modal-btn" onclick="cerrarSuccessModal()">Aceptar</button>
+            <button class="success-modal-btn" id="successModalBtn">Aceptar</button>
         </div>
     </div>
 
@@ -487,32 +122,80 @@
         <div class="error-modal">
             <h3>Error</h3>
             <p id="errorMessage">Ha ocurrido un error</p>
-            <button class="error-modal-btn" onclick="cerrarErrorModal()">Aceptar</button>
+            <button class="error-modal-btn" id="errorModalBtn">Aceptar</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE DETALLES -->
+    <div id="modalDetallesProveedor" class="prov-details-modal-overlay">
+        <div class="prov-details-modal">
+            <div class="prov-details-header">
+                <h2>Detalles del Proveedor</h2>
+                <button class="prov-details-close-btn" onclick="cerrarModalDetalles()">&times;</button>
+            </div>
+
+            <div class="prov-details-section">
+                <div class="prov-details-section-title">Información Personal</div>
+                <div class="prov-details-item">
+                    <span class="prov-details-label">Nombre Completo</span>
+                    <span class="prov-details-value" id="detNombre">-</span>
+                </div>
+                <div class="prov-details-item">
+                    <span class="prov-details-label">Teléfono</span>
+                    <span class="prov-details-value" id="detTelefono">-</span>
+                </div>
+                <div class="prov-details-item">
+                    <span class="prov-details-label">Operador</span>
+                    <span class="prov-details-value" id="detOperador">-</span>
+                </div>
+                <div class="prov-details-item">
+                    <span class="prov-details-label">Estado</span>
+                    <span class="prov-details-value" id="detEstado">-</span>
+                </div>
+            </div>
+
+            <div class="prov-details-section">
+                <div class="prov-details-section-title">Información de la Empresa</div>
+                <div class="prov-details-item">
+                    <span class="prov-details-label">Nombre de Empresa</span>
+                    <span class="prov-details-value" id="detEmpresa">-</span>
+                </div>
+                <div class="prov-details-item">
+                    <span class="prov-details-label">Teléfono</span>
+                    <span class="prov-details-value" id="detNumeroEmpresa">-</span>
+                </div>
+                <div class="prov-details-item">
+                    <span class="prov-details-label">Operador</span>
+                    <span class="prov-details-value" id="detOperadorEmpresa">-</span>
+                </div>
+                <div class="prov-details-item">
+                    <span class="prov-details-label">Dirección</span>
+                    <span class="prov-details-value" id="detDireccion">-</span>
+                </div>
+            </div>
+
+            <div class="prov-details-actions">
+                <button class="prov-details-edit-btn" id="btnEditarDesdeDetalles" onclick="editarDesdeDetalles()">Editar</button>
+                <button class="prov-details-close-action-btn" onclick="cerrarModalDetalles()">Cerrar</button>
+            </div>
         </div>
     </div>
 
     <script>
         // ========== PROTECCIÓN DE NAVEGACIÓN ==========
         (function bloquearBotonAtras() {
-            const paginaAdmin = 'menu_admin.html';
             const paginaLogin = 'PAG.html';
-            
-            // Verificar sesión
             const token = localStorage.getItem('token');
             const tipoUsuario = localStorage.getItem('tipoUsuario');
-            
+
             if (!token || tipoUsuario !== 'admin') {
                 window.location.replace(paginaLogin);
                 return;
             }
-            
-            // Verificar token con el servidor
+
             fetch('/api/verificar-sesion', {
                 method: 'GET',
-                headers: {
-                    'x-auth-token': token,
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'x-auth-token': token, 'Content-Type': 'application/json' }
             })
             .then(response => response.json())
             .then(data => {
@@ -523,52 +206,36 @@
                 }
             })
             .catch(error => {
-                console.error('Error verificando sesión:', error);
-                window.location.replace(paginaLogin);
+                console.warn('Advertencia al verificar sesión:', error);
             });
-            
-            // Crear buffer de estados en el historial
+
             for (let i = 0; i < 100; i++) {
                 history.pushState(null, null, location.href);
             }
-            
-            // Escuchar evento de ir atrás
+
             window.addEventListener('popstate', function() {
                 if (!localStorage.getItem('token') || localStorage.getItem('tipoUsuario') !== 'admin') {
                     window.location.replace(paginaLogin);
                     return;
                 }
-                
-                // Forzar ir hacia adelante (cancelar el "atrás")
                 history.go(1);
-                
-                // Mantener el buffer
-                setTimeout(() => {
-                    history.pushState(null, null, location.href);
-                }, 10);
+                setTimeout(() => history.pushState(null, null, location.href), 10);
             });
         })();
-        
+
         let proveedoresData = [];
         let estadosData = {};
         let nombresCompletosData = {};
 
-        // Función para abrir modal - IMPORTANTE
         function abrirModalProveedor() {
-            const modal = document.getElementById('modalProveedor');
-            modal.style.display = 'flex';
-            modal.classList.add('active');
+            document.getElementById('modalProveedor').classList.add('active');
             document.body.classList.add('modal-open');
-            console.log('Modal abierto'); // Para debug
         }
 
         function cerrarModalProveedor() {
-            const modal = document.getElementById('modalProveedor');
-            modal.style.display = 'none';
-            modal.classList.remove('active');
+            document.getElementById('modalProveedor').classList.remove('active');
             document.body.classList.remove('modal-open');
             limpiarModalProveedor();
-            console.log('Modal cerrado'); // Para debug
         }
 
         function limpiarModalProveedor() {
@@ -578,6 +245,10 @@
             document.getElementById('provTelefono').value = '';
             document.getElementById('provTelefono').classList.remove('error-border', 'valid-border');
             document.getElementById('tipoOperador').value = '';
+            document.getElementById('provNumeroEmpresa').value = '';
+            document.getElementById('provNumeroEmpresa').classList.remove('error-border', 'valid-border');
+            document.getElementById('tipoOperadorEmpresa').value = '';
+            document.getElementById('provDireccionEmpresa').value = '';
             document.getElementById('editIdProveedor').value = '';
             document.getElementById('estadoProveedor').value = 'Activo';
             document.getElementById('estadoGroup').style.display = 'none';
@@ -585,312 +256,204 @@
         }
 
         function abrirModalProveedorParaAgregar() {
-            console.log('Abriendo modal para agregar'); // Para debug
-            document.getElementById('modalTitle').textContent = 'Agregar Proveedor';
-            document.getElementById('editIdProveedor').value = '';
-            document.getElementById('provNombre').value = '';
-            document.getElementById('provEmpresa').value = '';
-            document.getElementById('provTelefono').value = '';
-            document.getElementById('tipoOperador').value = '';
-            document.getElementById('estadoGroup').style.display = 'none';
-            document.getElementById('provNombre').classList.remove('error-border', 'valid-border');
-            document.getElementById('provTelefono').classList.remove('error-border', 'valid-border');
+            limpiarModalProveedor();
             abrirModalProveedor();
         }
 
         function editarProveedor(idProveedor) {
-            console.log('Editando proveedor:', idProveedor); // Para debug
             const proveedor = proveedoresData.find(p => p.Id_Proveedor === idProveedor);
             if (!proveedor) return;
-            
+
             document.getElementById('modalTitle').textContent = 'Editar Proveedor';
             document.getElementById('editIdProveedor').value = proveedor.Id_Proveedor;
             document.getElementById('provNombre').value = nombresCompletosData[proveedor.Id_Proveedor] || proveedor.Nombre || '';
             document.getElementById('provEmpresa').value = proveedor.Empresa || '';
             document.getElementById('provTelefono').value = proveedor.Num_celular || '';
             document.getElementById('tipoOperador').value = proveedor.Operador || '';
+            document.getElementById('provNumeroEmpresa').value = proveedor.Numero_Empresa || '';
+            document.getElementById('tipoOperadorEmpresa').value = proveedor.Operador_Empresa || '';
+            document.getElementById('provDireccionEmpresa').value = proveedor.Direccion_Empresa || '';
             document.getElementById('estadoProveedor').value = estadosData[proveedor.Id_Proveedor] || 'Activo';
-            
+
             validarNombreCompleto(document.getElementById('provNombre'));
             validarTelefonoYOperador(document.getElementById('provTelefono'));
-            
+            validarTelefonoEmpresa(document.getElementById('provNumeroEmpresa'));
+
             document.getElementById('estadoGroup').style.display = 'block';
             abrirModalProveedor();
         }
 
-        // Asignar evento al boton
         document.addEventListener('DOMContentLoaded', function() {
-            const btnAgregar = document.getElementById('btnAgregarProveedor');
-            if (btnAgregar) {
-                btnAgregar.onclick = abrirModalProveedorParaAgregar;
-            }
+            document.getElementById('btnAgregarProveedor').onclick = abrirModalProveedorParaAgregar;
+            document.getElementById('errorModalBtn').onclick = cerrarErrorModal;
+            document.getElementById('successModalBtn').onclick = cerrarSuccessModal;
         });
-
-        function detectarOperadorPorNumero(telefono) {
-            if (!telefono || telefono.length < 8) return '';
-            const primerosDigitos = telefono.substring(0, 2);
-            if (primerosDigitos === '89' || primerosDigitos === '88' || primerosDigitos === '87' || 
-                primerosDigitos === '86' || primerosDigitos === '85' || primerosDigitos === '84' ||
-                primerosDigitos === '83' || primerosDigitos === '82' || primerosDigitos === '81') {
-                return 'Claro';
-            }
-            return '';
-        }
-
-        function validarTelefonoYOperador(input) {
-            let valor = input.value;
-            valor = valor.replace(/[^0-9]/g, '');
-            input.value = valor;
-            
-            if (valor.length === 8) {
-                if (!esNumeroValido(valor)) {
-                    input.classList.add('error-border');
-                    input.classList.remove('valid-border');
-                } else {
-                    input.classList.remove('error-border');
-                    input.classList.add('valid-border');
-                    const operadorDetectado = detectarOperadorPorNumero(valor);
-                    const selectOperador = document.getElementById('tipoOperador');
-                    if (operadorDetectado && !selectOperador.value) {
-                        selectOperador.value = operadorDetectado;
-                    }
-                }
-            } else {
-                input.classList.remove('error-border');
-                input.classList.remove('valid-border');
-            }
-        }
-
-        function soloLetrasYEspacios(event) {
-            const key = event.key;
-            const regex = /^[a-zA-ZáéíóúñÁÉÍÓÚÑ\s]$/;
-            if (!regex.test(key) && key !== 'Backspace' && key !== 'Tab' && key !== 'Enter' && key !== 'Delete' && key !== 'ArrowLeft' && key !== 'ArrowRight') {
-                event.preventDefault();
-            }
-        }
-
-        function soloNumeros(event) {
-            const key = event.key;
-            if (key !== 'Backspace' && key !== 'Tab' && key !== 'Enter' && key !== 'Delete' && key !== 'ArrowLeft' && key !== 'ArrowRight' && (key < '0' || key > '9')) {
-                event.preventDefault();
-            }
-        }
-
-        function validarNombreCompleto(input) {
-            let valor = input.value;
-            valor = valor.replace(/\s+/g, ' ');
-            input.value = valor;
-            
-            const palabras = valor.trim().split(/\s+/);
-            
-            for (let i = 0; i < palabras.length; i++) {
-                if (palabras[i].length > 12) {
-                    input.classList.add('error-border');
-                    input.classList.remove('valid-border');
-                    return false;
-                }
-            }
-            
-            if (valor.length > 70) {
-                input.classList.add('error-border');
-                input.classList.remove('valid-border');
-                return false;
-            }
-            
-            input.classList.remove('error-border');
-            input.classList.add('valid-border');
-            return true;
-        }
-
-        function esNumeroValido(telefono) {
-            if (!telefono || telefono.length !== 8) return false;
-            if (!/^\d+$/.test(telefono)) return false;
-            
-            const digitosUnicos = new Set(telefono.split(''));
-            if (digitosUnicos.size < 3) return false;
-            
-            let esPatronRepetitivo = true;
-            const primerPar = telefono.substring(0, 2);
-            for (let i = 0; i < telefono.length; i += 2) {
-                if (telefono.substring(i, i + 2) !== primerPar) {
-                    esPatronRepetitivo = false;
-                    break;
-                }
-            }
-            if (esPatronRepetitivo && primerPar[0] !== primerPar[1]) return false;
-            
-            if (digitosUnicos.size === 2) {
-                const primerDigito = telefono[0];
-                let primerGrupo = true;
-                let primerGrupoCompleto = true;
-                for (let i = 0; i < telefono.length; i++) {
-                    if (primerGrupo && telefono[i] !== primerDigito) {
-                        primerGrupo = false;
-                    }
-                    if (!primerGrupo && telefono[i] === primerDigito) {
-                        primerGrupoCompleto = false;
-                        break;
-                    }
-                }
-                if (primerGrupoCompleto) return false;
-            }
-            
-            const frecuencia = {};
-            for (let i = 0; i < telefono.length; i++) {
-                const digito = telefono[i];
-                frecuencia[digito] = (frecuencia[digito] || 0) + 1;
-                if (frecuencia[digito] > 4) return false;
-            }
-            
-            return true;
-        }
 
         function mostrarConfirmacion(mensaje, accionSi) {
             const modal = document.getElementById('confirmModal');
             document.getElementById('confirmMessage').innerText = mensaje;
-            modal.style.display = 'flex';
-            
+            modal.classList.add('active');
+
             const confirmYes = document.getElementById('confirmYes');
             const confirmNo = document.getElementById('confirmNo');
-            
-            const newConfirmYes = confirmYes.cloneNode(true);
-            const newConfirmNo = confirmNo.cloneNode(true);
-            confirmYes.parentNode.replaceChild(newConfirmYes, confirmYes);
-            confirmNo.parentNode.replaceChild(newConfirmNo, confirmNo);
-            
-            newConfirmYes.onclick = () => {
-                modal.style.display = 'none';
-                accionSi();
-            };
-            newConfirmNo.onclick = () => {
-                modal.style.display = 'none';
-            };
+            const newYes = confirmYes.cloneNode(true);
+            const newNo = confirmNo.cloneNode(true);
+            confirmYes.parentNode.replaceChild(newYes, confirmYes);
+            confirmNo.parentNode.replaceChild(newNo, confirmNo);
+
+            newYes.onclick = () => { modal.classList.remove('active'); accionSi(); };
+            newNo.onclick = () => { modal.classList.remove('active'); };
         }
-        
+
         function mostrarExito(mensaje, callback) {
             const modal = document.getElementById('successModal');
             document.getElementById('successMessage').innerText = mensaje;
-            modal.style.display = 'flex';
-            
-            const btn = document.querySelector('#successModal .success-modal-btn');
+            modal.classList.add('active');
+
+            const btn = document.getElementById('successModalBtn');
             const newBtn = btn.cloneNode(true);
             btn.parentNode.replaceChild(newBtn, btn);
-            
             newBtn.onclick = () => {
-                modal.style.display = 'none';
+                modal.classList.remove('active');
                 if (callback) callback();
             };
         }
-        
+
         function mostrarError(mensaje) {
-            const modal = document.getElementById('errorModal');
             document.getElementById('errorMessage').innerText = mensaje;
-            modal.style.display = 'flex';
+            document.getElementById('errorModal').classList.add('active');
         }
-        
+
         function cerrarErrorModal() {
-            document.getElementById('errorModal').style.display = 'none';
+            document.getElementById('errorModal').classList.remove('active');
         }
-        
+
         function cerrarSuccessModal() {
-            document.getElementById('successModal').style.display = 'none';
+            document.getElementById('successModal').classList.remove('active');
+        }
+
+        function abrirModalDetalles() {
+            document.getElementById('modalDetallesProveedor').classList.add('active');
+            document.body.classList.add('modal-open');
+        }
+
+        function cerrarModalDetalles() {
+            document.getElementById('modalDetallesProveedor').classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }
+
+        function verDetallesProveedor(idProveedor) {
+            const proveedor = proveedoresData.find(p => p.Id_Proveedor === idProveedor);
+            if (!proveedor) return;
+
+            const nombreCompleto = nombresCompletosData[proveedor.Id_Proveedor] || proveedor.Nombre || 'Sin nombre';
+            const estado = estadosData[proveedor.Id_Proveedor] || 'Activo';
+
+            document.getElementById('detNombre').textContent = nombreCompleto;
+            document.getElementById('detTelefono').textContent = proveedor.Num_celular || 'No especificado';
+            document.getElementById('detOperador').textContent = proveedor.Operador || 'No especificado';
+            document.getElementById('detEstado').textContent = estado;
+            document.getElementById('detEmpresa').textContent = proveedor.Empresa || 'No especificada';
+            document.getElementById('detNumeroEmpresa').textContent = proveedor.Numero_Empresa || 'No especificado';
+            document.getElementById('detOperadorEmpresa').textContent = proveedor.Operador_Empresa || 'No especificado';
+            document.getElementById('detDireccion').textContent = proveedor.Direccion_Empresa || 'No especificada';
+            document.getElementById('btnEditarDesdeDetalles').dataset.proveedorId = idProveedor;
+
+            abrirModalDetalles();
+        }
+
+        function editarDesdeDetalles() {
+            const idProveedor = document.getElementById('btnEditarDesdeDetalles').dataset.proveedorId;
+            cerrarModalDetalles();
+            setTimeout(() => editarProveedor(parseInt(idProveedor)), 300);
         }
 
         function volverAlMenuAdmin() {
             window.location.replace('menu_admin.html');
         }
-        
+
         function mostrarConfirmacionVolver() {
             mostrarConfirmacion('¿Esta seguro de que desea volver al menu?', volverAlMenuAdmin);
         }
 
         async function cargarProveedores() {
             const tabla = document.getElementById('tablaProveedores');
-            
             try {
                 const respuesta = await fetch('/api/proveedores');
                 const proveedores = await respuesta.json();
 
-                if (!respuesta.ok) {
-                    throw new Error(proveedores.error || "Error al conectar");
-                }
+                if (!respuesta.ok) throw new Error(proveedores.error || "Error al conectar");
 
                 proveedoresData = proveedores;
-                
-                const estadosGuardados = localStorage.getItem('estadosProveedores');
-                estadosData = estadosGuardados ? JSON.parse(estadosGuardados) : {};
-                
-                const nombresGuardados = localStorage.getItem('nombresCompletosProveedores');
-                nombresCompletosData = nombresGuardados ? JSON.parse(nombresGuardados) : {};
-                
+                estadosData = JSON.parse(localStorage.getItem('estadosProveedores') || '{}');
+                nombresCompletosData = JSON.parse(localStorage.getItem('nombresCompletosProveedores') || '{}');
+
                 proveedoresData.forEach(prov => {
-                    if (!estadosData[prov.Id_Proveedor]) {
-                        estadosData[prov.Id_Proveedor] = 'Activo';
-                    }
-                    if (!nombresCompletosData[prov.Id_Proveedor]) {
-                        nombresCompletosData[prov.Id_Proveedor] = prov.Nombre || '';
-                    }
+                    if (!estadosData[prov.Id_Proveedor]) estadosData[prov.Id_Proveedor] = 'Activo';
+                    if (!nombresCompletosData[prov.Id_Proveedor]) nombresCompletosData[prov.Id_Proveedor] = prov.Nombre || '';
                 });
-                
+
                 localStorage.setItem('estadosProveedores', JSON.stringify(estadosData));
                 localStorage.setItem('nombresCompletosProveedores', JSON.stringify(nombresCompletosData));
-                
-                mostrarProveedores();
 
+                mostrarProveedores();
             } catch (error) {
                 console.error("Error cargando proveedores:", error);
-                tabla.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #c00;">Error al cargar los datos. Asegurate que el servidor este funcionando.<\/td></tr>';
+                tabla.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#c00;padding:40px;">Error al cargar los datos. Asegurate que el servidor este funcionando.</div>';
             }
         }
 
         function mostrarProveedores() {
             const tabla = document.getElementById('tablaProveedores');
             const busqueda = document.getElementById('buscarProveedor').value.toLowerCase();
-            
+
             const filteredData = proveedoresData.filter(prov => {
-                const nombreCompleto = nombresCompletosData[prov.Id_Proveedor] || prov.Nombre || '';
+                const nombre = nombresCompletosData[prov.Id_Proveedor] || prov.Nombre || '';
                 const estado = estadosData[prov.Id_Proveedor] || 'Activo';
-                const empresa = prov.Empresa || '';
-                const operador = prov.Operador || '';
-                
-                return nombreCompleto.toLowerCase().includes(busqueda) ||
-                       empresa.toLowerCase().includes(busqueda) ||
+                return nombre.toLowerCase().includes(busqueda) ||
+                       (prov.Empresa || '').toLowerCase().includes(busqueda) ||
                        estado.toLowerCase().includes(busqueda) ||
-                       operador.toLowerCase().includes(busqueda);
+                       (prov.Operador || '').toLowerCase().includes(busqueda);
             });
 
             if (filteredData.length === 0) {
-                tabla.innerHTML = '<tr><td colspan="6" style="text-align: center;">No se encontraron proveedores.<\/td></tr>';
+                tabla.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#94a3b8;">No se encontraron proveedores.</div>';
                 return;
             }
 
-            tabla.innerHTML = "";
+            tabla.innerHTML = '';
             filteredData.forEach(prov => {
-                const telefono = prov.Num_celular || 'Sin telefono';
                 const nombreCompleto = nombresCompletosData[prov.Id_Proveedor] || prov.Nombre || 'Sin nombre';
                 const operador = prov.Operador || 'No especificado';
                 const estado = estadosData[prov.Id_Proveedor] || 'Activo';
-                
-                let operadorClass = '';
-                if (operador === 'Claro') {
-                    operadorClass = 'style="color: #1976d2; font-weight: bold;"';
-                } else if (operador === 'Tigo') {
-                    operadorClass = 'style="color: #e65100; font-weight: bold;"';
-                }
-                
-                let estadoClass = estado === 'Activo' ? 'estado-activo' : 'estado-inactivo';
-                
-                const fila = `
-                    <tr>
-                        <td style="white-space: normal; word-break: break-word;">${escapeHtml(nombreCompleto)}</span>
-                        <td>${escapeHtml(prov.Empresa || 'Sin empresa')}</span>
-                        <td>${telefono}</span>
-                        <td ${operadorClass}>${operador}</span>
-                        <td class="${estadoClass}">${estado}</span>
-                        <td><button class="edit-btn" onclick="editarProveedor(${prov.Id_Proveedor})">Editar</button></span>
-                    </tr>
-                `;
-                tabla.innerHTML += fila;
+                const estadoClass = estado === 'Activo' ? 'estado-activo' : 'estado-inactivo';
+
+                let operadorStyle = 'style="background:#f3f4f6;color:#6b7280;border:1px solid #d1d5db;"';
+                if (operador === 'Claro') operadorStyle = 'style="background:#e0f2fe;color:#0369a1;border:1px solid #0284c7;"';
+                if (operador === 'Tigo')  operadorStyle = 'style="background:#fed7aa;color:#b45309;border:1px solid #f97316;"';
+
+                tabla.innerHTML += `
+                    <div class="prov-card">
+                        <div class="prov-card-header">
+                            <div class="prov-card-name">${escapeHtml(nombreCompleto)}</div>
+                            <span class="prov-card-estado ${estadoClass}">${estado}</span>
+                        </div>
+                        <div class="prov-card-empresa">📍 ${escapeHtml(prov.Empresa || 'Sin empresa')}</div>
+                        <div class="prov-card-info">
+                            <div class="prov-card-info-row">
+                                <span class="prov-card-info-label">📞 Teléfono:</span>
+                                <span class="prov-card-info-value">${prov.Num_celular || 'Sin teléfono'}</span>
+                            </div>
+                            <div class="prov-card-info-row">
+                                <span class="prov-card-info-label">📡 Operador:</span>
+                                <span class="prov-card-operador" ${operadorStyle}>${operador}</span>
+                            </div>
+                        </div>
+                        <div class="prov-card-buttons">
+                            <button class="prov-card-btn prov-card-btn-details" onclick="verDetallesProveedor(${prov.Id_Proveedor})">Ver Detalles</button>
+                            <button class="prov-card-btn prov-card-btn-edit" onclick="editarProveedor(${prov.Id_Proveedor})">Editar</button>
+                        </div>
+                    </div>`;
             });
         }
 
@@ -901,99 +464,153 @@
             return div.innerHTML;
         }
 
-        function filtrarProveedores() {
-            mostrarProveedores();
+        function filtrarProveedores() { mostrarProveedores(); }
+
+        function detectarOperadorPorNumero(telefono) {
+            if (!telefono || telefono.length < 8) return '';
+            const prefijosClaro = ['89','88','87','86','85','84','83','82','81'];
+            return prefijosClaro.includes(telefono.substring(0, 2)) ? 'Claro' : '';
+        }
+
+        function validarTelefonoYOperador(input) {
+            input.value = input.value.replace(/[^0-9]/g, '');
+            const valor = input.value;
+            if (valor.length === 8) {
+                if (!esNumeroValido(valor)) {
+                    input.classList.add('error-border'); input.classList.remove('valid-border');
+                } else {
+                    input.classList.remove('error-border'); input.classList.add('valid-border');
+                    const op = detectarOperadorPorNumero(valor);
+                    const sel = document.getElementById('tipoOperador');
+                    if (op && !sel.value) sel.value = op;
+                }
+            } else {
+                input.classList.remove('error-border', 'valid-border');
+            }
+        }
+
+        function validarTelefonoEmpresa(input) {
+            input.value = input.value.replace(/[^0-9]/g, '');
+            const valor = input.value;
+            if (valor.length === 8) {
+                if (!esNumeroValido(valor)) {
+                    input.classList.add('error-border'); input.classList.remove('valid-border');
+                } else {
+                    input.classList.remove('error-border'); input.classList.add('valid-border');
+                }
+            } else {
+                input.classList.remove('error-border', 'valid-border');
+            }
+        }
+
+        function soloLetrasYEspacios(event) {
+            const key = event.key;
+            if (!/^[a-zA-ZáéíóúñÁÉÍÓÚÑ\s]$/.test(key) &&
+                !['Backspace','Tab','Enter','Delete','ArrowLeft','ArrowRight'].includes(key)) {
+                event.preventDefault();
+            }
+        }
+
+        function soloNumeros(event) {
+            const key = event.key;
+            if (!['Backspace','Tab','Enter','Delete','ArrowLeft','ArrowRight'].includes(key) &&
+                (key < '0' || key > '9')) {
+                event.preventDefault();
+            }
+        }
+
+        function validarNombreCompleto(input) {
+            input.value = input.value.replace(/\s+/g, ' ');
+            const valor = input.value;
+            for (let p of valor.trim().split(/\s+/)) {
+                if (p.length > 12) {
+                    input.classList.add('error-border'); input.classList.remove('valid-border');
+                    return false;
+                }
+            }
+            if (valor.length > 70) {
+                input.classList.add('error-border'); input.classList.remove('valid-border');
+                return false;
+            }
+            input.classList.remove('error-border'); input.classList.add('valid-border');
+            return true;
+        }
+
+        function esNumeroValido(telefono) {
+            if (!telefono || telefono.length !== 8 || !/^\d+$/.test(telefono)) return false;
+            const digitosUnicos = new Set(telefono.split(''));
+            if (digitosUnicos.size < 3) return false;
+
+            const primerPar = telefono.substring(0, 2);
+            let esRepetitivo = true;
+            for (let i = 0; i < telefono.length; i += 2) {
+                if (telefono.substring(i, i + 2) !== primerPar) { esRepetitivo = false; break; }
+            }
+            if (esRepetitivo && primerPar[0] !== primerPar[1]) return false;
+
+            if (digitosUnicos.size === 2) {
+                const pd = telefono[0];
+                let grupo = true, completo = true;
+                for (let i = 0; i < telefono.length; i++) {
+                    if (grupo && telefono[i] !== pd) grupo = false;
+                    if (!grupo && telefono[i] === pd) { completo = false; break; }
+                }
+                if (completo) return false;
+            }
+
+            const freq = {};
+            for (let c of telefono) {
+                freq[c] = (freq[c] || 0) + 1;
+                if (freq[c] > 4) return false;
+            }
+            return true;
         }
 
         async function verificarNumeroDuplicado(telefono, idExcluir = null) {
-            for (const prov of proveedoresData) {
-                if (idExcluir && prov.Id_Proveedor === parseInt(idExcluir)) continue;
-                if (prov.Num_celular === telefono) return true;
-            }
-            return false;
+            return proveedoresData.some(p =>
+                p.Num_celular === telefono &&
+                !(idExcluir && p.Id_Proveedor === parseInt(idExcluir))
+            );
         }
 
         async function guardarProveedor() {
-            const nombreCompleto = document.getElementById('provNombre').value.trim();
-            const empresa = document.getElementById('provEmpresa').value.trim();
-            const telefono = document.getElementById('provTelefono').value.trim();
-            const operador = document.getElementById('tipoOperador').value;
-            const editId = document.getElementById('editIdProveedor').value;
-            const estado = editId ? document.getElementById('estadoProveedor').value : 'Activo';
+            const nombreCompleto  = document.getElementById('provNombre').value.trim();
+            const empresa         = document.getElementById('provEmpresa').value.trim();
+            const telefono        = document.getElementById('provTelefono').value.trim();
+            const operador        = document.getElementById('tipoOperador').value;
+            const numeroEmpresa   = document.getElementById('provNumeroEmpresa').value.trim();
+            const operadorEmpresa = document.getElementById('tipoOperadorEmpresa').value;
+            const direccion       = document.getElementById('provDireccionEmpresa').value.trim();
+            const editId          = document.getElementById('editIdProveedor').value;
+            const estado          = editId ? document.getElementById('estadoProveedor').value : 'Activo';
 
-            if (!nombreCompleto) {
-                mostrarError('Ingrese el nombre completo del proveedor');
-                return;
+            if (!nombreCompleto)                                          { mostrarError('Ingrese el nombre completo del proveedor'); return; }
+            if (/\s{2,}/.test(nombreCompleto))                           { mostrarError('El nombre no puede tener múltiples espacios seguidos'); return; }
+            for (let p of nombreCompleto.split(/\s+/))                   { if (p.length > 12) { mostrarError('Una palabra excede los 12 caracteres permitidos'); return; } }
+            if (nombreCompleto.length > 70)                              { mostrarError('El nombre completo no puede exceder 70 caracteres'); return; }
+            if (!/^[a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+$/.test(nombreCompleto))     { mostrarError('El nombre solo puede contener letras y espacios'); return; }
+            if (!empresa)                                                 { mostrarError('Ingrese la empresa del proveedor'); return; }
+            if (!telefono)                                                { mostrarError('Ingrese el numero de telefono'); return; }
+            if (telefono.length !== 8)                                   { mostrarError('El numero de telefono debe tener exactamente 8 digitos'); return; }
+            if (!esNumeroValido(telefono))                               { mostrarError('Numero de telefono invalido. Debe tener al menos 3 digitos diferentes'); return; }
+            if (!operador)                                                { mostrarError('Seleccione el operador de telefonia'); return; }
+
+            if (numeroEmpresa.length > 0) {
+                if (numeroEmpresa.length !== 8)                          { mostrarError('El telefono de la empresa debe tener exactamente 8 digitos'); return; }
+                if (!esNumeroValido(numeroEmpresa))                      { mostrarError('Telefono de empresa invalido. Debe tener al menos 3 digitos diferentes'); return; }
+                if (!operadorEmpresa)                                    { mostrarError('Seleccione el operador de telefonia de la empresa'); return; }
             }
-            
-            if (nombreCompleto !== nombreCompleto.trim()) {
-                mostrarError('El nombre no puede tener espacios al inicio o final');
-                return;
-            }
-            
-            if (/\s{2,}/.test(nombreCompleto)) {
-                mostrarError('El nombre no puede tener multiples espacios seguidos');
-                return;
-            }
-            
-            const palabras = nombreCompleto.split(/\s+/);
-            for (let palabra of palabras) {
-                if (palabra.length > 12) {
-                    mostrarError('Una palabra excede los 12 caracteres permitidos');
-                    return;
-                }
-            }
-            
-            if (nombreCompleto.length > 70) {
-                mostrarError('El nombre completo no puede exceder 70 caracteres');
-                return;
-            }
-            
-            const soloLetrasEspaciosRegex = /^[a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+$/;
-            if (!soloLetrasEspaciosRegex.test(nombreCompleto)) {
-                mostrarError('El nombre solo puede contener letras y espacios');
-                return;
-            }
-            
-            if (!empresa) {
-                mostrarError('Ingrese la empresa del proveedor');
-                return;
-            }
-            
-            if (!telefono) {
-                mostrarError('Ingrese el numero de telefono');
-                return;
-            }
-            
-            if (telefono.length !== 8) {
-                mostrarError('El numero de telefono debe tener exactamente 8 digitos');
-                return;
-            }
-            
-            if (!esNumeroValido(telefono)) {
-                mostrarError('Numero de telefono invalido. Debe tener al menos 3 digitos diferentes');
-                return;
-            }
-            
-            if (!operador) {
-                mostrarError('Seleccione el operador de telefonia');
-                return;
-            }
-            
-            const esDuplicado = await verificarNumeroDuplicado(telefono, editId);
-            if (esDuplicado) {
-                mostrarError('Este numero de telefono ya esta registrado');
-                return;
-            }
-            
+
+            if (await verificarNumeroDuplicado(telefono, editId))        { mostrarError('Este numero de telefono ya esta registrado'); return; }
+
             if (editId) {
-                await ejecutarActualizacionProveedor(nombreCompleto, empresa, telefono, operador, estado, editId);
+                await ejecutarActualizacionProveedor(nombreCompleto, empresa, telefono, operador, numeroEmpresa, operadorEmpresa, direccion, estado, editId);
             } else {
-                await ejecutarCreacionProveedor(nombreCompleto, empresa, telefono, operador, estado);
+                await ejecutarCreacionProveedor(nombreCompleto, empresa, telefono, operador, numeroEmpresa, operadorEmpresa, direccion, estado);
             }
         }
-        
-        async function ejecutarCreacionProveedor(nombreCompleto, empresa, telefono, operador, estado) {
+
+        async function ejecutarCreacionProveedor(nombreCompleto, empresa, telefono, operador, numeroEmpresa, operadorEmpresa, direccion, estado) {
             try {
                 const respuesta = await fetch('/api/proveedores', {
                     method: 'POST',
@@ -1002,35 +619,32 @@
                         Nombre: nombreCompleto.substring(0, 45),
                         Empresa: empresa,
                         Num_celular: telefono,
-                        Operador: operador
+                        Operador: operador,
+                        Numero_Empresa: numeroEmpresa,
+                        Operador_Empresa: operadorEmpresa,
+                        Direccion_Empresa: direccion
                     })
                 });
-                
+
                 const resultado = await respuesta.json();
-                
-                if (!respuesta.ok) {
-                    throw new Error(resultado.error || 'Error al guardar el proveedor');
-                }
-                
+                if (!respuesta.ok) throw new Error(resultado.error || 'Error al guardar el proveedor');
+
                 nombresCompletosData[resultado.Id_Proveedor] = nombreCompleto;
                 estadosData[resultado.Id_Proveedor] = estado;
-                
                 localStorage.setItem('nombresCompletosProveedores', JSON.stringify(nombresCompletosData));
                 localStorage.setItem('estadosProveedores', JSON.stringify(estadosData));
-                
+
+                limpiarModalProveedor();
                 mostrarExito('Proveedor agregado exitosamente', () => {
                     cerrarModalProveedor();
                     cargarProveedores();
                 });
-                
-                limpiarModalProveedor();
-                
             } catch (error) {
                 mostrarError(error.message || 'Error al guardar el proveedor');
             }
         }
-        
-        async function ejecutarActualizacionProveedor(nombreCompleto, empresa, telefono, operador, estado, editId) {
+
+        async function ejecutarActualizacionProveedor(nombreCompleto, empresa, telefono, operador, numeroEmpresa, operadorEmpresa, direccion, estado, editId) {
             try {
                 const respuesta = await fetch(`/api/proveedores/${editId}`, {
                     method: 'PUT',
@@ -1039,29 +653,25 @@
                         Nombre: nombreCompleto.substring(0, 45),
                         Empresa: empresa,
                         Num_celular: telefono,
-                        Operador: operador
+                        Operador: operador,
+                        Numero_Empresa: numeroEmpresa,
+                        Operador_Empresa: operadorEmpresa,
+                        Direccion_Empresa: direccion
                     })
                 });
-                
+
                 const resultado = await respuesta.json();
-                
-                if (!respuesta.ok) {
-                    throw new Error(resultado.error || 'Error al actualizar el proveedor');
-                }
-                
+                if (!respuesta.ok) throw new Error(resultado.error || 'Error al actualizar el proveedor');
+
                 nombresCompletosData[editId] = nombreCompleto;
                 estadosData[editId] = estado;
-                
                 localStorage.setItem('nombresCompletosProveedores', JSON.stringify(nombresCompletosData));
                 localStorage.setItem('estadosProveedores', JSON.stringify(estadosData));
-                
+
                 mostrarExito('Proveedor actualizado exitosamente', () => {
                     cerrarModalProveedor();
                     cargarProveedores();
                 });
-                
-                limpiarModalProveedor();
-                
             } catch (error) {
                 mostrarError(error.message || 'Error al actualizar el proveedor');
             }
