@@ -140,7 +140,7 @@
 
         <div class="main-title">
             <h1>TIENDA CHEPITA</h1>
-            <p class="subtitle">Sistema de Gestión Administrativa</p>
+            <p class="subtitle">Sistema de Gestion Administrativa</p>
         </div>
 
         <div class="welcome-card">
@@ -148,8 +148,8 @@
                 <i class="fas fa-store"></i>
             </div>
             <div class="welcome-text">
-                <h3 id="bienvenidaAdmin">¡Bienvenido, Administrador!</h3>
-                <p>Seleccione una opción para gestionar el sistema</p>
+                <h3 id="bienvenidaAdmin">Bienvenido, Administrador!</h3>
+                <p>Seleccione una opcion para gestionar el sistema</p>
             </div>
         </div>
 
@@ -160,7 +160,7 @@
                 </div>
                 <div class="module-info">
                     <h3>Inventario</h3>
-                    <p>Gestión de productos y stock</p>
+                    <p>Gestion de productos y stock</p>
                 </div>
                 <div class="module-arrow">
                     <i class="fas fa-arrow-right"></i>
@@ -173,7 +173,7 @@
                 </div>
                 <div class="module-info">
                     <h3>Proveedores</h3>
-                    <p>Gestión de proveedores</p>
+                    <p>Gestion de proveedores</p>
                 </div>
                 <div class="module-arrow">
                     <i class="fas fa-arrow-right"></i>
@@ -199,7 +199,7 @@
                 </div>
                 <div class="module-info">
                     <h3>Evaluar Trabajador</h3>
-                    <p>Evaluaciones de desempeño</p>
+                    <p>Evaluaciones de desempeno</p>
                 </div>
                 <div class="module-arrow">
                     <i class="fas fa-arrow-right"></i>
@@ -211,8 +211,22 @@
                     <i class="fas fa-user-plus"></i>
                 </div>
                 <div class="module-info">
-                    <h3>Gestión de Personal</h3>
-                    <p>Registro y gestión de empleados</p>
+                    <h3>Gestion de Personal</h3>
+                    <p>Registro y gestion de empleados</p>
+                </div>
+                <div class="module-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </div>
+
+            <!-- NUEVA OPCION: FINANZAS / ESTADO DE RESULTADOS -->
+            <div class="module-card" onclick="location.href='finanza.html'">
+                <div class="module-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="module-info">
+                    <h3>Finanzas</h3>
+                    <p>Estado de Resultados - Ingresos y Egresos</p>
                 </div>
                 <div class="module-arrow">
                     <i class="fas fa-arrow-right"></i>
@@ -223,12 +237,12 @@
         <div class="logout-section">
             <button class="btn-logout" onclick="mostrarModalCerrarSesion()">
                 <i class="fas fa-sign-out-alt"></i>
-                <span>Cerrar Sesión</span>
+                <span>Cerrar Sesion</span>
             </button>
         </div>
 
         <div class="admin-footer">
-            <p><i class="fas fa-database"></i> Sistema de Gestión Comercial - Versión 2.0</p>
+            <p><i class="fas fa-database"></i> Sistema de Gestion Comercial - Version 3.0</p>
             <p><i class="fas fa-copyright"></i> 2025 Tienda Chepita - Todos los derechos reservados</p>
         </div>
     </div>
@@ -246,7 +260,7 @@
     <script>
         let accionConfirmar = null;
 
-        // ========== VERIFICACIÓN DE SESIÓN CON TOKEN ==========
+        // ========== VERIFICACION DE SESION CON TOKEN ==========
         (function verificarSesionAlInicio() {
             const token = localStorage.getItem('token');
             const tipoUsuario = localStorage.getItem('tipoUsuario');
@@ -274,27 +288,26 @@
                     sessionStorage.clear();
                     window.location.replace('PAG.html');
                 } else {
-                    // Mostrar nombre del admin si está disponible
+                    // Mostrar nombre del admin si esta disponible
                     const adminUser = localStorage.getItem('adminUser');
                     if (adminUser) {
-                        document.getElementById('bienvenidaAdmin').innerHTML = `¡Bienvenido, ${adminUser}!`;
+                        document.getElementById('bienvenidaAdmin').innerHTML = 'Bienvenido, ' + adminUser + '!';
                     }
                 }
             })
             .catch(error => {
-                console.error('Error verificando sesión:', error);
+                console.error('Error verificando sesion:', error);
                 localStorage.clear();
                 sessionStorage.clear();
                 window.location.replace('PAG.html');
             });
         })();
 
-        // ========== BLOQUEAR BOTÓN ATRÁS DEL NAVEGADOR (VERSIÓN MEJORADA) ==========
+        // ========== BLOQUEAR BOTON ATRAS DEL NAVEGADOR ==========
         (function bloquearBotonAtras() {
             const paginaActual = 'menu_admin.html';
             const paginaLogin = 'PAG.html';
             
-            // Verificar sesión antes de hacer cualquier cosa
             const token = localStorage.getItem('token');
             const tipoUsuario = localStorage.getItem('tipoUsuario');
             
@@ -303,13 +316,8 @@
                 return;
             }
             
-            // Crear un historial profundo con múltiples estados
-            // Esto crea un "buffer" que atrapa todos los intentos de ir atrás
-            
-            // Limpiar cualquier estado anterior y crear un estado base
             history.replaceState({ pagina: paginaActual, protegido: true, nivel: 0 }, '', location.href);
             
-            // Agregar 100 estados falsos para que el usuario no pueda salir fácilmente
             for (let i = 1; i <= 100; i++) {
                 history.pushState({ 
                     pagina: paginaActual, 
@@ -325,36 +333,29 @@
                 const ahora = Date.now();
                 const estado = event.state;
                 
-                // Evitar ejecuciones en ráfaga
                 if (ahora - ultimoPopState < 150) {
                     return;
                 }
                 ultimoPopState = ahora;
                 
-                // Verificar si la sesión sigue activa
                 const tokenActual = localStorage.getItem('token');
                 const tipoActual = localStorage.getItem('tipoUsuario');
                 const sesionValida = tokenActual && tipoActual === 'admin';
                 
                 if (!sesionValida) {
-                    // Sesión perdida, ir al login
                     window.location.replace(paginaLogin);
                     return;
                 }
                 
-                // Verificar si el estado es válido
                 const esEstadoValido = estado && estado.protegido === true && estado.pagina === paginaActual;
                 
                 if (!esEstadoValido) {
-                    // Estado inválido, regresar a nuestra página
                     window.location.replace(paginaActual);
                     return;
                 }
                 
-                // Estado válido, mantener el buffer de historial
                 setTimeout(() => {
                     if (localStorage.getItem('token') && localStorage.getItem('tipoUsuario') === 'admin') {
-                        // Reponer el buffer de estados
                         for (let i = 1; i <= 5; i++) {
                             history.pushState({ 
                                 pagina: paginaActual, 
@@ -395,7 +396,7 @@
             textoElem.textContent = texto;
             
             botonesDiv.innerHTML = `
-                <button class="modal-btn" id="btnConfirmarSi">Sí, continuar</button>
+                <button class="modal-btn" id="btnConfirmarSi">Si, continuar</button>
                 <button class="modal-btn cancelar" id="btnConfirmarNo">Cancelar</button>
             `;
             
@@ -428,13 +429,13 @@
             const dateElements = document.querySelectorAll('#currentDate, #headerDate');
             dateElements.forEach(element => {
                 if (element) {
-                    element.innerHTML = `<i class="fas fa-calendar-alt"></i> ${fechaFormateada}`;
+                    element.innerHTML = '<i class="fas fa-calendar-alt"></i> ' + fechaFormateada;
                 }
             });
         }
         
         function mostrarModalCerrarSesion() {
-            mostrarModalConfirmacion('Cerrar Sesión', '¿Está seguro que desea cerrar sesión?', function() {
+            mostrarModalConfirmacion('Cerrar Sesion', 'Esta seguro que desea cerrar sesion?', function() {
                 localStorage.clear();
                 sessionStorage.clear();
                 window.location.replace('PAG.html');

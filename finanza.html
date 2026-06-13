@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Financiero — Tienda Chepita</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bg-base:      #0d0f14;
+            --bg-panel:     #141720;
+            --bg-card:      #1b1f2e;
+            --bg-card-hover:#21263a;
+            --bg-input:     #1e2333;
+            --border:       rgba(255,255,255,0.07);
+            --border-focus: rgba(130,100,255,0.5);
+
+            --accent:       #7c5cfa;
+            --accent-light: #9d80ff;
+            --accent-glow:  rgba(124,92,250,0.25);
+
+            --green:        #22d3a5;
+            --green-bg:     rgba(34,211,165,0.12);
+            --red:          #f45b69;
+            --red-bg:       rgba(244,91,105,0.12);
+            --amber:        #fbbf24;
+            --amber-bg:     rgba(251,191,36,0.12);
+            --blue:         #60a5fa;
+            --blue-bg:      rgba(96,165,250,0.12);
+
+            --text-primary:   #f0f2f8;
+            --text-secondary: #8b90a7;
+            --text-muted:     #505673;
+
+            --radius-sm: 10px;
+            --radius:    16px;
+            --radius-lg: 22px;
+
+            --sidebar-w: 240px;
+            --transition: 0.22s ease;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ───── LOADER ───── */
+        .loader-overlay {
+            position:fixed; inset:0;
+            background:rgba(13,15,20,0.85);
+            display:none; justify-content:center; align-items:center;
+            z-index:3000; backdrop-filter:blur(8px);
+        }
+        .loader-box {
+            background:var(--bg-card);
+            border:1px solid var(--border);
+            border-radius:var(--radius-lg);
+            padding:36px 56px;
+            text-align:center;
+        }
+        .loader-box .spinner {
+            width:48px; height:48px;
+            border:3px solid var(--border);
+            border-top-color:var(--accent);
+            border-radius:50%;
+            animation:spin 0.8s linear infinite;
+            margin:0 auto 16px;
+        }
+        .loader-box p { color:var(--text-secondary); font-size:0.9rem; font-weight:500; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+
+        /* ───── SIDEBAR ───── */
+        .sidebar {
+            width:var(--sidebar-w);
+            background:var(--bg-panel);
+            border-right:1px solid var(--border);
+            display:flex; flex-direction:column;
+            position:fixed; top:0; left:0; height:100vh;
+            z-index:100; padding:24px 0;
+        }
+        .sidebar-logo {
+            padding:0 20px 28px;
+            border-bottom:1px solid var(--border);
+            margin-bottom:20px;
+        }
+        .sidebar-logo .logo-mark {
+            width:38px; height:38px;
+            background:var(--accent);
+            border-radius:10px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:18px; margin-bottom:10px;
+        }
+        .sidebar-logo h2 { font-size:1rem; font-weight:700; color:var(--text-primary); }
+        .sidebar-logo p  { font-size:0.72rem; color:var(--text-muted); margin-top:2px; }
+
+        .sidebar-nav { padding:0 12px; flex:1; overflow-y:auto; }
+        .nav-label { font-size:0.65rem; font-weight:600; color:var(--text-muted); letter-spacing:.12em; text-transform:uppercase; padding:6px 8px 10px; }
+
+        .nav-item {
+            display:flex; align-items:center; gap:11px;
+            padding:10px 12px; border-radius:var(--radius-sm);
+            color:var(--text-secondary); font-size:0.84rem; font-weight:500;
+            cursor:pointer; transition:all var(--transition); margin-bottom:2px;
+            text-decoration:none;
+        }
+        .nav-item i { width:18px; text-align:center; font-size:0.9rem; }
+        .nav-item:hover { background:var(--bg-card); color:var(--text-primary); }
+        .nav-item.active { background:var(--accent-glow); color:var(--accent-light); }
+        .nav-item.active i { color:var(--accent); }
+
+        .sidebar-footer {
+            padding:16px 12px;
+            border-top:1px solid var(--border);
+        }
+        .btn-logout {
+            display:flex; align-items:center; gap:10px;
+            width:100%; padding:10px 12px;
+            background:transparent; border:none; cursor:pointer;
+            color:var(--red); font-size:0.83rem; font-weight:500;
+            border-radius:var(--radius-sm); transition:background var(--transition);
+            font-family:'Inter',sans-serif;
+        }
+        .btn-logout:hover { background:var(--red-bg); }
+
+        /* ───── TOPBAR ───── */
+        .topbar {
+            position:fixed; top:0; left:var(--sidebar-w); right:0; height:64px;
+            background:var(--bg-panel); border-bottom:1px solid var(--border);
+            display:flex; align-items:center; justify-content:space-between;
+            padding:0 28px; z-index:50;
+        }
+        .topbar-left { display:flex; align-items:center; gap:16px; }
+        .topbar-title { font-size:1rem; font-weight:600; }
+        .topbar-title span { color:var(--text-muted); font-weight:400; }
+
+        .clock-badge {
+            display:flex; align-items:center; gap:8px;
+            background:var(--bg-card);
+            border:1px solid var(--border);
+            border-radius:40px; padding:7px 16px;
+            font-size:0.8rem; color:var(--text-secondary);
+            font-family:'JetBrains Mono', monospace;
+        }
+        .clock-badge i { color:var(--accent); }
+
+        .topbar-actions { display:flex; align-items:center; gap:10px; }
+        .btn-action {
+            display:inline-flex; align-items:center; gap:7px;
+            padding:8px 16px; border-radius:40px; border:none;
+            font-size:0.8rem; font-weight:600; cursor:pointer;
+            font-family:'Inter',sans-serif; transition:all var(--transition);
+        }
+        .btn-back   { background:var(--bg-card); color:var(--text-secondary); border:1px solid var(--border); }
+        .btn-back:hover { border-color:var(--accent); color:var(--accent-light); }
+        .btn-excel  { background:var(--green-bg); color:var(--green); border:1px solid rgba(34,211,165,.2); }
+        .btn-excel:hover { background:rgba(34,211,165,.2); }
+        .btn-pdf    { background:var(--red-bg); color:var(--red); border:1px solid rgba(244,91,105,.2); }
+        .btn-pdf:hover { background:rgba(244,91,105,.2); }
+
+        /* ───── MAIN ───── */
+        .main {
+            margin-left:var(--sidebar-w);
+            padding-top:64px;
+            min-height:100vh;
+            width:calc(100% - var(--sidebar-w));
+        }
+        .page-content { padding:28px 32px; max-width:1400px; }
+
+        /* ───── ALERT BANNER ───── */
+        .alert-banner {
+            display:flex; align-items:center; gap:14px;
+            background:var(--amber-bg);
+            border:1px solid rgba(251,191,36,.25);
+            border-radius:var(--radius); padding:14px 20px;
+            margin-bottom:24px; font-size:0.86rem;
+        }
+        .alert-banner i { color:var(--amber); font-size:18px; flex-shrink:0; }
+        #alertMensaje { color:var(--text-primary); }
+
+        /* ───── FILTER CARD ───── */
+        .filter-card {
+            background:var(--bg-card);
+            border:1px solid var(--border);
+            border-radius:var(--radius-lg);
+            padding:20px 24px;
+            margin-bottom:24px;
+        }
+        .filter-card h3 {
+            font-size:0.8rem; font-weight:600; color:var(--text-muted);
+            text-transform:uppercase; letter-spacing:.1em; margin-bottom:16px;
+        }
+        .filtros-grid {
+            display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end;
+        }
+        .filtro-group { display:flex; flex-direction:column; gap:6px; }
+        .filtro-group label { font-size:0.76rem; font-weight:500; color:var(--text-secondary); }
+        .filtro-group select,
+        .filtro-group input {
+            background:var(--bg-input);
+            border:1px solid var(--border);
+            border-radius:var(--radius-sm);
+            color:var(--text-primary);
+            font-family:'Inter',sans-serif;
+            font-size:0.85rem;
+            padding:10px 14px;
+            min-width:150px;
+            transition:border-color var(--transition);
+            outline:none;
+        }
+        .filtro-group select:focus,
+        .filtro-group input:focus { border-color:var(--border-focus); }
+
+        .btn-filtrar {
+            background:var(--accent);
+            color:#fff;
+            border:none; padding:11px 26px;
+            border-radius:40px; font-size:0.85rem; font-weight:600;
+            cursor:pointer; display:flex; align-items:center; gap:8px;
+            font-family:'Inter',sans-serif;
+            transition:all var(--transition);
+            box-shadow:0 4px 24px var(--accent-glow);
+        }
+        .btn-filtrar:hover { background:var(--accent-light); transform:translateY(-1px); }
+
+        /* ───── KPI CARDS ───── */
+        .kpi-grid {
+            display:grid;
+            grid-template-columns:repeat(4, 1fr);
+            gap:18px;
+            margin-bottom:24px;
+        }
+        .kpi-card {
+            background:var(--bg-card);
+            border:1px solid var(--border);
+            border-radius:var(--radius-lg);
+            padding:22px 22px 18px;
+            cursor:pointer;
+            transition:all var(--transition);
+            position:relative; overflow:hidden;
+        }
+        .kpi-card::before {
+            content:'';
+            position:absolute; top:0; left:0; right:0; height:2px;
+            border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+        }
+        .kpi-card.ingresos::before { background:var(--green); }
+        .kpi-card.egresos::before  { background:var(--red); }
+        .kpi-card.utilidad::before { background:var(--blue); }
+        .kpi-card.margen::before   { background:var(--amber); }
+
+        .kpi-card:hover {
+            background:var(--bg-card-hover);
+            border-color:rgba(255,255,255,0.13);
+            transform:translateY(-3px);
+        }
+        .kpi-card:hover .kpi-glow { opacity:1; }
+        .kpi-glow {
+            position:absolute; inset:0; opacity:0;
+            transition:opacity var(--transition); pointer-events:none;
+            border-radius:inherit;
+        }
+        .kpi-card.ingresos .kpi-glow { background:radial-gradient(ellipse at top left, rgba(34,211,165,.08), transparent 70%); }
+        .kpi-card.egresos  .kpi-glow { background:radial-gradient(ellipse at top left, rgba(244,91,105,.08), transparent 70%); }
+        .kpi-card.utilidad .kpi-glow { background:radial-gradient(ellipse at top left, rgba(96,165,250,.08), transparent 70%); }
+        .kpi-card.margen   .kpi-glow { background:radial-gradient(ellipse at top left, rgba(251,191,36,.08), transparent 70%); }
+
+        .kpi-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
+        .kpi-label { font-size:0.74rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; }
+        .kpi-icon {
+            width:34px; height:34px; border-radius:9px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:14px;
+        }
+        .kpi-card.ingresos .kpi-icon { background:var(--green-bg); color:var(--green); }
+        .kpi-card.egresos  .kpi-icon { background:var(--red-bg);   color:var(--red); }
+        .kpi-card.utilidad .kpi-icon { background:var(--blue-bg);  color:var(--blue); }
+        .kpi-card.margen   .kpi-icon { background:var(--amber-bg); color:var(--amber); }
+
+        .kpi-value {
+            font-size:1.65rem; font-weight:800; letter-spacing:-0.02em;
+            font-family:'JetBrains Mono', monospace;
+            margin-bottom:8px;
+        }
+        .kpi-card.ingresos .kpi-value { color:var(--green); }
+        .kpi-card.egresos  .kpi-value { color:var(--red); }
+        .kpi-card.utilidad .kpi-value { color:var(--blue); }
+        .kpi-card.margen   .kpi-value { color:var(--amber); }
+
+        .kpi-trend {
+            display:flex; align-items:center; gap:6px;
+            font-size:0.75rem; color:var(--text-muted);
+        }
+        .kpi-trend .pill {
+            background:var(--bg-base); border-radius:20px; padding:2px 8px;
+            font-size:0.7rem; font-weight:600;
+        }
+
+        /* ───── CHARTS GRID ───── */
+        .charts-grid {
+            display:grid;
+            grid-template-columns:1fr 1fr 1fr;
+            gap:18px;
+            margin-bottom:24px;
+        }
+        .chart-card {
+            background:var(--bg-card);
+            border:1px solid var(--border);
+            border-radius:var(--radius-lg);
+            padding:22px;
+        }
+        .chart-card-header {
+            display:flex; justify-content:space-between; align-items:center;
+            margin-bottom:20px;
+        }
+        .chart-card-header h3 {
+            font-size:0.88rem; font-weight:600; color:var(--text-primary);
+            display:flex; align-items:center; gap:9px;
+        }
+        .chart-card-header h3 i { color:var(--accent); font-size:0.85rem; }
+        canvas { max-height:220px; }
+
+        /* ───── TABLES ───── */
+        .tables-grid {
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:18px;
+            margin-bottom:24px;
+        }
+        .table-card {
+            background:var(--bg-card);
+            border:1px solid var(--border);
+            border-radius:var(--radius-lg);
+            overflow:hidden;
+        }
+        .table-card.full-width { grid-column:1/-1; }
+        .table-header {
+            padding:18px 22px 16px;
+            border-bottom:1px solid var(--border);
+            display:flex; align-items:center; justify-content:space-between;
+        }
+        .table-header h3 {
+            font-size:0.88rem; font-weight:600;
+            display:flex; align-items:center; gap:9px;
+        }
+        .table-header h3 i { color:var(--accent); }
+        .table-badge {
+            background:var(--bg-base); border:1px solid var(--border);
+            border-radius:20px; padding:3px 10px;
+            font-size:0.7rem; color:var(--text-muted);
+        }
+        .table-wrap { overflow-x:auto; }
+        table { width:100%; border-collapse:collapse; }
+        thead th {
+            background:var(--bg-panel);
+            color:var(--text-muted); font-size:0.72rem; font-weight:600;
+            text-transform:uppercase; letter-spacing:.08em;
+            padding:11px 22px; text-align:left;
+        }
+        tbody td {
+            padding:11px 22px; font-size:0.83rem; color:var(--text-primary);
+            border-bottom:1px solid var(--border);
+        }
+        tbody tr:last-child td { border-bottom:none; }
+        tbody tr:hover td { background:rgba(255,255,255,0.025); }
+        tbody tr.row-section td { background:var(--bg-panel); color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:.1em; }
+        tbody tr.row-total td { font-weight:700; }
+        tbody tr.row-positive td:last-child { color:var(--green); }
+        tbody tr.row-negative td:last-child { color:var(--red); }
+
+        /* ───── MODAL ───── */
+        .modal-overlay {
+            display:none; position:fixed; inset:0;
+            background:rgba(13,15,20,0.8);
+            justify-content:center; align-items:center;
+            z-index:1000; backdrop-filter:blur(6px);
+        }
+        .modal-container {
+            background:var(--bg-card);
+            border:1px solid var(--border);
+            border-radius:var(--radius-lg);
+            width:90%; max-width:520px;
+            max-height:80vh; overflow-y:auto;
+        }
+        .modal-header {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:20px 24px;
+            border-bottom:1px solid var(--border);
+        }
+        .modal-header h3 { font-size:0.95rem; font-weight:600; display:flex; align-items:center; gap:10px; }
+        .modal-header h3 i { color:var(--accent); }
+        .modal-close {
+            background:var(--bg-input); border:none; color:var(--text-secondary);
+            width:32px; height:32px; border-radius:50%; cursor:pointer;
+            font-size:16px; display:flex; align-items:center; justify-content:center;
+            transition:background var(--transition);
+        }
+        .modal-close:hover { background:var(--red-bg); color:var(--red); }
+        .modal-body { padding:24px; }
+        .modal-item {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:11px 0; border-bottom:1px solid var(--border);
+            font-size:0.85rem;
+        }
+        .modal-item span:first-child { color:var(--text-secondary); }
+        .modal-item span:last-child  { font-weight:600; font-family:'JetBrains Mono',monospace; }
+        .modal-total {
+            display:flex; justify-content:space-between; align-items:center;
+            background:var(--bg-panel); border-radius:var(--radius-sm);
+            padding:14px 16px; margin-top:16px; font-weight:700;
+        }
+        .modal-total span:last-child { font-family:'JetBrains Mono',monospace; color:var(--accent-light); }
+        .modal-subtitulo { color:var(--accent-light); font-weight:600; font-size:0.8rem; margin:16px 0 8px; text-transform:uppercase; letter-spacing:.08em; }
+
+        /* ───── FOOTER ───── */
+        .admin-footer {
+            padding:20px 32px;
+            border-top:1px solid var(--border);
+            font-size:0.75rem; color:var(--text-muted);
+            display:flex; justify-content:space-between; align-items:center;
+        }
+
+        /* ───── STATUS PILLS ───── */
+        .pill-good     { background:var(--green-bg); color:var(--green); border-radius:20px; padding:3px 10px; font-size:0.72rem; font-weight:600; }
+        .pill-warning  { background:var(--amber-bg); color:var(--amber); border-radius:20px; padding:3px 10px; font-size:0.72rem; font-weight:600; }
+        .pill-critical { background:var(--red-bg);   color:var(--red);   border-radius:20px; padding:3px 10px; font-size:0.72rem; font-weight:600; }
+
+        /* ───── LOADING TEXT ───── */
+        .loading-cell { text-align:center; color:var(--text-muted); padding:28px !important; font-size:0.85rem; }
+
+        /* ───── SCROLLBAR ───── */
+        ::-webkit-scrollbar { width:6px; height:6px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+        ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+        ::-webkit-scrollbar-thumb:hover { background:var(--accent); }
+
+        /* ───── RESPONSIVE ───── */
+        @media (max-width:1100px) {
+            .kpi-grid    { grid-template-columns:repeat(2,1fr); }
+            .charts-grid { grid-template-columns:1fr 1fr; }
+        }
+        @media (max-width:768px) {
+            :root { --sidebar-w:0px; }
+            .sidebar    { display:none; }
+            .kpi-grid   { grid-template-columns:1fr 1fr; }
+            .charts-grid{ grid-template-columns:1fr; }
+            .tables-grid{ grid-template-columns:1fr; }
+            .page-content { padding:20px 16px; }
+            .topbar { left:0; padding:0 16px; }
+            .main   { margin-left:0; width:100%; }
+        }
+        @media (max-width:480px) {
+            .kpi-grid { grid-template-columns:1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div class="loader-overlay" id="loaderOverlay">
+    <div class="loader-box">
+        <div class="spinner"></div>
+        <p>Analizando datos financieros…</p>
+    </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-mark">🏪</div>
+        <h2>Tienda Chepita</h2>
+        <p>Sistema de Gestión v3.0</p>
+    </div>
+    <nav class="sidebar-nav">
+        <p class="nav-label">Finanzas</p>
+        <a class="nav-item active" href="#">
+            <i class="fas fa-chart-pie"></i> Panel Financiero
+        </a>
+        <a class="nav-item" href="menu_admin.html">
+            <i class="fas fa-th-large"></i> Panel Principal
+        </a>
+        <p class="nav-label" style="margin-top:16px">Reportes</p>
+        <a class="nav-item" href="#" onclick="exportarPDF(); return false;">
+            <i class="fas fa-file-pdf"></i> Exportar PDF
+        </a>
+        <a class="nav-item" href="#" onclick="exportarExcel(); return false;">
+            <i class="fas fa-file-excel"></i> Exportar Excel
+        </a>
+    </nav>
+    <div class="sidebar-footer">
+        <button class="btn-logout" onclick="cerrarSesion()">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+        </button>
+    </div>
+</aside>
+
+<!-- TOPBAR -->
+<header class="topbar">
+    <div class="topbar-left">
+        <div class="topbar-title">
+            Panel Financiero <span>/ Tienda Chepita</span>
+        </div>
+    </div>
+    <div class="topbar-actions">
+        <div class="clock-badge" id="currentDate">
+            <i class="fas fa-circle" style="font-size:7px;color:var(--green)"></i>
+            <span id="clockText">—</span>
+        </div>
+        <button class="btn-action btn-excel" onclick="exportarExcel()">
+            <i class="fas fa-file-excel"></i> Excel
+        </button>
+        <button class="btn-action btn-pdf" onclick="exportarPDF()">
+            <i class="fas fa-file-pdf"></i> PDF
+        </button>
+        <button class="btn-action btn-back" onclick="location.href='menu_admin.html'">
+            <i class="fas fa-arrow-left"></i> Volver
+        </button>
+    </div>
+</header>
+
+<!-- MAIN -->
+<div class="main">
+<div class="page-content" id="reportContent">
+
+    <!-- ALERT STOCK -->
+    <div class="alert-banner" id="alertStockBajo">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span id="alertMensaje">Verificando inventario…</span>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filter-card">
+        <h3>Parámetros del Reporte</h3>
+        <div class="filtros-grid">
+            <div class="filtro-group">
+                <label>Tipo de Reporte</label>
+                <select id="tipoReporte">
+                    <option value="dia">Por Día</option>
+                    <option value="semana">Por Semana</option>
+                    <option value="mes" selected>Por Mes</option>
+                    <option value="anio">Por Año</option>
+                    <option value="rango">Rango Personalizado</option>
+                </select>
+            </div>
+            <div class="filtro-group" id="grupoAnio">
+                <label>Año</label>
+                <select id="anioSelect"></select>
+            </div>
+            <div class="filtro-group" id="grupoMes" style="display:none">
+                <label>Mes</label>
+                <select id="mesSelect">
+                    <option value="1">Enero</option><option value="2">Febrero</option>
+                    <option value="3">Marzo</option><option value="4">Abril</option>
+                    <option value="5">Mayo</option><option value="6">Junio</option>
+                    <option value="7">Julio</option><option value="8">Agosto</option>
+                    <option value="9">Septiembre</option><option value="10">Octubre</option>
+                    <option value="11">Noviembre</option><option value="12">Diciembre</option>
+                </select>
+            </div>
+            <div class="filtro-group" id="grupoRango" style="display:none">
+                <label>Desde</label>
+                <input type="date" id="fechaDesde">
+            </div>
+            <div class="filtro-group" id="grupoRangoHasta" style="display:none">
+                <label>Hasta</label>
+                <input type="date" id="fechaHasta">
+            </div>
+            <div class="filtro-group">
+                <button class="btn-filtrar" id="btnFiltrar">
+                    <i class="fas fa-search"></i> Consultar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+        <div class="kpi-card ingresos" onclick="abrirModalIngresos()">
+            <div class="kpi-glow"></div>
+            <div class="kpi-header">
+                <span class="kpi-label">Ingresos Netos</span>
+                <div class="kpi-icon"><i class="fas fa-arrow-trend-up"></i></div>
+            </div>
+            <div class="kpi-value" id="totalIngresos">C$ 0.00</div>
+            <div class="kpi-trend">
+                <span id="trendIngresos" class="pill">vs anterior: —</span>
+            </div>
+        </div>
+        <div class="kpi-card egresos" onclick="abrirModalEgresos()">
+            <div class="kpi-glow"></div>
+            <div class="kpi-header">
+                <span class="kpi-label">Egresos Totales</span>
+                <div class="kpi-icon"><i class="fas fa-arrow-trend-down"></i></div>
+            </div>
+            <div class="kpi-value" id="totalEgresos">C$ 0.00</div>
+            <div class="kpi-trend">
+                <span id="trendEgresos" class="pill">vs anterior: —</span>
+            </div>
+        </div>
+        <div class="kpi-card utilidad" onclick="abrirModalUtilidad()">
+            <div class="kpi-glow"></div>
+            <div class="kpi-header">
+                <span class="kpi-label">Utilidad Neta</span>
+                <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+            </div>
+            <div class="kpi-value" id="utilidadNeta">C$ 0.00</div>
+            <div class="kpi-trend">
+                <span id="trendUtilidad" class="pill">vs anterior: —</span>
+            </div>
+        </div>
+        <div class="kpi-card margen" onclick="abrirModalMargen()">
+            <div class="kpi-glow"></div>
+            <div class="kpi-header">
+                <span class="kpi-label">Margen de Utilidad</span>
+                <div class="kpi-icon"><i class="fas fa-percent"></i></div>
+            </div>
+            <div class="kpi-value" id="margenUtilidad">0%</div>
+            <div class="kpi-trend">
+                <span id="statusMargen" class="pill">—</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts-grid">
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <h3><i class="fas fa-chart-bar"></i> Ingresos vs Egresos</h3>
+            </div>
+            <canvas id="chartComparativo"></canvas>
+        </div>
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <h3><i class="fas fa-chart-area"></i> Evolución del Período</h3>
+            </div>
+            <canvas id="chartEvolucion"></canvas>
+        </div>
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <h3><i class="fas fa-chart-pie"></i> Ventas por Categoría</h3>
+            </div>
+            <canvas id="chartCategorias"></canvas>
+        </div>
+    </div>
+
+    <!-- TABLES -->
+    <div class="tables-grid">
+        <!-- Estado de Resultados -->
+        <div class="table-card">
+            <div class="table-header">
+                <h3><i class="fas fa-file-invoice-dollar"></i> Estado de Resultados</h3>
+            </div>
+            <div class="table-wrap">
+                <table id="tablaEstadoResultados">
+                    <thead><tr><th>Concepto</th><th>Monto</th></tr></thead>
+                    <tbody><tr><td colspan="2" class="loading-cell">Cargando…</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Top Clientes -->
+        <div class="table-card">
+            <div class="table-header">
+                <h3><i class="fas fa-trophy"></i> Top Clientes</h3>
+                <span class="table-badge">Top 10</span>
+            </div>
+            <div class="table-wrap">
+                <table id="tablaTopClientes">
+                    <thead><tr><th>Cliente</th><th>Compras</th><th>Unidades</th></tr></thead>
+                    <tbody><tr><td colspan="3" class="loading-cell">Cargando…</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Costo de Ventas -->
+        <div class="table-card full-width">
+            <div class="table-header">
+                <h3><i class="fas fa-boxes-stacked"></i> Desglose Costo de Ventas</h3>
+                <span class="table-badge">Top 15 productos</span>
+            </div>
+            <div class="table-wrap">
+                <table id="tablaCostoVentas">
+                    <thead><tr><th>Producto</th><th>Cantidad</th><th>Costo Unit.</th><th>Costo Total</th></tr></thead>
+                    <tbody><tr><td colspan="4" class="loading-cell">Cargando…</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /page-content -->
+
+<div class="admin-footer">
+    <span>Sistema de Gestión Comercial — Versión 3.0</span>
+    <span>Panel Financiero Profesional</span>
+</div>
+</div><!-- /main -->
+
+<!-- MODAL -->
+<div id="modalDesglose" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3 id="modalTitulo"><i class="fas fa-info-circle"></i> Desglose</h3>
+            <button class="modal-close" onclick="cerrarModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body" id="modalBody">Cargando…</div>
+    </div>
+</div>
+
+<script>
+    /* ─────────── Chart.js global defaults (dark theme) ─────────── */
+    Chart.defaults.color = '#8b90a7';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
+    Chart.defaults.plugins.legend.labels.boxWidth = 10;
+    Chart.defaults.plugins.legend.labels.padding  = 16;
+    Chart.defaults.plugins.legend.labels.font     = { family: 'Inter', size: 11 };
+    Chart.defaults.font.family = 'Inter';
+
+    /* ─────────── State ─────────── */
+    let datosActuales      = { ingresos:0, egresos:0, utilidad:0, margen:0, ventasNetas:0, costoVentas:0, salarios:0, mermas:0, consumos:0, iva:0, ventasBrutas:0 };
+    let datosPeriodoAnterior = { ingresos:0, egresos:0, utilidad:0 };
+
+    /* ─────────── Helpers ─────────── */
+    const showLoader  = (v) => document.getElementById('loaderOverlay').style.display = v ? 'flex' : 'none';
+    const cerrarModal = () => document.getElementById('modalDesglose').style.display = 'none';
+    const fmt         = (n) => 'C$ ' + n.toLocaleString('es-NI', { minimumFractionDigits:2 });
+
+    /* ─────────── Clock ─────────── */
+    function mostrarFecha() {
+        const now  = new Date();
+        const date = now.toLocaleDateString('es-ES', { year:'numeric', month:'short', day:'numeric', weekday:'short' });
+        const time = now.toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' });
+        document.getElementById('clockText').textContent = `${date}  ${time}`;
+        setTimeout(mostrarFecha, 30000);
+    }
+
+    /* ─────────── Session ─────────── */
+    async function verificarSesion() {
+        const token = localStorage.getItem('token');
+        if (!token || localStorage.getItem('tipoUsuario') !== 'admin') { localStorage.clear(); window.location.replace('PAG.html'); }
+        try {
+            const res  = await fetch('/api/verificar-sesion', { headers: { 'x-auth-token': token } });
+            const data = await res.json();
+            if (!data.autenticado) { localStorage.clear(); window.location.replace('PAG.html'); }
+        } catch(e) { localStorage.clear(); window.location.replace('PAG.html'); }
+    }
+
+    /* ─────────── Stock alert ─────────── */
+    async function cargarAlertasStock() {
+        try {
+            const res  = await fetch('/api/productos/bajo-stock');
+            const data = await res.json();
+            const banner = document.getElementById('alertStockBajo');
+            const msg    = document.getElementById('alertMensaje');
+            if (data && data.length > 0) {
+                banner.style.background = 'rgba(244,91,105,0.1)';
+                banner.style.borderColor = 'rgba(244,91,105,.25)';
+                banner.querySelector('i').style.color = 'var(--red)';
+                msg.innerHTML = `<strong>⚠️ ALERTA DE INVENTARIO:</strong> ${data.length} producto(s) con stock bajo. Revise inventario.`;
+            } else {
+                banner.style.background = 'rgba(34,211,165,0.08)';
+                banner.style.borderColor = 'rgba(34,211,165,.2)';
+                banner.querySelector('i').style.color = 'var(--green)';
+                msg.innerHTML = `<strong>✅ INVENTARIO SALUDABLE:</strong> Todos los productos tienen stock suficiente.`;
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    /* ─────────── Top clients ─────────── */
+    async function cargarTopClientes() {
+        try {
+            const res  = await fetch('/api/top-clientes?periodo=mes&limite=10');
+            const data = await res.json();
+            const tbody = document.querySelector('#tablaTopClientes tbody');
+            if (data && data.length > 0) {
+                tbody.innerHTML = data.map(c => `
+                    <tr>
+                        <td>${c.nombre}</td>
+                        <td>${c.compras} compras</td>
+                        <td>${c.unidades_compradas || 0} uds.</td>
+                    </tr>`).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="3" class="loading-cell">Sin datos de clientes</td></tr>';
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    /* ─────────── Load data ─────────── */
+    async function cargarDatos() {
+        showLoader(true);
+        try {
+            const tipo  = document.getElementById('tipoReporte').value;
+            const anio  = document.getElementById('anioSelect').value;
+            const mes   = document.getElementById('mesSelect').value;
+            const desde = document.getElementById('fechaDesde').value;
+            const hasta = document.getElementById('fechaHasta').value;
+
+            let params = new URLSearchParams();
+            if (tipo === 'mes')                          { params.append('anio', anio); params.append('mes', mes); }
+            else if (tipo === 'anio')                    { params.append('anio', anio); }
+            else if (tipo === 'rango' && desde && hasta) { params.append('desde', desde); params.append('hasta', hasta); }
+            else if (tipo === 'dia')  { const hoy = new Date().toISOString().split('T')[0]; params.append('desde', hoy); params.append('hasta', hoy); }
+            else if (tipo === 'semana') {
+                const s = new Date(); s.setDate(s.getDate()-7);
+                params.append('desde', s.toISOString().split('T')[0]);
+                params.append('hasta', new Date().toISOString().split('T')[0]);
+            }
+
+            const resER  = await fetch('/api/financiero/estado-resultados?' + params);
+            const erData = await resER.json();
+
+            datosActuales = {
+                ingresos:    erData.ingresos?.ventas_netas  || 0,
+                egresos:    (erData.costos?.costo_ventas    || 0) + (erData.gastos_operativos?.total || 0),
+                utilidad:    erData.utilidad_neta  || 0,
+                margen:      erData.margen_utilidad|| 0,
+                ventasNetas: erData.ingresos?.ventas_netas  || 0,
+                costoVentas: erData.costos?.costo_ventas    || 0,
+                salarios:    erData.gastos_operativos?.salarios          || 0,
+                mermas:      erData.gastos_operativos?.mermas            || 0,
+                consumos:    erData.gastos_operativos?.consumos_internos || 0,
+                iva:         erData.ingresos?.iva        || 0,
+                ventasBrutas:erData.ingresos?.ventas_brutas || 0,
+            };
+
+            /* periodo anterior */
+            let paramsAnt = new URLSearchParams(params);
+            if (tipo === 'mes') {
+                let ma = parseInt(mes)-1, aa = anio;
+                if (ma < 1) { ma = 12; aa = parseInt(anio)-1; }
+                paramsAnt.set('anio', aa); paramsAnt.set('mes', ma);
+            } else if (tipo === 'anio') {
+                paramsAnt.set('anio', parseInt(anio)-1);
+            }
+            if ((tipo === 'mes' && parseInt(mes) > 1) || (tipo === 'anio' && parseInt(anio) > 2020)) {
+                const ra  = await fetch('/api/financiero/estado-resultados?' + paramsAnt);
+                const ant = await ra.json();
+                datosPeriodoAnterior = {
+                    ingresos: ant.ingresos?.ventas_netas || 0,
+                    egresos:  (ant.costos?.costo_ventas  || 0) + (ant.gastos_operativos?.total || 0),
+                    utilidad: ant.utilidad_neta || 0,
+                };
+            }
+
+            actualizarUI();
+            actualizarTablaEstadoResultados(erData);
+
+            const resCV  = await fetch('/api/financiero/costo-ventas?' + params);
+            const cvData = await resCV.json();
+            actualizarTablaCostoVentas(cvData);
+
+            const resCat  = await fetch('/api/estadisticas-ventas?' + params);
+            const catData = await resCat.json();
+            if (catData.categorias && catData.totales_categorias)
+                actualizarGraficaCategorias(catData.categorias, catData.totales_categorias);
+
+            await cargarTopClientes();
+
+        } catch(e) { console.error(e); alert('Error al cargar datos financieros'); }
+        finally    { showLoader(false); }
+    }
+
+    /* ─────────── Update UI ─────────── */
+    function actualizarUI() {
+        const ti = datosPeriodoAnterior.ingresos ? ((datosActuales.ingresos - datosPeriodoAnterior.ingresos) / datosPeriodoAnterior.ingresos * 100).toFixed(1) : 0;
+        const te = datosPeriodoAnterior.egresos  ? ((datosActuales.egresos  - datosPeriodoAnterior.egresos)  / datosPeriodoAnterior.egresos  * 100).toFixed(1) : 0;
+        const tu = datosPeriodoAnterior.utilidad  ? ((datosActuales.utilidad - datosPeriodoAnterior.utilidad) / Math.abs(datosPeriodoAnterior.utilidad) * 100).toFixed(1) : 0;
+
+        document.getElementById('totalIngresos').textContent = fmt(datosActuales.ingresos);
+        document.getElementById('totalEgresos').textContent  = fmt(datosActuales.egresos);
+        document.getElementById('utilidadNeta').textContent  = fmt(datosActuales.utilidad);
+        document.getElementById('margenUtilidad').textContent= datosActuales.margen.toFixed(2) + '%';
+
+        document.getElementById('trendIngresos').textContent= `vs anterior: ${ti>=0?'▲ +':'▼ '}${Math.abs(ti)}%`;
+        document.getElementById('trendEgresos').textContent = `vs anterior: ${te<=0?'▼ ':'▲ +'}${Math.abs(te)}%`;
+        document.getElementById('trendUtilidad').textContent= `vs anterior: ${tu>=0?'▲ +':'▼ '}${Math.abs(tu)}%`;
+
+        const m = datosActuales.margen;
+        const statusText = m >= 20 ? '✅ Excelente' : (m >= 10 ? '👍 Buena' : (m >= 5 ? '⚠️ Aceptable' : '🔴 Crítica'));
+        document.getElementById('statusMargen').textContent = statusText;
+
+        // Color utilidad
+        document.getElementById('utilidadNeta').style.color = datosActuales.utilidad >= 0 ? 'var(--blue)' : 'var(--red)';
+
+        actualizarGraficaComparativa(datosActuales.ingresos, datosActuales.egresos);
+    }
+
+    /* ─────────── Tables ─────────── */
+    function actualizarTablaEstadoResultados(data) {
+        const tbody = document.querySelector('#tablaEstadoResultados tbody');
+        tbody.innerHTML = `
+            <tr class="row-section"><td colspan="2">Ingresos</td></tr>
+            <tr><td>Ventas Brutas</td><td>${fmt(data.ingresos?.ventas_brutas||0)}</td></tr>
+            <tr><td>(−) IVA 15%</td><td>${fmt(data.ingresos?.iva||0)}</td></tr>
+            <tr class="row-total row-positive"><td>= Ventas Netas</td><td>${fmt(data.ingresos?.ventas_netas||0)}</td></tr>
+            <tr class="row-section"><td colspan="2">Costos</td></tr>
+            <tr><td>(−) Costo de Ventas</td><td>${fmt(data.costos?.costo_ventas||0)}</td></tr>
+            <tr class="row-total row-positive"><td>= Utilidad Bruta</td><td>${fmt(data.utilidad_bruta||0)}</td></tr>
+            <tr class="row-section"><td colspan="2">Gastos Operativos</td></tr>
+            <tr><td>Salarios</td><td>${fmt(data.gastos_operativos?.salarios||0)}</td></tr>
+            <tr><td>Mermas</td><td>${fmt(data.gastos_operativos?.mermas||0)}</td></tr>
+            <tr><td>Consumo Interno</td><td>${fmt(data.gastos_operativos?.consumos_internos||0)}</td></tr>
+            <tr class="row-total"><td>Total Gastos</td><td>${fmt(data.gastos_operativos?.total||0)}</td></tr>
+            <tr class="row-total ${(data.utilidad_neta||0)>=0?'row-positive':'row-negative'}">
+                <td>= Utilidad Neta</td>
+                <td>${fmt(data.utilidad_neta||0)}</td>
+            </tr>
+            <tr><td>Margen de Utilidad</td><td>${(data.margen_utilidad||0).toFixed(2)}%</td></tr>
+        `;
+    }
+
+    function actualizarTablaCostoVentas(data) {
+        const tbody = document.querySelector('#tablaCostoVentas tbody');
+        if (data.productos?.length) {
+            tbody.innerHTML = data.productos.slice(0,15).map(p => `
+                <tr>
+                    <td>${p.nombre_producto}</td>
+                    <td>${p.cantidad_vendida}</td>
+                    <td>C$ ${p.costo_unitario.toFixed(2)}</td>
+                    <td>C$ ${p.costo_total.toFixed(2)}</td>
+                </tr>`).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4" class="loading-cell">Sin datos de productos</td></tr>';
+        }
+    }
+
+    /* ─────────── Charts ─────────── */
+    function actualizarGraficaComparativa(ingresos, egresos) {
+        const ctx = document.getElementById('chartComparativo').getContext('2d');
+        if (window.chartComp) window.chartComp.destroy();
+        window.chartComp = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Ingresos Netos', 'Egresos Totales'],
+                datasets: [{
+                    label: 'Monto (C$)',
+                    data: [ingresos, egresos],
+                    backgroundColor: ['rgba(34,211,165,0.7)', 'rgba(244,91,105,0.7)'],
+                    borderColor:     ['#22d3a5', '#f45b69'],
+                    borderWidth: 1,
+                    borderRadius: 8,
+                }]
+            },
+            options: {
+                responsive:true,
+                plugins: {
+                    legend:{ display:false },
+                    tooltip:{ callbacks:{ label: ctx => fmt(ctx.raw) } }
+                },
+                scales: {
+                    x: { grid:{ display:false } },
+                    y: { grid:{ color:'rgba(255,255,255,0.05)' }, ticks:{ callback: v => 'C$'+v.toLocaleString() } }
+                }
+            }
+        });
+    }
+
+    function actualizarGraficaCategorias(labels, data) {
+        const ctx = document.getElementById('chartCategorias').getContext('2d');
+        if (window.chartCat) window.chartCat.destroy();
+        window.chartCat = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels,
+                datasets:[{
+                    data,
+                    backgroundColor: ['#7c5cfa','#22d3a5','#f45b69','#fbbf24','#60a5fa','#a78bfa'],
+                    borderColor: 'var(--bg-card)',
+                    borderWidth: 2,
+                }]
+            },
+            options: { responsive:true, cutout:'65%', plugins:{ legend:{ position:'bottom' } } }
+        });
+    }
+
+    /* ─────────── Modals ─────────── */
+    function abrirModalIngresos() {
+        const d = datosActuales;
+        document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-arrow-up"></i> Desglose de Ingresos';
+        document.getElementById('modalBody').innerHTML = `
+            <div class="modal-item"><span>Ventas Brutas</span><span>${fmt(d.ventasBrutas)}</span></div>
+            <div class="modal-item"><span>(−) IVA 15%</span><span>${fmt(d.iva)}</span></div>
+            <div class="modal-total"><span>INGRESOS NETOS</span><span>${fmt(d.ingresos)}</span></div>
+            <div class="modal-subtitulo">Rentabilidad</div>
+            <div class="modal-item"><span>Costo de Ventas</span><span>${fmt(d.costoVentas)}</span></div>
+            <div class="modal-item"><span>Utilidad Bruta</span><span>${fmt(d.ingresos - d.costoVentas)}</span></div>
+        `;
+        document.getElementById('modalDesglose').style.display = 'flex';
+    }
+
+    function abrirModalEgresos() {
+        const d = datosActuales;
+        document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-arrow-down"></i> Desglose de Egresos';
+        document.getElementById('modalBody').innerHTML = `
+            <div class="modal-item"><span>Costo de Ventas</span><span>${fmt(d.costoVentas)}</span></div>
+            <div class="modal-item"><span>Mermas</span><span>${fmt(d.mermas)}</span></div>
+            <div class="modal-item"><span>Consumo Interno</span><span>${fmt(d.consumos)}</span></div>
+            <div class="modal-item"><span>Salarios</span><span>${fmt(d.salarios)}</span></div>
+            <div class="modal-total"><span>TOTAL EGRESOS</span><span>${fmt(d.egresos)}</span></div>
+        `;
+        document.getElementById('modalDesglose').style.display = 'flex';
+    }
+
+    function abrirModalUtilidad() {
+        const d = datosActuales;
+        document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-chart-line"></i> Utilidad Neta';
+        document.getElementById('modalBody').innerHTML = `
+            <div class="modal-item"><span>Ingresos Netos</span><span>${fmt(d.ingresos)}</span></div>
+            <div class="modal-item"><span>Egresos Totales</span><span>${fmt(d.egresos)}</span></div>
+            <div class="modal-total"><span>UTILIDAD NETA</span><span>${fmt(d.utilidad)}</span></div>
+        `;
+        document.getElementById('modalDesglose').style.display = 'flex';
+    }
+
+    function abrirModalMargen() {
+        const d = datosActuales;
+        document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-percent"></i> Margen de Utilidad';
+        document.getElementById('modalBody').innerHTML = `
+            <div class="modal-item"><span>Utilidad Neta</span><span>${fmt(d.utilidad)}</span></div>
+            <div class="modal-item"><span>Ingresos Netos</span><span>${fmt(d.ingresos)}</span></div>
+            <div class="modal-total"><span>MARGEN</span><span>${d.margen.toFixed(2)}%</span></div>
+            <div class="modal-subtitulo">Interpretación</div>
+            <div class="modal-item"><span>Por cada C$1 de ingreso</span><span>C$ ${(d.margen/100).toFixed(3)} son utilidad</span></div>
+        `;
+        document.getElementById('modalDesglose').style.display = 'flex';
+    }
+
+    /* ─────────── Export ─────────── */
+    function exportarPDF() {
+        const el  = document.getElementById('reportContent');
+        const opt = {
+            margin: [0.5,0.5,0.5,0.5],
+            filename: `Reporte_Financiero_${new Date().toISOString().split('T')[0]}.pdf`,
+            image: { type:'jpeg', quality:0.98 },
+            html2canvas: { scale:2 },
+            jsPDF: { unit:'in', format:'a4', orientation:'landscape' }
+        };
+        html2pdf().set(opt).from(el).save();
+    }
+
+    function exportarExcel() {
+        const blob = new Blob([`<html><head><meta charset="UTF-8"></head><body>${document.getElementById('reportContent').innerHTML}</body></html>`],
+            { type:'application/vnd.ms-excel' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Reporte_Financiero_${new Date().toISOString().split('T')[0]}.xls`;
+        link.click();
+    }
+
+    function cerrarSesion() { localStorage.clear(); window.location.replace('PAG.html'); }
+
+    /* ─────────── Filter toggle ─────────── */
+    document.getElementById('tipoReporte').addEventListener('change', function() {
+        document.getElementById('grupoMes').style.display        = this.value === 'mes'   ? 'flex' : 'none';
+        document.getElementById('grupoRango').style.display      = this.value === 'rango' ? 'flex' : 'none';
+        document.getElementById('grupoRangoHasta').style.display = this.value === 'rango' ? 'flex' : 'none';
+    });
+    document.getElementById('btnFiltrar').addEventListener('click', cargarDatos);
+
+    /* Close modal on overlay click */
+    document.getElementById('modalDesglose').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModal();
+    });
+
+    /* ─────────── Init ─────────── */
+    (function init() {
+        const anioActual = new Date().getFullYear();
+        const sel = document.getElementById('anioSelect');
+        for (let i = 2020; i <= anioActual+1; i++) sel.add(new Option(i, i));
+        sel.value = anioActual;
+        mostrarFecha();
+        verificarSesion();
+        cargarAlertasStock();
+        cargarDatos();
+    })();
+</script>
+</body>
+</html>

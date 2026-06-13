@@ -1795,8 +1795,9 @@ app.get('/api/ventas-detalle', (req, res) => {
 });
 
 // ================= ENDPOINT TOP-PRODUCTOS CORREGIDO (CON CATEGORÍA) =================
+// ================= ENDPOINT TOP-PRODUCTOS CORREGIDO (SIN DUPLICADOS) =================
 app.get('/api/top-productos', (req, res) => {
-    const { periodo = 'mes', limite = 10, fecha, desde, hasta, anio, mes } = req.query;
+    const { periodo = 'mes', limite = 100, fecha, desde, hasta, anio, mes } = req.query;
     
     let whereCondition = '';
     let params = [];
@@ -1838,6 +1839,7 @@ app.get('/api/top-productos', (req, res) => {
         params = [fechaInicioStr];
     }
     
+    // 🔧 CORREGIDO: Agrupar correctamente por ID de producto para evitar duplicados
     const sql = `
         SELECT 
             p.Id_Producto,
@@ -1846,9 +1848,9 @@ app.get('/api/top-productos', (req, res) => {
             COALESCE(SUM(o.CantidadVendida), 0) as cantidad,
             COALESCE(SUM(o.Subtotal), 0) as total_ventas
         FROM orden o
-        JOIN producto p ON o.Id_Producto = p.Id_Producto
+        INNER JOIN producto p ON o.Id_Producto = p.Id_Producto
         LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
-        JOIN compra c ON o.NumFactura = c.Num_Factura
+        INNER JOIN compra c ON o.NumFactura = c.Num_Factura
         ${whereCondition}
         GROUP BY p.Id_Producto, p.Nombre, cat.Nombre
         HAVING cantidad > 0
@@ -1859,6 +1861,246 @@ app.get('/api/top-productos', (req, res) => {
     db.query(sql, [...params, parseInt(limite)], (err, results) => {
         if (err) {
             console.error('Error en /api/top-productos:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(results);
+    });
+});
+
+// ================= ESTADÍSTICAS POR AÑO CORREGIDO =================
+app.get('/api/estadisticas-ventas-anio', (req, res) => {
+    const { anio } = req.query;
+    
+    // 🔧 CORREGIDO: Sumar TODAS las unidades, no solo top 5
+    const sqlVentas = `
+        SELECT COALESCE(SUM(o.CantidadVendida), 0) as total_unidades, COUNT(DISTINCT c.Num_Factura) as cantidad_ventas
+        FROM compra c
+        INNER JOIN orden o ON c.Num_Factura = o.NumFactura
+        WHERE YEAR(c.Fecha) = ?
+    `;
+    
+    const sqlVentasMensuales = `
+        SELECT MONTH(c.Fecha) as mes, COALESCE(SUM(o.CantidadVendida), 0) as total
+        FROM compra c
+        INNER JOIN orden o ON c.Num_Factura = o.NumFactura
+        WHERE YEAR(c.Fecha) = ?
+        GROUP BY MONTH(c.Fecha)
+        ORDER BY mes
+    `;
+    
+    const sqlCategorias = `
+        SELECT cat.Nombre as categoria, COALESCE(SUM(o.CantidadVendida), 0) as total
+        FROM orden o
+        INNER JOIN producto p ON o.Id_Producto = p.Id_Producto
+        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
+        INNER JOIN compra c ON o.NumFactura = c.Num_Factura
+        WHERE YEAR(c.Fecha) = ?
+        GROUP BY cat.Id_Categoria
+        ORDER BY total DESC
+    `;
+    
+    // 🔧 CORREGIDO: Top 5 productos (sin duplicados)
+    const sqlTopProductos = `
+        SELECT p.Nombre as nombre, COALESCE(cat.Nombre, 'Sin categoría') as categoria, SUM(o.CantidadVendida) as cantidad
+        FROM orden o
+        INNER JOIN producto p ON o.Id_Producto = p.Id_Producto
+        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
+        INNER JOIN compra c ON o.NumFactura = c.Num_Factura
+        WHERE YEAR(c.Fecha) = ?
+        GROUP BY p.Id_Producto, p.Nombre, cat.Nombre
+        ORDER BY cantidad DESC
+        LIMIT 5
+    `;
+    
+    const sqlTopProductosCompleto = `
+        SELECT p.Nombre as nombre, COALESCE(cat.Nombre, 'Sin categoría') as categoria, SUM(o.CantidadVendida) as cantidad
+        FROM orden o
+        INNER JOIN producto p ON o.Id_Producto = p.Id_Producto
+        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
+        INNER JOIN compra c ON o.NumFactura = c.Num_Factura
+        WHERE YEAR(c.Fecha) = ?
+        GROUP BY p.Id_Producto, p.Nombre, cat.Nombre
+        ORDER BY cantidad DESC
+    `;
+    
+    const sqlTopClientes = `
+        SELECT CONCAT(COALESCE(cl.Nombre, 'Cliente'), ' ', COALESCE(cl.Apellido, '')) as nombre, SUM(o.CantidadVendida) as unidades_compradas
+        FROM compra c
+        LEFT JOIN clientes cl ON c.Id_cliente = cl.Id_cliente
+        INNER JOIN orden o ON c.Num_Factura = o.NumFactura
+        WHERE YEAR(c.Fecha) = ? AND c.Id_cliente IS NOT NULL
+        GROUP BY c.Id_cliente, cl.Nombre, cl.Apellido
+        ORDER BY unidades_compradas DESC
+        LIMIT 5
+    `;
+    
+    Promise.all([
+        db.promise().query(sqlVentas, [anio]),
+        db.promise().query(sqlVentasMensuales, [anio]),
+        db.promise().query(sqlCategorias, [anio]),
+        db.promise().query(sqlTopProductos, [anio]),
+        db.promise().query(sqlTopProductosCompleto, [anio]),
+        db.promise().query(sqlTopClientes, [anio])
+    ]).then(([ventas, ventasMensuales, categorias, topProductos, topProductosCompleto, topClientes]) => {
+        const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const dataMensual = Array(12).fill(0);
+        const ventasPorMes = ventasMensuales[0];
+        ventasPorMes.forEach(v => {
+            dataMensual[v.mes - 1] = parseInt(v.total) || 0;
+        });
+        
+        // 🔧 CORREGIDO: total_unidades ahora es el total REAL, no solo top 5
+        const totalUnidades = parseInt(ventas[0][0]?.total_unidades) || 0;
+        
+        res.json({
+            cantidad_ventas: parseInt(ventas[0][0]?.cantidad_ventas) || 0,
+            total_unidades: totalUnidades,
+            ventas_diarias: meses.map((mes, idx) => ({ fecha: `${mes} ${anio}`, total: dataMensual[idx] })),
+            categorias: categorias[0].map(v => v.categoria),
+            totales_categorias: categorias[0].map(v => parseInt(v.total) || 0),
+            top_productos: topProductos[0],
+            top_productos_completo: topProductosCompleto[0],
+            top_clientes: topClientes[0],
+            labels_dias: meses,
+            data_dias: dataMensual
+        });
+    }).catch(err => {
+        console.error('Error en /api/estadisticas-ventas-anio:', err);
+        res.status(500).json({ error: err.message });
+    });
+});
+
+// ================= ESTADÍSTICAS POR FECHA CORREGIDO =================
+app.get('/api/estadisticas-ventas-fecha', (req, res) => {
+    const { fecha } = req.query;
+    
+    const sqlVentas = `
+        SELECT COALESCE(SUM(o.CantidadVendida), 0) as total_unidades, COUNT(DISTINCT c.Num_Factura) as cantidad_ventas
+        FROM compra c
+        INNER JOIN orden o ON c.Num_Factura = o.NumFactura
+        WHERE DATE(c.Fecha) = ?
+    `;
+    
+    const sqlCategorias = `
+        SELECT cat.Nombre as categoria, COALESCE(SUM(o.CantidadVendida), 0) as total
+        FROM orden o
+        INNER JOIN producto p ON o.Id_Producto = p.Id_Producto
+        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
+        INNER JOIN compra c ON o.NumFactura = c.Num_Factura
+        WHERE DATE(c.Fecha) = ?
+        GROUP BY cat.Id_Categoria
+        ORDER BY total DESC
+    `;
+    
+    const sqlTopProductos = `
+        SELECT p.Nombre as nombre, COALESCE(cat.Nombre, 'Sin categoría') as categoria, SUM(o.CantidadVendida) as cantidad
+        FROM orden o
+        INNER JOIN producto p ON o.Id_Producto = p.Id_Producto
+        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
+        INNER JOIN compra c ON o.NumFactura = c.Num_Factura
+        WHERE DATE(c.Fecha) = ?
+        GROUP BY p.Id_Producto, p.Nombre, cat.Nombre
+        ORDER BY cantidad DESC
+    `;
+    
+    const sqlTopClientes = `
+        SELECT CONCAT(COALESCE(cl.Nombre, 'Cliente'), ' ', COALESCE(cl.Apellido, '')) as nombre, SUM(o.CantidadVendida) as unidades_compradas
+        FROM compra c
+        LEFT JOIN clientes cl ON c.Id_cliente = cl.Id_cliente
+        INNER JOIN orden o ON c.Num_Factura = o.NumFactura
+        WHERE DATE(c.Fecha) = ? AND c.Id_cliente IS NOT NULL
+        GROUP BY c.Id_cliente, cl.Nombre, cl.Apellido
+        ORDER BY unidades_compradas DESC
+    `;
+    
+    Promise.all([
+        db.promise().query(sqlVentas, [fecha]),
+        db.promise().query(sqlCategorias, [fecha]),
+        db.promise().query(sqlTopProductos, [fecha]),
+        db.promise().query(sqlTopClientes, [fecha])
+    ]).then(([ventas, categorias, topProductos, topClientes]) => {
+        const totalUnidades = parseInt(ventas[0][0]?.total_unidades) || 0;
+        
+        res.json({
+            cantidad_ventas: parseInt(ventas[0][0]?.cantidad_ventas) || 0,
+            total_unidades: totalUnidades,
+            labels_dias: [fecha],
+            data_dias: [totalUnidades],
+            categorias: categorias[0].map(v => v.categoria),
+            totales_categorias: categorias[0].map(v => parseInt(v.total) || 0),
+            top_productos: topProductos[0].slice(0, 5),
+            top_productos_completo: topProductos[0],
+            top_clientes: topClientes[0].slice(0, 5),
+            top_clientes_completo: topClientes[0]
+        });
+    }).catch(err => {
+        console.error('Error en /api/estadisticas-ventas-fecha:', err);
+        res.status(500).json({ error: err.message });
+    });
+});
+
+// ================= ENDPOINT TOP-CLIENTES CORREGIDO =================
+app.get('/api/top-clientes', (req, res) => {
+    const { periodo = 'mes', limite = 100, fecha, desde, hasta, anio, mes } = req.query;
+    
+    let whereCondition = '';
+    let params = [];
+    
+    if (fecha) {
+        whereCondition = 'AND DATE(c.Fecha) = ?';
+        params = [fecha];
+    } else if (desde && hasta) {
+        whereCondition = 'AND DATE(c.Fecha) BETWEEN ? AND ?';
+        params = [desde, hasta];
+    } else if (anio && mes) {
+        const primerDia = `${anio}-${String(mes).padStart(2, '0')}-01`;
+        const ultimoDia = new Date(parseInt(anio), parseInt(mes), 0).toISOString().split('T')[0];
+        whereCondition = 'AND DATE(c.Fecha) BETWEEN ? AND ?';
+        params = [primerDia, ultimoDia];
+    } else if (anio) {
+        whereCondition = 'AND YEAR(c.Fecha) = ?';
+        params = [anio];
+    } else {
+        let fechaInicio = new Date();
+        switch(periodo) {
+            case 'dia':
+                fechaInicio.setDate(fechaInicio.getDate() - 1);
+                break;
+            case 'semana':
+                fechaInicio.setDate(fechaInicio.getDate() - 7);
+                break;
+            case 'mes':
+                fechaInicio.setDate(fechaInicio.getDate() - 30);
+                break;
+            case 'año':
+                fechaInicio.setFullYear(fechaInicio.getFullYear() - 1);
+                break;
+            default:
+                fechaInicio.setDate(fechaInicio.getDate() - 30);
+        }
+        const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
+        whereCondition = 'AND c.Fecha >= ?';
+        params = [fechaInicioStr];
+    }
+    
+    // 🔧 CORREGIDO: Usar CantidadVendida en lugar de COUNT
+    const sql = `
+        SELECT 
+            CONCAT(COALESCE(cl.Nombre, 'Cliente'), ' ', COALESCE(cl.Apellido, '')) as nombre,
+            SUM(o.CantidadVendida) as compras
+        FROM compra c
+        LEFT JOIN clientes cl ON c.Id_cliente = cl.Id_cliente
+        INNER JOIN orden o ON c.Num_Factura = o.NumFactura
+        WHERE c.Id_cliente IS NOT NULL ${whereCondition}
+        GROUP BY c.Id_cliente, cl.Nombre, cl.Apellido
+        HAVING compras > 0
+        ORDER BY compras DESC
+        LIMIT ?
+    `;
+    
+    db.query(sql, [...params, parseInt(limite)], (err, results) => {
+        if (err) {
+            console.error('Error en /api/top-clientes:', err);
             return res.status(500).json({ error: err.message });
         }
         res.json(results);
@@ -2955,6 +3197,741 @@ app.post('/api/recuperar-password-unificado', (req, res) => {
                 }
             });
         }
+    });
+});
+
+// ================= PANEL FINANCIERO - ENDPOINTS COMPLETOS =================
+
+// 1. Obtener ventas brutas, IVA y ventas netas por período
+app.get('/api/financiero/ventas-detalle', (req, res) => {
+    const { desde, hasta, anio, mes } = req.query;
+    
+    let whereCondition = '';
+    let params = [];
+    
+    if (desde && hasta) {
+        whereCondition = 'WHERE DATE(c.Fecha) BETWEEN ? AND ?';
+        params = [desde, hasta];
+    } else if (anio && mes) {
+        const primerDia = `${anio}-${String(mes).padStart(2, '0')}-01`;
+        const ultimoDia = new Date(parseInt(anio), parseInt(mes), 0).toISOString().split('T')[0];
+        whereCondition = 'WHERE DATE(c.Fecha) BETWEEN ? AND ?';
+        params = [primerDia, ultimoDia];
+    } else if (anio) {
+        whereCondition = 'WHERE YEAR(c.Fecha) = ?';
+        params = [anio];
+    } else {
+        const fechaInicio = new Date();
+        fechaInicio.setDate(fechaInicio.getDate() - 30);
+        whereCondition = 'WHERE c.Fecha >= ?';
+        params = [fechaInicio.toISOString().split('T')[0]];
+    }
+    
+    const sql = `
+        SELECT 
+            COALESCE(SUM(o.Subtotal), 0) as ventas_brutas,
+            COUNT(DISTINCT c.Num_Factura) as cantidad_ventas,
+            COALESCE(SUM(o.CantidadVendida), 0) as unidades_vendidas
+        FROM compra c
+        INNER JOIN orden o ON c.Num_Factura = o.NumFactura
+        ${whereCondition}
+    `;
+    
+    db.query(sql, params, (err, results) => {
+        if (err) {
+            console.error('Error en /api/financiero/ventas-detalle:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        const ventasBrutas = parseFloat(results[0]?.ventas_brutas) || 0;
+        const iva = ventasBrutas * 0.15;
+        const ventasNetas = ventasBrutas - iva;
+        
+        res.json({
+            ventas_brutas: ventasBrutas,
+            iva: iva,
+            ventas_netas: ventasNetas,
+            cantidad_ventas: parseInt(results[0]?.cantidad_ventas) || 0,
+            unidades_vendidas: parseInt(results[0]?.unidades_vendidas) || 0
+        });
+    });
+});
+
+// 2. Costo de Ventas (COGS) detallado por producto
+app.get('/api/financiero/costo-ventas', (req, res) => {
+    const { desde, hasta, anio, mes } = req.query;
+    
+    let whereCondition = '';
+    let params = [];
+    
+    if (desde && hasta) {
+        whereCondition = 'AND DATE(c.Fecha) BETWEEN ? AND ?';
+        params = [desde, hasta];
+    } else if (anio && mes) {
+        const primerDia = `${anio}-${String(mes).padStart(2, '0')}-01`;
+        const ultimoDia = new Date(parseInt(anio), parseInt(mes), 0).toISOString().split('T')[0];
+        whereCondition = 'AND DATE(c.Fecha) BETWEEN ? AND ?';
+        params = [primerDia, ultimoDia];
+    } else if (anio) {
+        whereCondition = 'AND YEAR(c.Fecha) = ?';
+        params = [anio];
+    } else {
+        const fechaInicio = new Date();
+        fechaInicio.setDate(fechaInicio.getDate() - 30);
+        whereCondition = 'AND c.Fecha >= ?';
+        params = [fechaInicio.toISOString().split('T')[0]];
+    }
+    
+    const sql = `
+        SELECT 
+            p.Id_Producto,
+            p.Nombre as nombre_producto,
+            COALESCE(SUM(o.CantidadVendida), 0) as cantidad_vendida,
+            COALESCE(AVG(a.Precio_Compra), 0) as costo_unitario,
+            COALESCE(SUM(o.CantidadVendida * a.Precio_Compra), 0) as costo_total
+        FROM orden o
+        INNER JOIN compra c ON o.NumFactura = c.Num_Factura
+        INNER JOIN producto p ON o.Id_Producto = p.Id_Producto
+        LEFT JOIN abastecimiento a ON p.Id_Producto = a.Id_Producto
+        WHERE 1=1 ${whereCondition}
+        GROUP BY p.Id_Producto, p.Nombre
+        HAVING cantidad_vendida > 0
+        ORDER BY costo_total DESC
+    `;
+    
+    db.query(sql, params, (err, results) => {
+        if (err) {
+            console.error('Error en /api/financiero/costo-ventas:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        const costoTotal = results.reduce((sum, r) => sum + (parseFloat(r.costo_total) || 0), 0);
+        
+        res.json({
+            productos: results.map(r => ({
+                id_producto: r.Id_Producto,
+                nombre_producto: r.nombre_producto,
+                cantidad_vendida: parseInt(r.cantidad_vendida),
+                costo_unitario: parseFloat(r.costo_unitario) || 0,
+                costo_total: parseFloat(r.costo_total) || 0
+            })),
+            costo_total: costoTotal
+        });
+    });
+});
+
+// 3. Gastos operativos (salarios, mermas, consumos)
+app.get('/api/financiero/gastos-operativos', (req, res) => {
+    const { desde, hasta, anio, mes } = req.query;
+    
+    let fechaInicio, fechaFin;
+    
+    if (desde && hasta) {
+        fechaInicio = desde;
+        fechaFin = hasta;
+    } else if (anio && mes) {
+        fechaInicio = `${anio}-${String(mes).padStart(2, '0')}-01`;
+        fechaFin = new Date(parseInt(anio), parseInt(mes), 0).toISOString().split('T')[0];
+    } else if (anio) {
+        fechaInicio = `${anio}-01-01`;
+        fechaFin = `${anio}-12-31`;
+    } else {
+        fechaInicio = new Date();
+        fechaInicio.setDate(fechaInicio.getDate() - 30);
+        fechaInicio = fechaInicio.toISOString().split('T')[0];
+        fechaFin = new Date().toISOString().split('T')[0];
+    }
+    
+    // Salarios del período (proporcionales)
+    const sqlSalarios = `
+        SELECT COALESCE(SUM(Salario), 0) as total_salarios
+        FROM trabajadores
+        WHERE Activo = 1
+    `;
+    
+    // Mermas/Perdidas del período (valor estimado por precio de producto)
+    const sqlMermas = `
+        SELECT COALESCE(SUM(m.Cantidad * p.Precio), 0) as total_mermas
+        FROM merma m
+        INNER JOIN perdida pd ON m.Id_Perdida = pd.Id_Perdida
+        INNER JOIN producto p ON m.Id_Producto = p.Id_Producto
+        WHERE DATE(pd.Fecha) BETWEEN ? AND ?
+    `;
+    
+    // Consumo interno del período
+    const sqlConsumos = `
+        SELECT COALESCE(SUM(ci.Cantidad * p.Precio), 0) as total_consumos
+        FROM consumo_interno ci
+        INNER JOIN producto p ON ci.Id_Producto = p.Id_Producto
+        WHERE DATE(ci.Fecha) BETWEEN ? AND ?
+    `;
+    
+    Promise.all([
+        db.promise().query(sqlSalarios),
+        db.promise().query(sqlMermas, [fechaInicio, fechaFin]),
+        db.promise().query(sqlConsumos, [fechaInicio, fechaFin])
+    ]).then(([salarios, mermas, consumos]) => {
+        const totalSalarios = parseFloat(salarios[0][0]?.total_salarios) || 0;
+        const totalMermas = parseFloat(mermas[0][0]?.total_mermas) || 0;
+        const totalConsumos = parseFloat(consumos[0][0]?.total_consumos) || 0;
+        
+        res.json({
+            salarios: totalSalarios,
+            mermas: totalMermas,
+            consumos_internos: totalConsumos,
+            otros_gastos: 0,
+            total_gastos_operativos: totalSalarios + totalMermas + totalConsumos,
+            detalle: {
+                salarios_detalle: [{ concepto: "Salarios de trabajadores", monto: totalSalarios }],
+                mermas_detalle: [{ concepto: "Mermas y perdidas", monto: totalMermas }],
+                consumos_detalle: [{ concepto: "Consumo interno", monto: totalConsumos }]
+            }
+        });
+    }).catch(err => {
+        console.error('Error en /api/financiero/gastos-operativos:', err);
+        res.status(500).json({ error: err.message });
+    });
+});
+
+// 4. Estado de Resultados completo
+app.get('/api/financiero/estado-resultados', async (req, res) => {
+    const { desde, hasta, anio, mes } = req.query;
+    
+    try {
+        // Obtener ventas
+        const ventasPromise = new Promise((resolve, reject) => {
+            let whereCondition = '';
+            let params = [];
+            
+            if (desde && hasta) {
+                whereCondition = 'WHERE DATE(c.Fecha) BETWEEN ? AND ?';
+                params = [desde, hasta];
+            } else if (anio && mes) {
+                const primerDia = `${anio}-${String(mes).padStart(2, '0')}-01`;
+                const ultimoDia = new Date(parseInt(anio), parseInt(mes), 0).toISOString().split('T')[0];
+                whereCondition = 'WHERE DATE(c.Fecha) BETWEEN ? AND ?';
+                params = [primerDia, ultimoDia];
+            } else if (anio) {
+                whereCondition = 'WHERE YEAR(c.Fecha) = ?';
+                params = [anio];
+            } else {
+                const fechaInicio = new Date();
+                fechaInicio.setDate(fechaInicio.getDate() - 30);
+                whereCondition = 'WHERE c.Fecha >= ?';
+                params = [fechaInicio.toISOString().split('T')[0]];
+            }
+            
+            db.query(`
+                SELECT COALESCE(SUM(o.Subtotal), 0) as ventas_brutas
+                FROM compra c
+                INNER JOIN orden o ON c.Num_Factura = o.NumFactura
+                ${whereCondition}
+            `, params, (err, results) => {
+                if (err) reject(err);
+                else resolve(parseFloat(results[0]?.ventas_brutas) || 0);
+            });
+        });
+        
+        // Obtener costo de ventas
+        const costoPromise = new Promise((resolve, reject) => {
+            let whereCondition = '';
+            let params = [];
+            
+            if (desde && hasta) {
+                whereCondition = 'AND DATE(c.Fecha) BETWEEN ? AND ?';
+                params = [desde, hasta];
+            } else if (anio && mes) {
+                const primerDia = `${anio}-${String(mes).padStart(2, '0')}-01`;
+                const ultimoDia = new Date(parseInt(anio), parseInt(mes), 0).toISOString().split('T')[0];
+                whereCondition = 'AND DATE(c.Fecha) BETWEEN ? AND ?';
+                params = [primerDia, ultimoDia];
+            } else if (anio) {
+                whereCondition = 'AND YEAR(c.Fecha) = ?';
+                params = [anio];
+            } else {
+                const fechaInicio = new Date();
+                fechaInicio.setDate(fechaInicio.getDate() - 30);
+                whereCondition = 'AND c.Fecha >= ?';
+                params = [fechaInicio.toISOString().split('T')[0]];
+            }
+            
+            db.query(`
+                SELECT COALESCE(SUM(o.CantidadVendida * a.Precio_Compra), 0) as costo_ventas
+                FROM orden o
+                INNER JOIN compra c ON o.NumFactura = c.Num_Factura
+                LEFT JOIN abastecimiento a ON o.Id_Producto = a.Id_Producto
+                WHERE 1=1 ${whereCondition}
+            `, params, (err, results) => {
+                if (err) reject(err);
+                else resolve(parseFloat(results[0]?.costo_ventas) || 0);
+            });
+        });
+        
+        // Obtener gastos operativos
+        let fechaInicio, fechaFin;
+        if (desde && hasta) {
+            fechaInicio = desde;
+            fechaFin = hasta;
+        } else if (anio && mes) {
+            fechaInicio = `${anio}-${String(mes).padStart(2, '0')}-01`;
+            fechaFin = new Date(parseInt(anio), parseInt(mes), 0).toISOString().split('T')[0];
+        } else if (anio) {
+            fechaInicio = `${anio}-01-01`;
+            fechaFin = `${anio}-12-31`;
+        } else {
+            fechaInicio = new Date();
+            fechaInicio.setDate(fechaInicio.getDate() - 30);
+            fechaInicio = fechaInicio.toISOString().split('T')[0];
+            fechaFin = new Date().toISOString().split('T')[0];
+        }
+        
+        const gastosPromise = new Promise((resolve, reject) => {
+            db.query(`
+                SELECT 
+                    (SELECT COALESCE(SUM(Salario), 0) FROM trabajadores WHERE Activo = 1) as salarios,
+                    (SELECT COALESCE(SUM(m.Cantidad * p.Precio), 0) FROM merma m 
+                     INNER JOIN perdida pd ON m.Id_Perdida = pd.Id_Perdida
+                     INNER JOIN producto p ON m.Id_Producto = p.Id_Producto
+                     WHERE DATE(pd.Fecha) BETWEEN ? AND ?) as mermas,
+                    (SELECT COALESCE(SUM(ci.Cantidad * p.Precio), 0) FROM consumo_interno ci
+                     INNER JOIN producto p ON ci.Id_Producto = p.Id_Producto
+                     WHERE DATE(ci.Fecha) BETWEEN ? AND ?) as consumos
+            `, [fechaInicio, fechaFin, fechaInicio, fechaFin], (err, results) => {
+                if (err) reject(err);
+                else resolve(results[0]);
+            });
+        });
+        
+        const [ventasBrutas, costoVentas, gastos] = await Promise.all([ventasPromise, costoPromise, gastosPromise]);
+        
+        const iva = ventasBrutas * 0.15;
+        const ventasNetas = ventasBrutas - iva;
+        const utilidadBruta = ventasNetas - costoVentas;
+        const totalGastos = (parseFloat(gastos?.salarios) || 0) + (parseFloat(gastos?.mermas) || 0) + (parseFloat(gastos?.consumos) || 0);
+        const utilidadNeta = utilidadBruta - totalGastos;
+        const margenUtilidad = ventasNetas > 0 ? (utilidadNeta / ventasNetas) * 100 : 0;
+        
+        res.json({
+            ingresos: {
+                ventas_brutas: ventasBrutas,
+                iva: iva,
+                ventas_netas: ventasNetas
+            },
+            costos: {
+                costo_ventas: costoVentas
+            },
+            utilidad_bruta: utilidadBruta,
+            gastos_operativos: {
+                salarios: parseFloat(gastos?.salarios) || 0,
+                mermas: parseFloat(gastos?.mermas) || 0,
+                consumos_internos: parseFloat(gastos?.consumos) || 0,
+                total: totalGastos
+            },
+            utilidad_neta: utilidadNeta,
+            margen_utilidad: margenUtilidad
+        });
+    } catch (err) {
+        console.error('Error en /api/financiero/estado-resultados:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 5. IVA por declarar
+app.get('/api/financiero/iva-declarar', (req, res) => {
+    const { desde, hasta, anio, mes } = req.query;
+    
+    let whereCondition = '';
+    let params = [];
+    
+    if (desde && hasta) {
+        whereCondition = 'WHERE DATE(c.Fecha) BETWEEN ? AND ?';
+        params = [desde, hasta];
+    } else if (anio && mes) {
+        const primerDia = `${anio}-${String(mes).padStart(2, '0')}-01`;
+        const ultimoDia = new Date(parseInt(anio), parseInt(mes), 0).toISOString().split('T')[0];
+        whereCondition = 'WHERE DATE(c.Fecha) BETWEEN ? AND ?';
+        params = [primerDia, ultimoDia];
+    } else if (anio) {
+        whereCondition = 'WHERE YEAR(c.Fecha) = ?';
+        params = [anio];
+    } else {
+        const fechaInicio = new Date();
+        fechaInicio.setDate(fechaInicio.getDate() - 30);
+        whereCondition = 'WHERE c.Fecha >= ?';
+        params = [fechaInicio.toISOString().split('T')[0]];
+    }
+    
+    const sqlIVA = `
+        SELECT COALESCE(SUM(o.Subtotal), 0) as ventas_brutas
+        FROM compra c
+        INNER JOIN orden o ON c.Num_Factura = o.NumFactura
+        ${whereCondition}
+    `;
+    
+    db.query(sqlIVA, params, (err, results) => {
+        if (err) {
+            console.error('Error en /api/financiero/iva-declarar:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        const ventasBrutas = parseFloat(results[0]?.ventas_brutas) || 0;
+        const ivaCobrado = ventasBrutas * 0.15;
+        
+        // Simular IVA pagado en compras (aprox 15% del costo de ventas)
+        const sqlCompras = `
+            SELECT COALESCE(SUM(a.Precio_Compra * a.Cantidad_Entrada), 0) as total_compras
+            FROM abastecimiento a
+        `;
+        
+        db.query(sqlCompras, (err2, results2) => {
+            const totalCompras = parseFloat(results2[0]?.total_compras) || 0;
+            const ivaPagado = totalCompras * 0.15;
+            const ivaPorDeclarar = ivaCobrado - ivaPagado;
+            
+            res.json({
+                periodo: { desde: params[0], hasta: params[params.length - 1] },
+                ventas_brutas: ventasBrutas,
+                iva_cobrado: ivaCobrado,
+                compras_totales: totalCompras,
+                iva_pagado: ivaPagado,
+                iva_por_declarar: ivaPorDeclarar > 0 ? ivaPorDeclarar : 0,
+                iva_a_favor: ivaPorDeclarar < 0 ? Math.abs(ivaPorDeclarar) : 0
+            });
+        });
+    });
+});
+
+// 6. Punto de equilibrio
+app.get('/api/financiero/punto-equilibrio', (req, res) => {
+    // Costos fijos mensuales estimados
+    const sqlCostosFijos = `
+        SELECT 
+            (SELECT COALESCE(SUM(Salario), 0) FROM trabajadores WHERE Activo = 1) as salarios_mensuales,
+            5000 as servicios_basicos,
+            2000 as alquiler,
+            1000 as otros_gastos_fijos
+    `;
+    
+    // Margen de contribución promedio
+    const sqlMargenContribucion = `
+        SELECT 
+            AVG(p.Precio - COALESCE(a.Precio_Compra, p.Precio * 0.6)) as margen_promedio
+        FROM producto p
+        LEFT JOIN abastecimiento a ON p.Id_Producto = a.Id_Producto
+        WHERE p.Precio > 0
+    `;
+    
+    Promise.all([
+        db.promise().query(sqlCostosFijos),
+        db.promise().query(sqlMargenContribucion)
+    ]).then(([costosFijos, margenContribucion]) => {
+        const costosFijosMensuales = 
+            (parseFloat(costosFijos[0][0]?.salarios_mensuales) || 0) +
+            (parseFloat(costosFijos[0][0]?.servicios_basicos) || 0) +
+            (parseFloat(costosFijos[0][0]?.alquiler) || 0) +
+            (parseFloat(costosFijos[0][0]?.otros_gastos_fijos) || 0);
+        
+        const margenPromedio = parseFloat(margenContribucion[0][0]?.margen_promedio) || 150;
+        const precioPromedioVenta = 400;
+        const margenPorcentual = margenPromedio / precioPromedioVenta;
+        
+        const puntoEquilibrioUnidades = Math.ceil(costosFijosMensuales / margenPromedio);
+        const puntoEquilibrioVentas = puntoEquilibrioUnidades * precioPromedioVenta;
+        
+        res.json({
+            costos_fijos_mensuales: costosFijosMensuales,
+            margen_contribucion_promedio: margenPromedio,
+            precio_venta_promedio: precioPromedioVenta,
+            punto_equilibrio_unidades: puntoEquilibrioUnidades,
+            punto_equilibrio_ventas: puntoEquilibrioVentas,
+            explicacion: `Necesitas vender aproximadamente ${puntoEquilibrioUnidades} unidades (C$${puntoEquilibrioVentas.toLocaleString()}) al mes para cubrir todos tus costos.`
+        });
+    }).catch(err => {
+        console.error('Error en /api/financiero/punto-equilibrio:', err);
+        res.status(500).json({ error: err.message });
+    });
+});
+
+// 7. Productos más y menos rentables
+app.get('/api/financiero/rentabilidad-productos', (req, res) => {
+    const sql = `
+        SELECT 
+            p.Id_Producto,
+            p.Nombre as nombre,
+            COALESCE(cat.Nombre, 'Sin categoría') as categoria,
+            p.Precio as precio_venta,
+            COALESCE(a.Precio_Compra, p.Precio * 0.6) as costo_unitario,
+            (p.Precio - COALESCE(a.Precio_Compra, p.Precio * 0.6)) as ganancia_unitaria,
+            ROUND(((p.Precio - COALESCE(a.Precio_Compra, p.Precio * 0.6)) / p.Precio) * 100, 2) as margen_porcentaje,
+            COALESCE(SUM(o.CantidadVendida), 0) as unidades_vendidas,
+            COALESCE(SUM(o.CantidadVendida * (p.Precio - COALESCE(a.Precio_Compra, p.Precio * 0.6))), 0) as ganancia_total
+        FROM producto p
+        LEFT JOIN abastecimiento a ON p.Id_Producto = a.Id_Producto
+        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
+        LEFT JOIN orden o ON p.Id_Producto = o.Id_Producto
+        LEFT JOIN compra c ON o.NumFactura = c.Num_Factura
+        WHERE p.Precio > 0 AND p.Id_Estado = 1
+        GROUP BY p.Id_Producto, p.Nombre, cat.Nombre, p.Precio, a.Precio_Compra
+        ORDER BY ganancia_unitaria DESC
+    `;
+    
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error en /api/financiero/rentabilidad-productos:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        const productosConGanancia = results.filter(p => p.ganancia_unitaria > 0);
+        const productosConPerdida = results.filter(p => p.ganancia_unitaria < 0);
+        
+        res.json({
+            productos_mas_rentables: productosConGanancia.slice(0, 10),
+            productos_menos_rentables: productosConPerdida.slice(0, 10),
+            productos_con_perdida: productosConPerdida.length,
+            total_productos_analizados: results.length
+        });
+    });
+});
+
+// 8. Comparativo ingresos vs egresos por período (para gráficas)
+app.get('/api/financiero/comparativo-periodos', (req, res) => {
+    const { anio } = req.query;
+    const añoActual = parseInt(anio) || new Date().getFullYear();
+    
+    const sqlMensual = `
+        SELECT 
+            MONTH(c.Fecha) as mes,
+            COALESCE(SUM(o.Subtotal), 0) as ingresos,
+            COALESCE(SUM(o.CantidadVendida * a.Precio_Compra), 0) as egresos_costo
+        FROM compra c
+        INNER JOIN orden o ON c.Num_Factura = o.NumFactura
+        LEFT JOIN abastecimiento a ON o.Id_Producto = a.Id_Producto
+        WHERE YEAR(c.Fecha) = ?
+        GROUP BY MONTH(c.Fecha)
+        ORDER BY mes
+    `;
+    
+    db.query(sqlMensual, [añoActual], (err, results) => {
+        if (err) {
+            console.error('Error en /api/financiero/comparativo-periodos:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const ingresosData = Array(12).fill(0);
+        const egresosData = Array(12).fill(0);
+        
+        results.forEach(r => {
+            ingresosData[r.mes - 1] = parseFloat(r.ingresos) || 0;
+            egresosData[r.mes - 1] = parseFloat(r.egresos_costo) || 0;
+        });
+        
+        // Agregar gastos operativos mensuales estimados
+        const gastosOperativosMensuales = 20000;
+        const egresosTotales = egresosData.map(e => e + gastosOperativosMensuales);
+        
+        res.json({
+            anio: añoActual,
+            meses: meses,
+            ingresos: ingresosData,
+            egresos: egresosTotales,
+            utilidad: ingresosData.map((ing, idx) => ing - egresosTotales[idx])
+        });
+    });
+});
+
+// 9. Flujo de caja
+app.get('/api/financiero/flujo-caja', (req, res) => {
+    const { desde, hasta, anio, mes } = req.query;
+    
+    let whereCondition = '';
+    let params = [];
+    
+    if (desde && hasta) {
+        whereCondition = 'WHERE DATE(c.Fecha) BETWEEN ? AND ?';
+        params = [desde, hasta];
+    } else if (anio && mes) {
+        const primerDia = `${anio}-${String(mes).padStart(2, '0')}-01`;
+        const ultimoDia = new Date(parseInt(anio), parseInt(mes), 0).toISOString().split('T')[0];
+        whereCondition = 'WHERE DATE(c.Fecha) BETWEEN ? AND ?';
+        params = [primerDia, ultimoDia];
+    } else if (anio) {
+        whereCondition = 'WHERE YEAR(c.Fecha) = ?';
+        params = [anio];
+    } else {
+        const fechaInicio = new Date();
+        fechaInicio.setDate(fechaInicio.getDate() - 30);
+        whereCondition = 'WHERE c.Fecha >= ?';
+        params = [fechaInicio.toISOString().split('T')[0]];
+    }
+    
+    // Entradas de efectivo (ventas)
+    const sqlEntradas = `
+        SELECT 
+            c.Fecha,
+            c.Num_Factura,
+            c.Monto as monto,
+            mp.Nombre_Metodo as metodo_pago
+        FROM compra c
+        LEFT JOIN metododepago mp ON c.Id_Metodo = mp.Id_Metodo
+        ${whereCondition}
+        ORDER BY c.Fecha
+    `;
+    
+    // Salidas de efectivo (pagos a proveedores)
+    const sqlSalidas = `
+        SELECT 
+            pp.Fecha,
+            pp.Monto,
+            prov.Nombre as proveedor,
+            mp.Nombre_Metodo as metodo_pago
+        FROM pago_proveedor pp
+        LEFT JOIN proveedores prov ON pp.Id_Proveedor = prov.Id_Proveedor
+        LEFT JOIN metododepago mp ON pp.Id_Metodo = mp.Id_Metodo
+        WHERE DATE(pp.Fecha) BETWEEN ? AND ?
+        ORDER BY pp.Fecha
+    `;
+    
+    Promise.all([
+        db.promise().query(sqlEntradas, params),
+        db.promise().query(sqlSalidas, [params[0] || '2020-01-01', params[params.length - 1] || '2025-12-31'])
+    ]).then(([entradas, salidas]) => {
+        const entradasList = entradas[0].map(e => ({
+            fecha: e.Fecha,
+            concepto: `Venta Factura #${e.Num_Factura}`,
+            monto: parseFloat(e.monto) || 0,
+            metodo: e.metodo_pago
+        }));
+        
+        const salidasList = salidas[0].map(s => ({
+            fecha: s.Fecha,
+            concepto: `Pago a proveedor: ${s.proveedor}`,
+            monto: parseFloat(s.Monto) || 0,
+            metodo: s.metodo_pago
+        }));
+        
+        const totalEntradas = entradasList.reduce((sum, e) => sum + e.monto, 0);
+        const totalSalidas = salidasList.reduce((sum, s) => sum + s.monto, 0);
+        const saldoNeto = totalEntradas - totalSalidas;
+        
+        // Calcular saldo diario acumulado
+        let saldoAcumulado = 0;
+        const movimientos = [];
+        
+        [...entradasList, ...salidasList].sort((a, b) => new Date(a.fecha) - new Date(b.fecha)).forEach(m => {
+            if (m.concepto.includes('Venta')) {
+                saldoAcumulado += m.monto;
+            } else {
+                saldoAcumulado -= m.monto;
+            }
+            movimientos.push({
+                ...m,
+                saldo_acumulado: saldoAcumulado
+            });
+        });
+        
+        res.json({
+            periodo: {
+                desde: params[0] || 'inicio',
+                hasta: params[params.length - 1] || 'actual'
+            },
+            resumen: {
+                total_entradas: totalEntradas,
+                total_salidas: totalSalidas,
+                saldo_neto: saldoNeto,
+                saldo_final: saldoAcumulado
+            },
+            entradas: entradasList,
+            salidas: salidasList,
+            movimientos: movimientos
+        });
+    }).catch(err => {
+        console.error('Error en /api/financiero/flujo-caja:', err);
+        res.status(500).json({ error: err.message });
+    });
+});
+
+// 10. Gastos por categoría
+app.get('/api/financiero/gastos-categoria', (req, res) => {
+    const { desde, hasta, anio, mes } = req.query;
+    
+    let fechaInicio, fechaFin;
+    
+    if (desde && hasta) {
+        fechaInicio = desde;
+        fechaFin = hasta;
+    } else if (anio && mes) {
+        fechaInicio = `${anio}-${String(mes).padStart(2, '0')}-01`;
+        fechaFin = new Date(parseInt(anio), parseInt(mes), 0).toISOString().split('T')[0];
+    } else if (anio) {
+        fechaInicio = `${anio}-01-01`;
+        fechaFin = `${anio}-12-31`;
+    } else {
+        fechaInicio = new Date();
+        fechaInicio.setDate(fechaInicio.getDate() - 30);
+        fechaInicio = fechaInicio.toISOString().split('T')[0];
+        fechaFin = new Date().toISOString().split('T')[0];
+    }
+    
+    const sqlGastos = `
+        SELECT 
+            'Salarios' as categoria,
+            COALESCE(SUM(Salario), 0) as monto
+        FROM trabajadores
+        WHERE Activo = 1
+        UNION ALL
+        SELECT 
+            'Compras (Inventario)' as categoria,
+            COALESCE(SUM(a.Precio_Compra * a.Cantidad_Entrada), 0) as monto
+        FROM abastecimiento a
+        WHERE DATE(a.FechaEntrada) BETWEEN ? AND ?
+        UNION ALL
+        SELECT 
+            'Mermas y Perdidas' as categoria,
+            COALESCE(SUM(m.Cantidad * p.Precio), 0) as monto
+        FROM merma m
+        INNER JOIN perdida pd ON m.Id_Perdida = pd.Id_Perdida
+        INNER JOIN producto p ON m.Id_Producto = p.Id_Producto
+        WHERE DATE(pd.Fecha) BETWEEN ? AND ?
+        UNION ALL
+        SELECT 
+            'Consumo Interno' as categoria,
+            COALESCE(SUM(ci.Cantidad * p.Precio), 0) as monto
+        FROM consumo_interno ci
+        INNER JOIN producto p ON ci.Id_Producto = p.Id_Producto
+        WHERE DATE(ci.Fecha) BETWEEN ? AND ?
+        UNION ALL
+        SELECT 
+            'Servicios Basicos' as categoria,
+            5000 as monto
+        UNION ALL
+        SELECT 
+            'Alquiler' as categoria,
+            2000 as monto
+        UNION ALL
+        SELECT 
+            'Otros Gastos' as categoria,
+            1000 as monto
+    `;
+    
+    db.query(sqlGastos, [fechaInicio, fechaFin, fechaInicio, fechaFin, fechaInicio, fechaFin], (err, results) => {
+        if (err) {
+            console.error('Error en /api/financiero/gastos-categoria:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        const gastosPorCategoria = results.map(g => ({
+            categoria: g.categoria,
+            monto: parseFloat(g.monto) || 0
+        }));
+        
+        const totalGastos = gastosPorCategoria.reduce((sum, g) => sum + g.monto, 0);
+        
+        res.json({
+            periodo: { desde: fechaInicio, hasta: fechaFin },
+            gastos_por_categoria: gastosPorCategoria,
+            total_gastos: totalGastos
+        });
     });
 });
 

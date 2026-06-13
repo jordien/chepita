@@ -1,3 +1,7 @@
+/* ============================================
+   DASHBOARD TIENDA CHEPITA - ESTILOS PRINCIPALES
+   ============================================ */
+
 * {
     margin: 0;
     padding: 0;
@@ -11,6 +15,7 @@ body {
     padding: 20px;
 }
 
+/* ========== CONTENEDOR PRINCIPAL ========== */
 .nc-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -26,6 +31,7 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* ========== HEADER ========== */
 .dashboard-header {
     display: flex;
     justify-content: space-between;
@@ -67,7 +73,7 @@ h1 {
     box-shadow: 0 6px 20px rgba(166, 60, 137, 0.4);
 }
 
-/* Selector de secciones */
+/* ========== SELECTOR DE SECCIONES ========== */
 .seccion-selector {
     background: #f8f0f5;
     padding: 15px 20px;
@@ -103,7 +109,7 @@ h1 {
     transform: translateY(-2px);
 }
 
-/* Selector de fechas personalizado */
+/* ========== SELECTOR DE FECHAS ========== */
 .fecha-range-selector {
     display: flex;
     gap: 15px;
@@ -149,7 +155,7 @@ h1 {
     box-shadow: 0 4px 12px rgba(166, 60, 137, 0.3);
 }
 
-/* Selector de período moderno */
+/* ========== SELECTOR DE PERÍODO MODERNO ========== */
 .stats-header {
     display: flex;
     justify-content: space-between;
@@ -209,7 +215,7 @@ h1 {
     margin-right: 8px;
 }
 
-/* Tarjetas financieras */
+/* ========== TARJETAS FINANCIERAS ========== */
 .financial-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -269,7 +275,7 @@ h1 {
     margin-top: 5px;
 }
 
-/* Gráficos */
+/* ========== GRÁFICOS ========== */
 .charts-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -302,10 +308,10 @@ h1 {
     position: relative;
 }
 
-/* Top productos y clientes */
+/* ========== TOP PRODUCTOS ========== */
 .top-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 25px;
     margin-bottom: 30px;
 }
@@ -362,9 +368,9 @@ h1 {
     font-size: 14px;
 }
 
-.top-rank-badge.rank-1 { background: linear-gradient(135deg, #ffd700, #ffb347); }
-.top-rank-badge.rank-2 { background: linear-gradient(135deg, #c0c0c0, #a8a8a8); }
-.top-rank-badge.rank-3 { background: linear-gradient(135deg, #cd7f32, #b87333); }
+.top-rank-badge.rank-1 { background: linear-gradient(135deg, #ffd700, #ffb347); color: #8B6914; }
+.top-rank-badge.rank-2 { background: linear-gradient(135deg, #c0c0c0, #a8a8a8); color: #555; }
+.top-rank-badge.rank-3 { background: linear-gradient(135deg, #cd7f32, #b87333); color: white; }
 
 .top-info {
     flex: 1;
@@ -385,38 +391,7 @@ h1 {
     color: #28a745;
 }
 
-/* Transacciones recientes */
-.recent-transactions {
-    background: white;
-    border-radius: 20px;
-    padding: 20px;
-    margin-top: 30px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-}
-
-.transactions-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.transactions-table th {
-    text-align: left;
-    padding: 12px;
-    background: #f8f0f5;
-    color: #A63C89;
-    font-weight: 600;
-}
-
-.transactions-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.transactions-table tr:hover {
-    background: #fef8fc;
-}
-
-/* Perdidas resumen */
+/* ========== PÉRDIDAS ========== */
 .perdidas-resumen {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -473,50 +448,6 @@ h1 {
 .valor-negativo { font-weight: 600; color: #dc3545; }
 .valor-consumo { font-weight: 600; color: #20c997; }
 
-/* Análisis comparativo */
-.analisis-comparativo {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 25px;
-    margin-bottom: 35px;
-}
-
-.analisis-card {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    text-align: center;
-    transition: transform 0.3s ease;
-}
-
-.analisis-card:hover {
-    transform: translateY(-3px);
-}
-
-.analisis-card h3 {
-    color: #A63C89;
-    margin-bottom: 15px;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.analisis-valor {
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: #2c3e50;
-}
-
-.analisis-card p {
-    color: #666;
-    font-size: 13px;
-}
-
-/* Perdidas charts */
 .perdidas-charts-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
@@ -546,7 +477,54 @@ h1 {
     position: relative;
 }
 
-/* Inventario resumen */
+.motivos-container {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.motivos-container h3 {
+    color: #A63C89;
+    margin-bottom: 15px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.motivos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.motivo-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 15px;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.motivo-nombre {
+    flex: 1;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.motivo-cantidad {
+    font-weight: 700;
+    color: #dc3545;
+    min-width: 80px;
+    text-align: right;
+}
+
+/* ========== INVENTARIO ========== */
 .inventario-resumen {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -598,7 +576,36 @@ h1 {
     margin-top: 5px;
 }
 
-/* Tablas */
+.categorias-filtro {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 50px;
+}
+
+.cat-filtro {
+    background: white;
+    padding: 6px 18px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #A63C89;
+    cursor: pointer;
+    border: 1px solid #e0d4e8;
+    transition: all 0.2s;
+}
+
+.cat-filtro:hover,
+.cat-filtro.active {
+    background: #A63C89;
+    color: white;
+    border-color: #A63C89;
+}
+
+/* ========== TABLAS ========== */
 .tabla-container {
     margin-bottom: 30px;
     animation: fadeIn 0.4s ease;
@@ -642,35 +649,13 @@ h1 {
     background-color: #f8f0f5;
 }
 
-.estado-badge {
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    display: inline-block;
-}
-
-.estado-disponible { background: #d4edda; color: #155724; }
-.estado-agotado { background: #f8d7da; color: #721c24; }
-.estado-bajo-stock { background: #fff3cd; color: #856404; }
-.estado-descontinuado { background: #e2e3e5; color: #383d41; }
-.estado-perdida { background: #f8d7da; color: #721c24; }
-.estado-consumo { background: #d1ecf1; color: #0c5460; }
-
-.cantidad-badge {
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    display: inline-block;
-}
-
-.cantidad-alta { background: #d4edda; color: #155724; }
-.cantidad-media { background: #fff3cd; color: #856404; }
-.cantidad-baja { background: #f8d7da; color: #721c24; }
-
+/* ========== BADGES ========== */
+.cantidad-alta { background: #d4edda; color: #155724; font-weight: 600; padding: 4px 10px; border-radius: 20px; display: inline-block; }
+.cantidad-media { background: #fff3cd; color: #856404; font-weight: 600; padding: 4px 10px; border-radius: 20px; display: inline-block; }
+.cantidad-baja { background: #f8d7da; color: #721c24; font-weight: 600; padding: 4px 10px; border-radius: 20px; display: inline-block; }
 .precio { font-weight: 600; color: #28a745; }
 
+/* ========== BOTONES ========== */
 .mostrar-todas-btn {
     background: linear-gradient(135deg, #A63C89, #8B5CF6);
     color: white;
@@ -679,7 +664,7 @@ h1 {
     border-radius: 30px;
     cursor: pointer;
     font-weight: 600;
-    margin-bottom: 20px;
+    margin-top: 15px;
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -691,6 +676,7 @@ h1 {
     box-shadow: 0 5px 15px rgba(166, 60, 137, 0.3);
 }
 
+/* ========== NO DATA ========== */
 .no-data {
     text-align: center;
     padding: 50px;
@@ -700,7 +686,7 @@ h1 {
     border: 2px dashed #ddd;
 }
 
-/* MODALES */
+/* ========== MODALES ========== */
 .modal {
     display: none;
     position: fixed;
@@ -776,91 +762,9 @@ h1 {
     font-weight: 500;
 }
 
-.modal-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
-.modal-stat {
-    background: linear-gradient(135deg, #f8f9fa, white);
-    padding: 20px;
-    border-radius: 16px;
-    text-align: center;
-    border: 1px solid #e9ecef;
-}
-
-.modal-stat-value {
-    font-size: 28px;
-    font-weight: bold;
-    color: #A63C89;
-}
-
-.modal-stat-label {
-    font-size: 12px;
-    color: #6c757d;
-    margin-top: 5px;
-}
-
-.modal-detail-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.detail-stat-card {
-    background: #f8f9fa;
-    border-radius: 16px;
-    padding: 20px;
-    text-align: center;
-}
-
-.detail-stat-card h4 {
-    color: #A63C89;
-    margin-bottom: 10px;
-    font-size: 14px;
-}
-
-.detail-stat-value {
-    font-size: 24px;
-    font-weight: 700;
-    color: #2c3e50;
-}
-
-.detail-stat-change {
-    font-size: 13px;
-    margin-top: 8px;
-}
-
-.change-positive { color: #28a745; }
-.change-negative { color: #dc3545; }
-
-.modal-info-text {
-    background: #e8f0fe;
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    font-size: 14px;
-    color: #2c3e50;
-}
-
-.modal-section {
-    margin-top: 25px;
-}
-
-.modal-section h4 {
-    margin-bottom: 15px;
-    color: #2c3e50;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
 .tabla-detalle-container {
     overflow-x: auto;
-    max-height: 300px;
+    max-height: 400px;
     border-radius: 12px;
     border: 1px solid #e9ecef;
 }
@@ -884,71 +788,13 @@ h1 {
     top: 0;
 }
 
-.top-productos-container, .mejores-clientes-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+/* ========== UTILITIES ========== */
+.section-content {
+    display: none;
 }
 
-.top-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    border: 1px solid transparent;
-}
-
-.top-item:hover {
-    transform: translateX(5px);
-    background: #f0f0f0;
-    border-color: rgba(166, 60, 137, 0.2);
-}
-
-.top-rank {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, #A63C89, #8B5CF6);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 18px;
-    flex-shrink: 0;
-}
-
-.top-rank.rank-1 { background: linear-gradient(135deg, #ffd700, #ffb347); color: #8B6914; }
-.top-rank.rank-2 { background: linear-gradient(135deg, #c0c0c0, #a8a8a8); color: #555; }
-.top-rank.rank-3 { background: linear-gradient(135deg, #cd7f32, #b87333); color: white; }
-
-.currency-selector {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: #f0f0f0;
-    padding: 5px 15px;
-    border-radius: 30px;
-}
-
-.currency-option {
-    padding: 5px 12px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s;
-}
-
-.currency-option.active {
-    background: #A63C89;
-    color: white;
-}
-
-.currency-option:hover:not(.active) {
-    background: #ddd;
+.section-content.active {
+    display: block;
 }
 
 /* ========== MEDIA QUERIES ========== */
@@ -957,7 +803,6 @@ h1 {
     h1 { font-size: 28px; }
     .financial-stats { grid-template-columns: repeat(2, 1fr); }
     .charts-grid { grid-template-columns: 1fr; }
-    .top-grid { grid-template-columns: 1fr; }
     .perdidas-charts-container { grid-template-columns: 1fr; }
 }
 
@@ -974,25 +819,21 @@ h1 {
     .financial-stats { grid-template-columns: 1fr; }
     .financial-value { font-size: 24px; }
     .charts-grid { grid-template-columns: 1fr; }
-    .top-grid { grid-template-columns: 1fr; }
-    .inventario-resumen, .perdidas-resumen, .analisis-comparativo { grid-template-columns: 1fr; }
+    .inventario-resumen,
+    .perdidas-resumen { grid-template-columns: 1fr; }
     .inventario-tabla { font-size: 12px; }
-    .inventario-tabla th, .inventario-tabla td { padding: 8px; }
+    .inventario-tabla th,
+    .inventario-tabla td { padding: 8px; }
     .modal-content { margin: 5% auto; width: 95%; }
     .modal-header h2 { font-size: 18px; }
-    .modal-stats, .modal-detail-stats { grid-template-columns: 1fr; }
     .fecha-range-selector { flex-direction: column; align-items: stretch; }
     .fecha-range-group { justify-content: space-between; }
     .perdida-stat-card { flex-direction: column; text-align: center; }
-    .currency-selector { margin-top: 10px; justify-content: center; align-self: center; }
 }
 
 @media (max-width: 480px) {
     .periodo-option { padding: 6px 12px; font-size: 11px; }
-    .stat-value { font-size: 22px; }
     .resumen-value { font-size: 24px; }
-    .modal-stat-value { font-size: 22px; }
-    .detail-stat-value { font-size: 18px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
