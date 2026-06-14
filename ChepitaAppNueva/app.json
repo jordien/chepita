@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "Chepita Vendedor",
+    "slug": "chepita-vendedor",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "android": {
+      "package": "com.jordy89.chepitavendedor"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "554b12de-df55-4c8e-8d9e-643c70604411"
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+# Expo
+.expo/
+node_modules/
+dist/
+web-build/
+
+# Dependencias
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Variables de entorno
+.env.local
+.env*.local
+
+# Archivos de Android (si se generan)
+android/
+*.jks
+*.key
+
+# Archivos de iOS (si se generan)
+ios/
+*.mobileprovision
+*.p8
+*.p12
+
+# Logs
+*.log
