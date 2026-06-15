@@ -489,14 +489,16 @@ thead tr {
 .custom-modal-overlay {
   display: none;
   position: fixed;
-  top: 0;
+  top: 72px; /* altura de la barra */
   left: 0;
   width: 100%;
-  height: 100%;
+  height: calc(100% - 72px);
   background: rgba(15, 23, 42, 0.55);
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 20px;
   z-index: 3000;
+  overflow-y: auto;
 }
 
 .custom-modal {
@@ -698,13 +700,27 @@ select.invalid {
 }
 
 .custom-modal-btn.confirm {
-  background: linear-gradient(135deg, #667eea, #7c3aed);
+  background: linear-gradient(135deg, #7a5b8f 0%, #8d679f 60%, #b78bc8 100%);
+
   color: white;
+
+  border: 1px solid rgba(231, 200, 91, 0.35);
+
+  box-shadow:
+    0 8px 18px rgba(141, 103, 159, 0.3),
+    0 0 10px rgba(231, 200, 91, 0.15);
 }
 
 .custom-modal-btn.confirm:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+
+  box-shadow:
+    0 12px 24px rgba(141, 103, 159, 0.4),
+    0 0 18px rgba(231, 200, 91, 0.25);
+}
+
+.custom-modal-btn.confirm:active {
+  transform: scale(0.98);
 }
 
 .custom-modal-btn.cancel {

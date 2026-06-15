@@ -25,17 +25,23 @@
 
       .periodo-selector {
         display: flex;
-        gap: 6px;
-
-        background: rgba(255, 255, 255, 0.85);
+        gap: 8px;
 
         padding: 8px;
 
-        border-radius: 18px;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.9),
+          rgba(255, 247, 191, 0.35)
+        );
 
-        border: 1px solid rgba(202, 160, 216, 0.35);
+        border: 1px solid rgba(231, 200, 91, 0.25);
 
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        border-radius: 50px;
+
+        box-shadow:
+          0 10px 25px rgba(0, 0, 0, 0.05),
+          inset 0 1px 0 rgba(255, 255, 255, 0.7);
       }
 
       .periodo-btn {
@@ -52,6 +58,15 @@
         align-items: center;
         gap: 6px;
       }
+      .periodo-btn.active {
+        background: linear-gradient(135deg, #8d679f, #b78bc8);
+
+        color: white;
+
+        box-shadow: 0 8px 18px rgba(141, 103, 159, 0.35);
+
+        transform: translateY(-1px);
+      }
 
       .periodo-btn i {
         font-size: 12px;
@@ -62,56 +77,132 @@
       }
 
       .fecha-simple {
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid rgba(202, 160, 216, 0.35);
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.95),
+          rgba(255, 247, 191, 0.4)
+        );
 
-        padding: 10px 18px;
+        border: 1px solid rgba(231, 200, 91, 0.25);
+
+        padding: 12px 20px;
+
         border-radius: 14px;
+
+        color: #6f4b7d;
+
+        font-weight: 700;
+
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
         font-size: 12px;
-        font-weight: 600;
-        color: #8d679f;
         display: inline-flex;
         align-items: center;
         gap: 6px;
       }
 
       .top-card {
-        background: rgba(255, 255, 255, 0.95);
+        overflow: hidden;
+
+        padding: 0;
+
+        border-radius: 22px;
+
+        margin-bottom: 30px;
+
+        background: transparent;
+
+        border: none;
+
+        box-shadow: none;
+      }
+
+      .chart-card {
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.95),
+          rgba(255, 247, 191, 0.18)
+        );
 
         border-radius: 24px;
 
-        padding: 24px;
+        border: 1px solid rgba(231, 200, 91, 0.2);
 
-        margin-bottom: 25px;
+        box-shadow:
+          0 20px 40px rgba(0, 0, 0, 0.08),
+          inset 0 1px 0 rgba(255, 255, 255, 0.7);
 
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        transition: 0.35s;
+      }
 
-        border: 1px solid rgba(231, 200, 91, 0.15);
+      .chart-card:hover {
+        transform: translateY(-5px);
 
-        backdrop-filter: blur(6px);
+        box-shadow:
+          0 25px 50px rgba(0, 0, 0, 0.12),
+          0 0 25px rgba(231, 200, 91, 0.15);
       }
 
       .top-card-header {
+        background: linear-gradient(
+          135deg,
+          #6f4b7d 0%,
+          #8d679f 55%,
+          #b78bc8 100%
+        );
+
+        padding: 18px 24px;
+
+        margin: 0;
+
+        border: none;
+
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 18px;
-        padding-bottom: 14px;
-        border-bottom: 2px solid rgba(202, 160, 216, 0.2);
+        justify-content: space-between;
+
+        position: relative;
       }
 
-      .top-card h3 {
-        color: #334155;
-        font-size: 18px;
-        font-weight: 700;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+      .top-card-header::after {
+        content: "";
+
+        position: absolute;
+
+        bottom: 0;
+        left: 0;
+        right: 0;
+
+        height: 2px;
+
+        background: linear-gradient(
+          90deg,
+          transparent,
+          #fff7bf,
+          #e7c85b,
+          #fff7bf,
+          transparent
+        );
       }
 
       .top-card h3 i {
-        color: #8d679f;
+        color: #e7c85b;
+      }
+      .top-card h3,
+      .chart-title {
+        color: #6f4b7d;
+
+        font-weight: 700;
+      }
+      .top-card h3 {
+        color: white;
+
+        font-size: 1.2rem;
+
+        font-weight: 700;
+
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
 
       .btn-ver-todos {
@@ -229,11 +320,7 @@
       }
 
       .chart-title {
-        color: #334155;
-
         font-size: 16px;
-
-        font-weight: 700;
 
         padding-bottom: 12px;
 
@@ -265,51 +352,294 @@
         color: #8d679f;
       }
 
+      /* ==========================================
+   MODALES ESTILO LUXURY DASHBOARD
+========================================== */
+
       .modal-full,
       .modal-mes,
       .modal-anios,
       .modal-dia {
         display: none;
+
         position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
+        inset: 0;
+
+        z-index: 99999;
+
         justify-content: center;
         align-items: center;
+
+        backdrop-filter: blur(8px);
+
+        background: rgba(35, 20, 45, 0.55);
       }
+
+      /* CONTENEDOR */
 
       .modal-full-content,
       .modal-mes-content,
       .modal-anios-content,
       .modal-dia-content {
-        background: white;
-        border-radius: 20px;
-        width: 90%;
-        max-width: 450px;
-        padding: 20px;
+        overflow: hidden;
+
+        width: 92%;
+        max-width: 520px;
+
+        border-radius: 28px;
+
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.97),
+          rgba(255, 247, 191, 0.55)
+        );
+
+        border: 1px solid rgba(231, 200, 91, 0.35);
+
+        backdrop-filter: blur(18px);
+
+        box-shadow:
+          0 30px 80px rgba(0, 0, 0, 0.25),
+          0 0 30px rgba(231, 200, 91, 0.15);
+
+        animation: modalShow 0.3s ease;
+      }
+
+      @keyframes modalShow {
+        from {
+          opacity: 0;
+          transform: translateY(20px) scale(0.95);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      /* HEADER */
+
+      .modal-full-header,
+      .modal-dia-content h3,
+      .modal-mes-content h3,
+      .modal-anios-content h3 {
+        margin: 0;
       }
 
       .modal-full-header {
+        position: relative;
+
+        padding: 18px 24px;
+
+        background: linear-gradient(
+          135deg,
+          #6f4b7d 0%,
+          #8d679f 55%,
+          #b78bc8 100%
+        );
+
+        color: white;
+      }
+
+      .modal-full-header::after {
+        content: "";
+
+        position: absolute;
+
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        height: 2px;
+
+        background: linear-gradient(
+          90deg,
+          transparent,
+          #fff7bf,
+          #e7c85b,
+          #fff7bf,
+          transparent
+        );
+      }
+
+      .modal-full-header h2 {
+        font-size: 1.15rem;
+        font-weight: 700;
+      }
+
+      /* CERRAR */
+
+      .modal-close {
+        color: white;
+
+        font-size: 28px;
+
+        transition: 0.3s;
+
+        cursor: pointer;
+      }
+
+      .modal-close:hover {
+        color: #fff7bf;
+        transform: rotate(90deg);
+      }
+
+      /* BODY */
+
+      .modal-body {
+        padding: 24px;
+      }
+
+      /* MODALES PEQUEÑOS */
+
+      .modal-dia-content,
+      .modal-mes-content,
+      .modal-anios-content {
+        padding: 0;
+      }
+
+      .modal-dia-content > div,
+      .modal-mes-content > div,
+      .modal-anios-content > div {
+        padding: 28px;
+      }
+
+      .modal-dia-content h3,
+      .modal-mes-content h3,
+      .modal-anios-content h3 {
+        color: #6f4b7d;
+
+        font-size: 1.2rem;
+
+        font-weight: 700;
+
+        margin-bottom: 20px;
+      }
+
+      .modal-full,
+      .modal-mes,
+      .modal-anios,
+      .modal-dia {
+        display: none;
+
+        position: fixed;
+        inset: 0;
+
+        z-index: 99999;
+
+        justify-content: center;
+        align-items: center;
+
+        backdrop-filter: blur(8px);
+
+        background: rgba(35, 20, 45, 0.55);
+      }
+      .modal-full-content,
+      .modal-mes-content,
+      .modal-anios-content,
+      .modal-dia-content {
+        overflow: hidden;
+
+        width: 92%;
+        max-width: 520px;
+
+        border-radius: 28px;
+
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.97),
+          rgba(255, 247, 191, 0.55)
+        );
+
+        border: 1px solid rgba(231, 200, 91, 0.35);
+
+        backdrop-filter: blur(18px);
+
+        box-shadow:
+          0 30px 80px rgba(0, 0, 0, 0.25),
+          0 0 30px rgba(231, 200, 91, 0.15);
+
+        animation: modalShow 0.3s ease;
+      }
+
+      @keyframes modalShow {
+        from {
+          opacity: 0;
+          transform: translateY(20px) scale(0.95);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .modal-full-header,
+      .modal-dia-content h3,
+      .modal-mes-content h3,
+      .modal-anios-content h3 {
+        margin: 0;
+      }
+
+      .modal-full-header {
+        position: relative;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 12px 20px;
-        background: linear-gradient(135deg, #6f4b7d, #8d679f, #b78bc8);
+        padding: 18px 24px;
+        background: linear-gradient(
+          135deg,
+          #6f4b7d 0%,
+          #8d679f 55%,
+          #b78bc8 100%
+        );
         color: white;
         border-radius: 20px 20px 0 0;
       }
 
+      .modal-full-header::after {
+        content: "";
+
+        position: absolute;
+
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        height: 2px;
+
+        background: linear-gradient(
+          90deg,
+          transparent,
+          #fff7bf,
+          #e7c85b,
+          #fff7bf,
+          transparent
+        );
+      }
+      .modal-full-header h2 {
+        font-size: 1.15rem;
+        font-weight: 700;
+      }
+
       .modal-close {
+        color: white;
+
         font-size: 28px;
+
+        transition: 0.3s;
+
         cursor: pointer;
         font-weight: bold;
       }
 
+      .modal-close:hover {
+        color: #fff7bf;
+        transform: rotate(90deg);
+      }
+
       .modal-body {
-        padding: 20px;
+        padding: 24px;
       }
 
       .selector-dia-panel,
@@ -323,27 +653,65 @@
 
       .selector-dia-panel input,
       .selector-mes-panel select {
-        padding: 10px 15px;
-        border-radius: 10px;
-        border: 1px solid #ddd;
-        font-size: 14px;
+        width: 100%;
+
+        padding: 12px 16px;
+
+        border-radius: 14px;
+
+        border: 1px solid rgba(231, 200, 91, 0.25);
+
+        background: rgba(255, 255, 255, 0.9);
+
+        color: #6f4b7d;
+
+        font-weight: 600;
+
+        outline: none;
+
+        transition: 0.3s;
+      }
+
+      .selector-dia-panel input:focus,
+      .selector-mes-panel select:focus {
+        border-color: #8d679f;
+
+        box-shadow: 0 0 0 4px rgba(141, 103, 159, 0.15);
       }
 
       .btn-aplicar {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
         border: none;
-        padding: 10px 25px;
+
+        padding: 12px 26px;
+
+        border-radius: 14px;
+
         cursor: pointer;
-        margin: 5px;
-        border-radius: 12px;
 
         font-weight: 700;
+
+        color: white;
+
+        background: linear-gradient(135deg, #e7c85b, #d9ae33);
+
+        box-shadow: 0 10px 20px rgba(231, 200, 91, 0.3);
+
+        transition: 0.3s;
+      }
+
+      .btn-aplicar:hover {
+        transform: translateY(-3px);
+
+        box-shadow: 0 15px 30px rgba(231, 200, 91, 0.4);
       }
 
       .btn-cancelar {
-        background: #ccc;
-        color: #666;
+        background: linear-gradient(135deg, #8d679f, #6f4b7d);
+
+        color: white;
+      }
+      .btn-cancelar:hover {
+        transform: translateY(-3px);
       }
 
       .lista-anios {
@@ -355,16 +723,27 @@
       }
 
       .anio-item {
-        padding: 10px 25px;
-        background: #f0eaf4;
+        padding: 12px 24px;
+
         border-radius: 30px;
-        cursor: pointer;
-        font-weight: 600;
+
+        background: rgba(141, 103, 159, 0.08);
+
+        border: 1px solid rgba(141, 103, 159, 0.15);
+
+        color: #6f4b7d;
+
+        font-weight: 700;
+
+        transition: 0.3s;
       }
 
       .anio-item:hover {
-        background: #a63c89;
+        background: linear-gradient(135deg, #8d679f, #b78bc8);
+
         color: white;
+
+        transform: translateY(-2px);
       }
 
       .tabla-completa {
@@ -379,10 +758,24 @@
         padding: 10px;
         text-align: left;
       }
+      .tabla-completa thead th {
+        background: rgba(141, 103, 159, 0.08);
+
+        color: #6f4b7d;
+
+        font-weight: 700;
+
+        padding: 14px;
+      }
+
+      .tabla-completa tbody tr:hover {
+        background: rgba(231, 200, 91, 0.08);
+      }
 
       .tabla-completa td {
-        padding: 8px 10px;
-        border-bottom: 1px solid #eee;
+        padding: 12px 14px;
+
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
       }
 
       .no-data {
@@ -438,54 +831,56 @@
         </button>
       </div>
 
-      <div class="periodo-wrapper">
-        <div class="periodo-selector">
-          <button class="periodo-btn active" data-periodo="dia">
-            <i class="fas fa-calendar-day"></i> Día
-          </button>
-          <button class="periodo-btn" data-periodo="semana">
-            <i class="fas fa-calendar-week"></i> Semana
-          </button>
-          <button class="periodo-btn" data-periodo="mes">
-            <i class="fas fa-calendar-alt"></i> Mes
-          </button>
-          <button class="periodo-btn" data-periodo="anio">
-            <i class="fas fa-calendar"></i> Año
-          </button>
+      <div class="dashboard-content">
+        <div class="periodo-wrapper">
+          <div class="periodo-selector">
+            <button class="periodo-btn active" data-periodo="dia">
+              <i class="fas fa-calendar-day"></i> Día
+            </button>
+            <button class="periodo-btn" data-periodo="semana">
+              <i class="fas fa-calendar-week"></i> Semana
+            </button>
+            <button class="periodo-btn" data-periodo="mes">
+              <i class="fas fa-calendar-alt"></i> Mes
+            </button>
+            <button class="periodo-btn" data-periodo="anio">
+              <i class="fas fa-calendar"></i> Año
+            </button>
+          </div>
+          <div class="fecha-simple" id="fechaInfo">
+            <i class="fas fa-calendar-alt"></i> <span>Cargando...</span>
+          </div>
         </div>
-        <div class="fecha-simple" id="fechaInfo">
-          <i class="fas fa-calendar-alt"></i> <span>Cargando...</span>
-        </div>
-      </div>
 
-      <div id="infoMessage" class="info-message" style="display: none">
-        <i class="fas fa-info-circle"></i>
-        <span id="infoMessageText"></span>
-      </div>
+        <div id="infoMessage" class="info-message" style="display: none">
+          <i class="fas fa-info-circle"></i>
+          <span id="infoMessageText"></span>
+        </div>
 
-      <!-- Productos Más Vendidos -->
-      <div class="top-card">
-        <div class="top-card-header">
-          <h3><i class="fas fa-trophy"></i> Productos Más Vendidos</h3>
-          <button class="btn-ver-todos" onclick="verTodosProductos()">
-            Ver todos
-          </button>
+        <!-- Productos Más Vendidos -->
+        <div class="top-card">
+          <div class="top-card-header">
+            <h3><i class="fas fa-trophy"></i> Productos Más Vendidos</h3>
+            <button class="btn-ver-todos" onclick="verTodosProductos()">
+              Ver todos
+            </button>
+          </div>
+          <div class="top-list" id="topProductosList">
+            <div class="no-data">Cargando...</div>
+          </div>
         </div>
-        <div class="top-list" id="topProductosList">
-          <div class="no-data">Cargando...</div>
-        </div>
-      </div>
 
-      <!-- Gráficos -->
-      <div class="charts-grid">
-        <div class="chart-card">
-          <div class="chart-title">Tendencia de Ventas (Unidades)</div>
-          <div class="chart-wrapper"><canvas id="ventasChart"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">Unidades por Categoría</div>
-          <div class="chart-wrapper">
-            <canvas id="categoriasChart"></canvas>
+        <!-- Gráficos -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-title">Tendencia de Ventas (Unidades)</div>
+            <div class="chart-wrapper"><canvas id="ventasChart"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Unidades por Categoría</div>
+            <div class="chart-wrapper">
+              <canvas id="categoriasChart"></canvas>
+            </div>
           </div>
         </div>
       </div>

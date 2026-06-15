@@ -28,7 +28,12 @@ body::before {
   z-index: -3;
 }
 
+.dashboard-content {
+  padding: 28px;
+}
+
 .dashboard-container {
+  padding-bottom: 35px;
   position: relative;
 
   max-width: 1400px;
