@@ -323,33 +323,41 @@
         }
     </style>
 </head>
-<body>
+<body> 
 
-<header class="top-bar">
-    <div class="brands-container">
-        <div class="brands-track">
-            <img src="imagenes/marcas/logo1.png" alt="marca">
-            <img src="imagenes/marcas/logo2.png" alt="marca">
-            <img src="imagenes/marcas/logo3.png" alt="marca">
-            <img src="imagenes/marcas/logo4.png" alt="marca">
-            <img src="imagenes/marcas/logo5.png" alt="marca">
-            <img src="imagenes/marcas/logo6.png" alt="marca">
-            <img src="imagenes/marcas/logo1.png" alt="marca">
-            <img src="imagenes/marcas/logo2.png" alt="marca">
-            <img src="imagenes/marcas/logo3.png" alt="marca">
-            <img src="imagenes/marcas/logo4.png" alt="marca">
-            <img src="imagenes/marcas/logo5.png" alt="marca">
-            <img src="imagenes/marcas/logo6.png" alt="marca">
+    <header class="header-marcas">
+
+    <div class="header-marcas-scroll">
+
+        <div class="header-track">
+
+            <img src="imagenes/marcas/logo1.png">
+            <img src="imagenes/marcas/logo2.png">
+            <img src="imagenes/marcas/logo3.png">
+            <img src="imagenes/marcas/logo4.png">
+            <img src="imagenes/marcas/logo5.png">
+            <img src="imagenes/marcas/logo6.png">
+
+            <img src="imagenes/marcas/logo1.png">
+            <img src="imagenes/marcas/logo2.png">
+            <img src="imagenes/marcas/logo3.png">
+            <img src="imagenes/marcas/logo4.png">
+            <img src="imagenes/marcas/logo5.png">
+            <img src="imagenes/marcas/logo6.png">
+
         </div>
+
     </div>
-    <div class="clock-box">
-        <span id="topFecha"></span> | <span id="topHora"></span>
+
+    <div class="header-fecha">
+        <span id="fechaHora"></span>
     </div>
+
 </header>
 
-<div class="nc-container">
-    <div class="nc-factura-header">
-        <div class="nc-factura-title">FACTURA DE COMPRA</div>
+    <div class="nc-container">
+        <div class="nc-factura-header">
+            <div class="nc-factura-title">FACTURA DE COMPRA</div>
         <div class="nc-factura-number">#<span id="numeroFactura">1</span></div>
         <div class="nc-factura-subtitle">Tienda Chepita • <span id="fechaActual"></span></div>
     </div>
@@ -894,8 +902,6 @@
 
     function actualizarFechaHora() {
         const ahora = new Date();
-        document.getElementById('topFecha').textContent = ahora.toLocaleDateString('es-ES');
-        document.getElementById('topHora').textContent = ahora.toLocaleTimeString('es-ES');
         document.getElementById('fechaActual').textContent = ahora.toLocaleDateString('es-ES');
         const fechaInput = document.getElementById('fecha');
         if (fechaInput && !fechaInput.value) fechaInput.value = ahora.toISOString().split('T')[0];

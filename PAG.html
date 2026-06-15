@@ -1,178 +1,217 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chepita - Login</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="PAG.css">
-</head>
-<body>
-
-    <header class="top-bar">
-        <div class="brands-container">
-            <div class="brands-track">
-                <img src="imagenes/marcas/logo1.png" alt="Logo 1">
-                <img src="imagenes/marcas/logo2.png" alt="Logo 2">
-                <img src="imagenes/marcas/logo3.png" alt="Logo 3">
-                <img src="imagenes/marcas/logo4.png" alt="Logo 4">
-                <img src="imagenes/marcas/logo5.png" alt="Logo 5">
-                <img src="imagenes/marcas/logo6.png" alt="Logo 6">
-                <img src="imagenes/marcas/logo1.png" alt="Logo 1">
-                <img src="imagenes/marcas/logo2.png" alt="Logo 2">
-                <img src="imagenes/marcas/logo3.png" alt="Logo 3">
-                <img src="imagenes/marcas/logo4.png" alt="Logo 4">
-                <img src="imagenes/marcas/logo5.png" alt="Logo 5">
-                <img src="imagenes/marcas/logo6.png" alt="Logo 6">
-            </div>
-        </div>
-        <div class="clock-box">
-            <span id="fecha"></span>
-            <span id="hora"></span>
-        </div>
-    </header>
-
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="PAG.css" />
+  </head>
+  <body>
     <div class="main-layout">
-        <div class="left-side">
-            <img src="imagenes/Izquierda.png" class="logo-grande" alt="Logo Chepita">
-        </div>
-        <div class="right-side">
-            <div class="container">
-                <!-- Usuario seleccionado -->
-                <div id="selectedUser" class="selected-user">
-                    <i class="fa-solid fa-circle-user"></i>
-                    <div class="selected-user-info">
-                        <div class="selected-user-nombre" id="selectedNombre"></div>
-                        <div class="selected-user-rol" id="selectedRol"></div>
-                    </div>
-                    <i class="fa-solid fa-xmark selected-user-clear" onclick="limpiarSeleccion()"></i>
-                </div>
-
-                <form id="loginForm" onsubmit="return handleLogin(event)">
-                    <div class="input-group">
-                        <label>BUSCAR USUARIO</label>
-                        <div class="search-wrapper">
-                            <input type="text" id="busquedaUsuario" placeholder="Escriba su nombre..." autocomplete="off">
-                            <div class="sugerencias-container" id="sugerenciasContainer"></div>
-                        </div>
-                        <input type="hidden" id="usuarioId">
-                        <input type="hidden" id="usuarioNombre">
-                        <input type="hidden" id="usuarioTipo">
-                    </div>
-
-                    <div class="input-group">
-                        <label>CONTRASEÑA</label>
-                        <div class="input-icon">
-                            <input type="password" id="password" placeholder="Ingrese su contraseña">
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-submit" id="btnLogin">Iniciar Sesión</button>
-
-                    <div id="errorMessage" class="error-message"></div>
-                    <div id="warningMessage" class="warning-message"></div>
-
-                    <div class="forgot-link">
-                        <a onclick="abrirModalRecuperacion()">¿Olvidaste tu contraseña?</a>
-                    </div>
-                </form>
+      <div class="right-side">
+        <div class="container">
+          <div class="login-header">
+            <img src="imagenes/LOGOCHEPITA.png" alt="Chepita" />
+            <h2>Bienvenido</h2>
+            <p>Sistema de Gestión de Variedades Chepita</p>
+            <div class="fecha-login">
+              <i class="fa-solid fa-calendar-days"></i>
+              <span id="fecha"></span>
+              ·
+              <span id="hora"></span>
             </div>
+          </div>
+          <!-- Usuario seleccionado -->
+          <div id="selectedUser" class="selected-user">
+            <i class="fa-solid fa-circle-user"></i>
+            <div class="selected-user-info">
+              <div class="selected-user-nombre" id="selectedNombre"></div>
+              <div class="selected-user-rol" id="selectedRol"></div>
+            </div>
+            <i
+              class="fa-solid fa-xmark selected-user-clear"
+              onclick="limpiarSeleccion()"
+            ></i>
+          </div>
+
+          <form id="loginForm" onsubmit="return handleLogin(event);">
+            <div class="input-group">
+              <label>BUSCAR USUARIO</label>
+              <div class="search-wrapper">
+                <i class="fa-solid fa-user input-icon-left"></i>
+                <input
+                  type="text"
+                  id="busquedaUsuario"
+                  placeholder="Escriba su nombre..."
+                  autocomplete="off"
+                />
+                <div
+                  class="sugerencias-container"
+                  id="sugerenciasContainer"
+                ></div>
+              </div>
+              <input type="hidden" id="usuarioId" />
+              <input type="hidden" id="usuarioNombre" />
+              <input type="hidden" id="usuarioTipo" />
+            </div>
+
+            <div class="input-group">
+              <label>CONTRASEÑA</label>
+              <div class="input-icon">
+                <i class="fa-solid fa-lock input-icon-left"></i>
+                <input
+                  type="password"
+                  id="password"
+                  placeholder="Ingrese su contraseña"
+                />
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="btnLogin">
+              Iniciar Sesión
+            </button>
+
+            <div id="errorMessage" class="error-message"></div>
+            <div id="warningMessage" class="warning-message"></div>
+
+            <div class="forgot-link">
+              <a onclick="abrirModalRecuperacion()"
+                >¿Olvidaste tu contraseña?</a
+              >
+            </div>
+          </form>
         </div>
+      </div>
     </div>
 
     <!-- Modal de Recuperación UNIFICADO -->
     <div id="modalRecuperacion" class="modal">
-        <div class="modal-content">
-            <h3>Recuperar Contraseña</h3>
-            <div id="recuperacionPaso1">
-                <p>Ingresa tu correo electrónico registrado:</p>
-                <input type="email" id="recuperarEmail" placeholder="correo@ejemplo.com">
-                <div class="modal-buttons">
-                    <button class="modal-btn primary" onclick="solicitarRecuperacion()">Enviar enlace</button>
-                    <button class="modal-btn secondary" onclick="cerrarModalRecuperacion()">Cancelar</button>
-                </div>
-            </div>
-            <div id="recuperacionResultado" style="display: none;">
-                <p id="resultadoTexto"></p>
-                <div class="modal-buttons">
-                    <button class="modal-btn primary" onclick="cerrarModalRecuperacion()">Cerrar</button>
-                </div>
-            </div>
+      <div class="modal-content">
+        <h3>Recuperar Contraseña</h3>
+        <div id="recuperacionPaso1">
+          <p>Ingresa tu correo electrónico registrado:</p>
+          <input
+            type="email"
+            id="recuperarEmail"
+            placeholder="correo@ejemplo.com"
+          />
+          <div class="modal-buttons">
+            <button class="modal-btn primary" onclick="solicitarRecuperacion()">
+              Enviar enlace
+            </button>
+            <button
+              class="modal-btn secondary"
+              onclick="cerrarModalRecuperacion()"
+            >
+              Cancelar
+            </button>
+          </div>
         </div>
+        <div id="recuperacionResultado" style="display: none">
+          <p id="resultadoTexto"></p>
+          <div class="modal-buttons">
+            <button
+              class="modal-btn primary"
+              onclick="cerrarModalRecuperacion()"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
-        let trabajadoresData = [];
-        let sugerenciaActiva = -1;
-        let usuarioSeleccionado = null;
+      let trabajadoresData = [];
+      let sugerenciaActiva = -1;
+      let usuarioSeleccionado = null;
 
-        localStorage.clear();
-        sessionStorage.clear();
+      localStorage.clear();
+      sessionStorage.clear();
 
-        const ADMIN_VIRTUAL = {
-            Id_Trabajador: 0,
-            NombreCompleto: "Administrador",
-            tipo: "admin",
-            usuario: "admin"
-        };
+      const ADMIN_VIRTUAL = {
+        Id_Trabajador: 0,
+        NombreCompleto: "Administrador",
+        tipo: "admin",
+        usuario: "admin",
+      };
 
-        async function cargarUsuarios() {
-            try {
-                const response = await fetch('/api/trabajadores/activos');
-                trabajadoresData = await response.json();
-                
-                const input = document.getElementById('busquedaUsuario');
-                input.addEventListener('input', () => mostrarSugerencias(input.value));
-                input.addEventListener('keydown', manejarTecladoSugerencias);
-                
-                document.addEventListener('click', (e) => {
-                    const container = document.getElementById('sugerenciasContainer');
-                    const input = document.getElementById('busquedaUsuario');
-                    if (!container.contains(e.target) && e.target !== input) {
-                        container.classList.remove('mostrar');
-                        sugerenciaActiva = -1;
-                    }
-                });
-            } catch (error) {
-                console.error('Error cargando usuarios:', error);
-                trabajadoresData = [];
+      async function cargarUsuarios() {
+        try {
+          const response = await fetch("/api/trabajadores/activos");
+          trabajadoresData = await response.json();
+
+          const input = document.getElementById("busquedaUsuario");
+          input.addEventListener("input", () =>
+            mostrarSugerencias(input.value),
+          );
+          input.addEventListener("keydown", manejarTecladoSugerencias);
+
+          document.addEventListener("click", (e) => {
+            const container = document.getElementById("sugerenciasContainer");
+            const input = document.getElementById("busquedaUsuario");
+            if (!container.contains(e.target) && e.target !== input) {
+              container.classList.remove("mostrar");
+
+              document
+                .querySelector(".search-wrapper")
+                .classList.remove("abierto");
+
+              sugerenciaActiva = -1;
             }
+          });
+        } catch (error) {
+          console.error("Error cargando usuarios:", error);
+          trabajadoresData = [];
+        }
+      }
+
+      function mostrarSugerencias(texto) {
+        const container = document.getElementById("sugerenciasContainer");
+        const busqueda = texto.toLowerCase().trim();
+
+        if (busqueda === "") {
+          container.classList.remove("mostrar");
+          document.querySelector(".search-wrapper").classList.remove("abierto");
+          return;
         }
 
-        function mostrarSugerencias(texto) {
-            const container = document.getElementById('sugerenciasContainer');
-            const busqueda = texto.toLowerCase().trim();
-            
-            if (busqueda === '') {
-                container.classList.remove('mostrar');
-                return;
-            }
-            
-            let coincidencias = [];
-            
-            if (busqueda === 'admin' || busqueda === 'administrador') {
-                coincidencias.push(ADMIN_VIRTUAL);
-            }
-            
-            const trabajadoresCoincidentes = trabajadoresData.filter(t => 
-                t.NombreCompleto.toLowerCase().includes(busqueda)
-            );
-            coincidencias.push(...trabajadoresCoincidentes);
-            
-            if (coincidencias.length === 0) {
-                container.innerHTML = '<div class="sugerencia-item" style="color:#999; justify-content:center;">Sin coincidencias</div>';
-                container.classList.add('mostrar');
-                return;
-            }
-            
-            let html = '';
-            coincidencias.forEach((user) => {
-                const esAdmin = user.tipo === 'admin' || user.Id_Trabajador === 0;
-                const icono = esAdmin ? '<i class="fa-solid fa-crown"></i>' : '<i class="fa-solid fa-user"></i>';
-                const rol = esAdmin ? 'Administrador' : 'Vendedor';
-                html += `
-                    <div class="sugerencia-item" data-id="${user.Id_Trabajador || 0}" data-nombre="${user.NombreCompleto}" data-tipo="${esAdmin ? 'admin' : 'trabajador'}">
+        let coincidencias = [];
+
+        if (busqueda === "admin" || busqueda === "administrador") {
+          coincidencias.push(ADMIN_VIRTUAL);
+        }
+
+        const trabajadoresCoincidentes = trabajadoresData.filter((t) =>
+          t.NombreCompleto.toLowerCase().includes(busqueda),
+        );
+        coincidencias.push(...trabajadoresCoincidentes);
+
+        if (coincidencias.length === 0) {
+          container.innerHTML =
+            '<div class="sugerencia-item" style="color:#999; justify-content:center;">Sin coincidencias</div>';
+          container.classList.add("mostrar");
+          document.querySelector(".search-wrapper").classList.add("abierto");
+          return;
+        }
+
+        let html = "";
+        coincidencias.forEach((user) => {
+          const esAdmin = user.tipo === "admin" || user.Id_Trabajador === 0;
+          const icono = esAdmin
+            ? '<i class="fa-solid fa-crown"></i>'
+            : '<i class="fa-solid fa-user"></i>';
+          const rol = esAdmin ? "Administrador" : "Vendedor";
+          html += `
+                    <div class="sugerencia-item" data-id="${user.Id_Trabajador || 0}" data-nombre="${user.NombreCompleto}" data-tipo="${esAdmin ? "admin" : "trabajador"}">
                         <div class="sugerencia-icono">${icono}</div>
                         <div class="sugerencia-info">
                             <div class="sugerencia-nombre">${user.NombreCompleto}</div>
@@ -180,270 +219,309 @@
                         </div>
                     </div>
                 `;
-            });
-            
-            container.innerHTML = html;
-            container.classList.add('mostrar');
-            
-            document.querySelectorAll('.sugerencia-item[data-id]').forEach(item => {
-                item.addEventListener('click', () => seleccionarUsuario(item));
-            });
-        }
+        });
 
-        function manejarTecladoSugerencias(e) {
-            const items = document.querySelectorAll('.sugerencia-item[data-id]');
-            if (items.length === 0) return;
-            
-            switch(e.key) {
-                case 'ArrowDown':
-                    e.preventDefault();
-                    sugerenciaActiva = Math.min(sugerenciaActiva + 1, items.length - 1);
-                    actualizarSugerenciaActiva(items);
-                    break;
-                case 'ArrowUp':
-                    e.preventDefault();
-                    sugerenciaActiva = Math.max(sugerenciaActiva - 1, 0);
-                    actualizarSugerenciaActiva(items);
-                    break;
-                case 'Enter':
-                    if (sugerenciaActiva >= 0 && sugerenciaActiva < items.length) {
-                        e.preventDefault();
-                        seleccionarUsuario(items[sugerenciaActiva]);
-                    }
-                    break;
-                case 'Escape':
-                    document.getElementById('sugerenciasContainer').classList.remove('mostrar');
-                    sugerenciaActiva = -1;
-                    break;
+        container.innerHTML = html;
+        container.classList.add("mostrar");
+        document.querySelector(".search-wrapper").classList.add("abierto");
+        document
+          .querySelectorAll(".sugerencia-item[data-id]")
+          .forEach((item) => {
+            item.addEventListener("click", () => seleccionarUsuario(item));
+          });
+      }
+
+      function manejarTecladoSugerencias(e) {
+        const items = document.querySelectorAll(".sugerencia-item[data-id]");
+        if (items.length === 0) return;
+
+        switch (e.key) {
+          case "ArrowDown":
+            e.preventDefault();
+            sugerenciaActiva = Math.min(sugerenciaActiva + 1, items.length - 1);
+            actualizarSugerenciaActiva(items);
+            break;
+          case "ArrowUp":
+            e.preventDefault();
+            sugerenciaActiva = Math.max(sugerenciaActiva - 1, 0);
+            actualizarSugerenciaActiva(items);
+            break;
+          case "Enter":
+            if (sugerenciaActiva >= 0 && sugerenciaActiva < items.length) {
+              e.preventDefault();
+              seleccionarUsuario(items[sugerenciaActiva]);
             }
-        }
-
-        function actualizarSugerenciaActiva(items) {
-            items.forEach((item, idx) => {
-                if (idx === sugerenciaActiva) {
-                    item.classList.add('activo');
-                } else {
-                    item.classList.remove('activo');
-                }
-            });
-        }
-
-        function seleccionarUsuario(elemento) {
-            const id = parseInt(elemento.getAttribute('data-id'));
-            const nombre = elemento.getAttribute('data-nombre');
-            const tipo = elemento.getAttribute('data-tipo');
-            
-            usuarioSeleccionado = { id, nombre, tipo };
-            
-            document.getElementById('selectedNombre').textContent = nombre;
-            document.getElementById('selectedRol').textContent = tipo === 'admin' ? 'Administrador' : 'Vendedor';
-            document.getElementById('selectedUser').style.display = 'flex';
-            
-            document.getElementById('sugerenciasContainer').classList.remove('mostrar');
-            document.getElementById('busquedaUsuario').value = nombre;
+            break;
+          case "Escape":
+            document
+              .getElementById("sugerenciasContainer")
+              .classList.remove("mostrar");
             sugerenciaActiva = -1;
-            
-            document.getElementById('usuarioId').value = id;
-            document.getElementById('usuarioNombre').value = nombre;
-            document.getElementById('usuarioTipo').value = tipo;
-            
-            document.getElementById('password').focus();
-            document.getElementById('errorMessage').style.display = 'none';
-            document.getElementById('warningMessage').style.display = 'none';
+            break;
+        }
+      }
+
+      function actualizarSugerenciaActiva(items) {
+        items.forEach((item, idx) => {
+          if (idx === sugerenciaActiva) {
+            item.classList.add("activo");
+          } else {
+            item.classList.remove("activo");
+          }
+        });
+      }
+
+      function seleccionarUsuario(elemento) {
+        const id = parseInt(elemento.getAttribute("data-id"));
+        const nombre = elemento.getAttribute("data-nombre");
+        const tipo = elemento.getAttribute("data-tipo");
+
+        usuarioSeleccionado = { id, nombre, tipo };
+
+        document.getElementById("selectedNombre").textContent = nombre;
+        document.getElementById("selectedRol").textContent =
+          tipo === "admin" ? "Administrador" : "Vendedor";
+        document.getElementById("selectedUser").style.display = "flex";
+
+        document
+          .getElementById("sugerenciasContainer")
+          .classList.remove("mostrar");
+        document.querySelector(".search-wrapper").classList.remove("abierto");
+        document.getElementById("busquedaUsuario").value = nombre;
+        sugerenciaActiva = -1;
+
+        document.getElementById("usuarioId").value = id;
+        document.getElementById("usuarioNombre").value = nombre;
+        document.getElementById("usuarioTipo").value = tipo;
+
+        document.getElementById("password").focus();
+        document.getElementById("errorMessage").style.display = "none";
+        document.getElementById("warningMessage").style.display = "none";
+      }
+
+      function limpiarSeleccion() {
+        usuarioSeleccionado = null;
+        document.getElementById("selectedUser").style.display = "none";
+        document.getElementById("busquedaUsuario").value = "";
+        document.getElementById("usuarioId").value = "";
+        document.getElementById("usuarioNombre").value = "";
+        document.getElementById("usuarioTipo").value = "";
+        document.getElementById("password").value = "";
+        document.getElementById("busquedaUsuario").focus();
+        document.getElementById("errorMessage").style.display = "none";
+        document.getElementById("warningMessage").style.display = "none";
+      }
+
+      async function handleLogin(event) {
+        event.preventDefault();
+
+        const password = document.getElementById("password").value;
+        const tipo = document.getElementById("usuarioTipo").value;
+        const usuarioNombre = document.getElementById("usuarioNombre").value;
+        const errorDiv = document.getElementById("errorMessage");
+        const warningDiv = document.getElementById("warningMessage");
+        const btn = document.getElementById("btnLogin");
+
+        errorDiv.style.display = "none";
+        warningDiv.style.display = "none";
+
+        if (!usuarioSeleccionado) {
+          errorDiv.textContent = "Seleccione un usuario de la lista";
+          errorDiv.style.display = "block";
+          return false;
         }
 
-        function limpiarSeleccion() {
-            usuarioSeleccionado = null;
-            document.getElementById('selectedUser').style.display = 'none';
-            document.getElementById('busquedaUsuario').value = '';
-            document.getElementById('usuarioId').value = '';
-            document.getElementById('usuarioNombre').value = '';
-            document.getElementById('usuarioTipo').value = '';
-            document.getElementById('password').value = '';
-            document.getElementById('busquedaUsuario').focus();
-            document.getElementById('errorMessage').style.display = 'none';
-            document.getElementById('warningMessage').style.display = 'none';
+        if (!password) {
+          errorDiv.textContent = "Ingrese su contraseña";
+          errorDiv.style.display = "block";
+          return false;
         }
 
-        async function handleLogin(event) {
-            event.preventDefault();
-            
-            const password = document.getElementById('password').value;
-            const tipo = document.getElementById('usuarioTipo').value;
-            const usuarioNombre = document.getElementById('usuarioNombre').value;
-            const errorDiv = document.getElementById('errorMessage');
-            const warningDiv = document.getElementById('warningMessage');
-            const btn = document.getElementById('btnLogin');
-            
-            errorDiv.style.display = 'none';
-            warningDiv.style.display = 'none';
-            
-            if (!usuarioSeleccionado) {
-                errorDiv.textContent = 'Seleccione un usuario de la lista';
-                errorDiv.style.display = 'block';
-                return false;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner"></span> Verificando...';
+        btn.disabled = true;
+
+        try {
+          let response;
+
+          if (tipo === "admin") {
+            response = await fetch("/api/admin/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ usuario: "admin", password: password }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              localStorage.setItem("token", data.token);
+              localStorage.setItem("tipoUsuario", "admin");
+              localStorage.setItem("adminUser", data.user);
+              localStorage.setItem("sesionIniciada", "true");
+              window.location.replace("menu_admin.html");
+              return true;
+            } else {
+              errorDiv.textContent = data.message || "Contraseña incorrecta";
+              errorDiv.style.display = "block";
+              document.getElementById("password").value = "";
+              document.getElementById("password").focus();
+              btn.innerHTML = originalText;
+              btn.disabled = false;
+              return false;
             }
-            
-            if (!password) {
-                errorDiv.textContent = 'Ingrese su contraseña';
-                errorDiv.style.display = 'block';
-                return false;
+          } else {
+            response = await fetch("/api/trabajadores/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                nombre_usuario: usuarioNombre,
+                password: password,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              localStorage.setItem("token", data.token);
+              localStorage.setItem(
+                "trabajador",
+                JSON.stringify(data.trabajador),
+              );
+              localStorage.setItem("tipoUsuario", "caja");
+              localStorage.setItem("sesionIniciada", "true");
+
+              if (data.trabajador.debe_cambiar_password) {
+                window.location.replace("cambiar-password-obligatorio.html");
+              } else {
+                window.location.replace("menu_caja.html");
+              }
+              return true;
+            } else {
+              const mensaje = data.message || "Contraseña incorrecta";
+              if (
+                mensaje.includes("bloqueada") ||
+                mensaje.includes("intento")
+              ) {
+                warningDiv.textContent = mensaje;
+                warningDiv.style.display = "block";
+              } else {
+                errorDiv.textContent = mensaje;
+                errorDiv.style.display = "block";
+              }
+              document.getElementById("password").value = "";
+              document.getElementById("password").focus();
+              btn.innerHTML = originalText;
+              btn.disabled = false;
+              return false;
             }
-            
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner"></span> Verificando...';
-            btn.disabled = true;
-            
-            try {
-                let response;
-                
-                if (tipo === 'admin') {
-                    response = await fetch('/api/admin/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ usuario: 'admin', password: password })
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        localStorage.setItem('token', data.token);
-                        localStorage.setItem('tipoUsuario', 'admin');
-                        localStorage.setItem('adminUser', data.user);
-                        localStorage.setItem('sesionIniciada', 'true');
-                        window.location.replace("menu_admin.html");
-                        return true;
-                    } else {
-                        errorDiv.textContent = data.message || 'Contraseña incorrecta';
-                        errorDiv.style.display = 'block';
-                        document.getElementById('password').value = '';
-                        document.getElementById('password').focus();
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                        return false;
-                    }
-                } 
-                else {
-                    response = await fetch('/api/trabajadores/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ nombre_usuario: usuarioNombre, password: password })
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        localStorage.setItem('token', data.token);
-                        localStorage.setItem('trabajador', JSON.stringify(data.trabajador));
-                        localStorage.setItem('tipoUsuario', 'caja');
-                        localStorage.setItem('sesionIniciada', 'true');
-                        
-                        if (data.trabajador.debe_cambiar_password) {
-                            window.location.replace("cambiar-password-obligatorio.html");
-                        } else {
-                            window.location.replace("menu_caja.html");
-                        }
-                        return true;
-                    } else {
-                        const mensaje = data.message || 'Contraseña incorrecta';
-                        if (mensaje.includes('bloqueada') || mensaje.includes('intento')) {
-                            warningDiv.textContent = mensaje;
-                            warningDiv.style.display = 'block';
-                        } else {
-                            errorDiv.textContent = mensaje;
-                            errorDiv.style.display = 'block';
-                        }
-                        document.getElementById('password').value = '';
-                        document.getElementById('password').focus();
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                        return false;
-                    }
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                errorDiv.textContent = 'Error de conexión';
-                errorDiv.style.display = 'block';
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                return false;
-            }
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          errorDiv.textContent = "Error de conexión";
+          errorDiv.style.display = "block";
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          return false;
+        }
+      }
+
+      // ========== RECUPERACIÓN UNIFICADA ==========
+      function abrirModalRecuperacion() {
+        document.getElementById("recuperacionPaso1").style.display = "block";
+        document.getElementById("recuperacionResultado").style.display = "none";
+        document.getElementById("recuperarEmail").value = "";
+        document.getElementById("modalRecuperacion").style.display = "flex";
+      }
+
+      function cerrarModalRecuperacion() {
+        document.getElementById("modalRecuperacion").style.display = "none";
+      }
+
+      async function solicitarRecuperacion() {
+        const email = document.getElementById("recuperarEmail").value.trim();
+        const resultadoDiv = document.getElementById("recuperacionResultado");
+        const resultadoTexto = document.getElementById("resultadoTexto");
+
+        if (!email) {
+          resultadoTexto.innerHTML = "Ingrese su correo electrónico";
+          resultadoDiv.style.display = "block";
+          document.getElementById("recuperacionPaso1").style.display = "none";
+          return;
         }
 
-        // ========== RECUPERACIÓN UNIFICADA ==========
-        function abrirModalRecuperacion() {
-            document.getElementById('recuperacionPaso1').style.display = 'block';
-            document.getElementById('recuperacionResultado').style.display = 'none';
-            document.getElementById('recuperarEmail').value = '';
-            document.getElementById('modalRecuperacion').style.display = 'flex';
-        }
+        const btn = document.querySelector(
+          "#modalRecuperacion .modal-btn.primary",
+        );
+        const originalText = btn.textContent;
+        btn.textContent = "Enviando...";
+        btn.disabled = true;
 
-        function cerrarModalRecuperacion() {
-            document.getElementById('modalRecuperacion').style.display = 'none';
-        }
+        try {
+          // Usar el endpoint unificado
+          const response = await fetch("/api/recuperar-password-unificado", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: email }),
+          });
 
-        async function solicitarRecuperacion() {
-            const email = document.getElementById('recuperarEmail').value.trim();
-            const resultadoDiv = document.getElementById('recuperacionResultado');
-            const resultadoTexto = document.getElementById('resultadoTexto');
-            
-            if (!email) {
-                resultadoTexto.innerHTML = 'Ingrese su correo electrónico';
-                resultadoDiv.style.display = 'block';
-                document.getElementById('recuperacionPaso1').style.display = 'none';
-                return;
-            }
-            
-            const btn = document.querySelector('#modalRecuperacion .modal-btn.primary');
-            const originalText = btn.textContent;
-            btn.textContent = 'Enviando...';
-            btn.disabled = true;
-            
-            try {
-                // Usar el endpoint unificado
-                const response = await fetch('/api/recuperar-password-unificado', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email })
-                });
-                
-                const data = await response.json();
-                resultadoTexto.innerHTML = data.message || 'Si el correo está registrado, recibirás un enlace';
-                
-                resultadoDiv.style.display = 'block';
-                document.getElementById('recuperacionPaso1').style.display = 'none';
-                
-            } catch (error) {
-                console.error('Error:', error);
-                resultadoTexto.innerHTML = 'Error de conexión con el servidor';
-                resultadoDiv.style.display = 'block';
-                document.getElementById('recuperacionPaso1').style.display = 'none';
-            } finally {
-                btn.textContent = originalText;
-                btn.disabled = false;
-            }
-        }
+          const data = await response.json();
+          resultadoTexto.innerHTML =
+            data.message || "Si el correo está registrado, recibirás un enlace";
 
-        window.onclick = function(event) {
-            const modal = document.getElementById('modalRecuperacion');
-            if (event.target === modal) {
-                cerrarModalRecuperacion();
-            }
+          resultadoDiv.style.display = "block";
+          document.getElementById("recuperacionPaso1").style.display = "none";
+        } catch (error) {
+          console.error("Error:", error);
+          resultadoTexto.innerHTML = "Error de conexión con el servidor";
+          resultadoDiv.style.display = "block";
+          document.getElementById("recuperacionPaso1").style.display = "none";
+        } finally {
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
+      }
+
+      window.onclick = function (event) {
+        const modal = document.getElementById("modalRecuperacion");
+        if (event.target === modal) {
+          cerrarModalRecuperacion();
+        }
+      };
+
+      function actualizarFechaHora() {
+        const ahora = new Date();
+        const opcionesFecha = {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
         };
+        const fechaStr = ahora.toLocaleDateString("es-ES", opcionesFecha);
+        const horaStr = ahora.toLocaleTimeString("es-ES", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
 
-        function actualizarFechaHora() {
-            const ahora = new Date();
-            const opcionesFecha = { year: 'numeric', month: 'long', day: 'numeric' };
-            const fechaStr = ahora.toLocaleDateString('es-ES', opcionesFecha);
-            const horaStr = ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-            
-            document.getElementById('fecha').textContent = fechaStr;
-            document.getElementById('hora').textContent = horaStr;
-        }
-        
-        actualizarFechaHora();
-        setInterval(actualizarFechaHora, 60000);
-        cargarUsuarios();
+        document.getElementById("fecha").textContent = fechaStr;
+        document.getElementById("hora").textContent = horaStr;
+      }
+
+      actualizarFechaHora();
+      setInterval(actualizarFechaHora, 60000);
+      cargarUsuarios();
     </script>
-</body>
+    <div class="bg-circle c1"></div>
+    <div class="bg-circle c2"></div>
+    <div class="bg-circle c3"></div>
+    <div class="bg-circle c4"></div>
+    <div class="sparkle sparkle1">✦</div>
+    <div class="sparkle sparkle2">✦</div>
+    <div class="sparkle sparkle3">✦</div>
+    <div class="sparkle sparkle4">✦</div>
+    <div class="particle p1"></div>
+    <div class="particle p2"></div>
+    <div class="particle p3"></div>
+    <div class="particle p4"></div>
+    <div class="particle p5"></div>
+    <div class="particle p6"></div>
+  </body>
 </html>

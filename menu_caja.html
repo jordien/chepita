@@ -1,384 +1,448 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Panel de Caja - Tienda Chepita</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="menu_caja.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Playfair+Display:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="menu_caja.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <style>
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255,255,255,0.95);
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            flex-direction: column;
+      .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+        flex-direction: column;
+      }
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3e8ff;
+        border-top: 5px solid #caa0d8;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
         }
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3e8ff;
-            border-top: 5px solid #caa0d8;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        100% {
+          transform: rotate(360deg);
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+      }
     </style>
-</head>
+  </head>
 
-<body>
-
-<div class="loading-overlay" id="loadingOverlay">
-    <div class="loading-spinner"></div>
-    <p style="margin-top: 15px; color: #caa0d8;">Cargando...</p>
-</div>
-
-<header class="top-bar">
-    <div class="brands-container">
-        <div class="brands-track">
-            <img src="imagenes/marcas/logo1.png">
-            <img src="imagenes/marcas/logo2.png">
-            <img src="imagenes/marcas/logo3.png">
-            <img src="imagenes/marcas/logo4.png">
-            <img src="imagenes/marcas/logo1.png">
-            <img src="imagenes/marcas/logo2.png">
-            <img src="imagenes/marcas/logo3.png">
-            <img src="imagenes/marcas/logo4.png">
-        </div>
+  <body>
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-spinner"></div>
+      <p style="margin-top: 15px; color: #caa0d8">Cargando...</p>
     </div>
-    <div class="top-bar-right">
-        <div class="clock-box" id="topBarDate"></div>
-        <div class="clock-box" id="topBarTime"></div>
-    </div>
-</header>
 
-<div class="admin-container">
-
-    <div class="admin-header">
+    <div class="admin-container">
+      <div class="admin-header">
         <div class="admin-badge">
-            <i class="fas fa-cash-register"></i>
-            <span>Cajero</span>
+          <i class="fas fa-cash-register"></i>
+          <span>Cajero</span>
         </div>
         <div class="main-title-inline">
-            <h1>TIENDA CHEPITA</h1>
-            <p class="subtitle">Panel de Caja</p>
+          <h1>TIENDA CHEPITA</h1>
+          <p class="subtitle">Panel de Caja</p>
         </div>
         <div class="welcome-card-header">
-            <div class="welcome-icon-small">
-                <i class="fas fa-user"></i>
+          <div class="welcome-icon-small">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="welcome-text">
+            <h3 id="nombreCajero">Cargando...</h3>
+            <p id="infoUsuario">Bienvenida al sistema</p>
+            <div class="datetime-row">
+              <div class="clock-box" id="topBarDate"></div>
+              <div class="clock-box" id="topBarTime"></div>
             </div>
-            <div class="welcome-text">
-                <h3 id="nombreCajero">Cargando...</h3>
-                <p id="infoUsuario">Bienvenida al sistema</p>
-            </div>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <div class="modules-grid">
+      <div class="modules-grid">
         <div class="module-card" onclick="iniciarVenta()">
-            <div class="module-icon">
-                <i class="fas fa-shopping-cart"></i>
-            </div>
-            <div class="module-info">
-                <h3>Nueva Venta</h3>
-                <p>Registrar una venta</p>
-            </div>
-            <div class="module-arrow">
-                <i class="fas fa-arrow-right"></i>
-            </div>
+          <div class="module-icon">
+            <i class="fas fa-shopping-cart"></i>
+          </div>
+          <div class="module-info">
+            <h3>Nueva Venta</h3>
+            <p>Registrar una venta</p>
+          </div>
+          <div class="module-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
         </div>
 
         <div class="module-card" onclick="consultarInventario()">
-            <div class="module-icon">
-                <i class="fas fa-box"></i>
-            </div>
-            <div class="module-info">
-                <h3>Consultar Inventario</h3>
-                <p>Ver productos disponibles</p>
-            </div>
-            <div class="module-arrow">
-                <i class="fas fa-arrow-right"></i>
-            </div>
+          <div class="module-icon">
+            <i class="fas fa-box"></i>
+          </div>
+          <div class="module-info">
+            <h3>Consultar Inventario</h3>
+            <p>Ver productos disponibles</p>
+          </div>
+          <div class="module-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <!-- SECCIÓN TIPO DE VENTA (se despliega al hacer clic en Nueva Venta) -->
-    <div class="tipo-venta-section" id="tipoVentaSection">
+      <!-- SECCIÓN TIPO DE VENTA (se despliega al hacer clic en Nueva Venta) -->
+      <div class="tipo-venta-section" id="tipoVentaSection">
         <div class="tipo-venta-header">
-            <i class="fas fa-magic"></i>
-            <div>
-                <h2>Seleccione el tipo de venta</h2>
-                <p>Elija la modalidad que mejor se adapte a su operación</p>
-            </div>
+          <i class="fas fa-magic"></i>
+          <div>
+            <h2>Seleccione el tipo de venta</h2>
+            <p>Elija la modalidad que mejor se adapte a su operación</p>
+          </div>
         </div>
 
         <div class="tipo-venta-grid">
-
-            <!-- Venta Normal -->
-            <div class="tipo-venta-card" onclick="abrirVentaNormal()">
-                <div class="tipo-venta-left">
-                    <div class="tipo-icon tipo-normal">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="tipo-info">
-                        <h3>Venta Normal</h3>
-                        <p>Registra completo del cliente, productos y datos de la venta.</p>
-                        <span class="tipo-badge">Ideal para clientes frecuentes.</span>
-                    </div>
-                </div>
-                <div class="tipo-venta-right">
-                    <ul class="tipo-features">
-                        <li><i class="fas fa-check-circle"></i> Registro de cliente</li>
-                        <li><i class="fas fa-check-circle"></i> Datos completos</li>
-                    </ul>
-                    <div class="tipo-arrow tipo-arrow-normal">
-                        <i class="fas fa-arrow-right"></i>
-                    </div>
-                </div>
+          <!-- Venta Normal -->
+          <div class="tipo-venta-card" onclick="abrirVentaNormal()">
+            <div class="tipo-venta-left">
+              <div class="tipo-icon tipo-normal">
+                <i class="fas fa-user"></i>
+              </div>
+              <div class="tipo-info">
+                <h3>Venta Normal</h3>
+                <p>
+                  Registra completo del cliente, productos y datos de la venta.
+                </p>
+                <span class="tipo-badge">Ideal para clientes frecuentes.</span>
+              </div>
             </div>
-
-            <!-- Venta Express -->
-            <div class="tipo-venta-card tipo-express" onclick="abrirVentaExpress()">
-                <div class="tipo-venta-left">
-                    <div class="tipo-icon tipo-express-icon">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <div class="tipo-info">
-                        <h3 class="express-title">Venta Express</h3>
-                        <p>Venta rápida sin registrar información del cliente.</p>
-                        <span class="tipo-badge tipo-badge-express">Ideal para clientes con prisa.</span>
-                    </div>
-                </div>
-                <div class="tipo-venta-right">
-                    <ul class="tipo-features tipo-features-express">
-                        <li><i class="fas fa-check-circle"></i> Sin registro de cliente</li>
-                        <li><i class="fas fa-check-circle"></i> Menos pasos</li>
-                        <li><i class="fas fa-check-circle"></i> Más rápida</li>
-                        <li><i class="fas fa-check-circle"></i> Atención inmediata</li>
-                    </ul>
-                    <div class="tipo-arrow tipo-arrow-express">
-                        <i class="fas fa-arrow-right"></i>
-                    </div>
-                </div>
+            <div class="tipo-venta-right">
+              <ul class="tipo-features">
+                <li><i class="fas fa-check-circle"></i> Registro de cliente</li>
+                <li><i class="fas fa-check-circle"></i> Datos completos</li>
+              </ul>
+              <div class="tipo-arrow tipo-arrow-normal">
+                <i class="fas fa-arrow-right"></i>
+              </div>
             </div>
+          </div>
 
+          <!-- Venta Express -->
+          <div
+            class="tipo-venta-card tipo-express"
+            onclick="abrirVentaExpress()"
+          >
+            <div class="tipo-venta-left">
+              <div class="tipo-icon tipo-express-icon">
+                <i class="fas fa-bolt"></i>
+              </div>
+              <div class="tipo-info">
+                <h3 class="express-title">Venta Express</h3>
+                <p>Venta rápida sin registrar información del cliente.</p>
+                <span class="tipo-badge tipo-badge-express"
+                  >Ideal para clientes con prisa.</span
+                >
+              </div>
+            </div>
+            <div class="tipo-venta-right">
+              <ul class="tipo-features tipo-features-express">
+                <li>
+                  <i class="fas fa-check-circle"></i> Sin registro de cliente
+                </li>
+                <li><i class="fas fa-check-circle"></i> Menos pasos</li>
+                <li><i class="fas fa-check-circle"></i> Más rápida</li>
+                <li><i class="fas fa-check-circle"></i> Atención inmediata</li>
+              </ul>
+              <div class="tipo-arrow tipo-arrow-express">
+                <i class="fas fa-arrow-right"></i>
+              </div>
+            </div>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <div class="logout-section">
+      <div class="logout-section">
         <button class="btn-logout" onclick="mostrarModalCerrarJornada()">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Cerrar Jornada / Salir</span>
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Cerrar Jornada / Salir</span>
         </button>
+      </div>
+
+      <div class="admin-footer">
+        <p><i class="fas fa-copyright"></i> 2026 Tienda Chepita</p>
+      </div>
     </div>
 
-    <div class="admin-footer">
-        <p><i class="fas fa-database"></i> Sistema de Gestión Comercial - v2.0</p>
-        <p><i class="fas fa-copyright"></i> 2025 Tienda Chepita</p>
-    </div>
-</div>
-
-<!-- Modal genérico -->
-<div id="modalMensaje" class="modal-mensaje">
-    <div class="modal-contenido">
+    <!-- Modal genérico -->
+    <div id="modalMensaje" class="modal-mensaje">
+      <div class="modal-contenido">
+        <div class="modal-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
         <h3 id="modalTitulo"></h3>
         <p id="modalTexto"></p>
         <div class="modal-buttons" id="modalBotones">
-            <button class="modal-btn" onclick="cerrarModal()">Aceptar</button>
+          <button class="modal-btn" onclick="cerrarModal()">Aceptar</button>
         </div>
+      </div>
     </div>
-</div>
 
-<script>
-    function mostrarLoading() {
-        const overlay = document.getElementById('loadingOverlay');
-        if (overlay) overlay.style.display = 'flex';
-    }
+    <script>
+      function mostrarLoading() {
+        const overlay = document.getElementById("loadingOverlay");
+        if (overlay) overlay.style.display = "flex";
+      }
 
-    function ocultarLoading() {
-        const overlay = document.getElementById('loadingOverlay');
-        if (overlay) overlay.style.display = 'none';
-    }
+      function ocultarLoading() {
+        const overlay = document.getElementById("loadingOverlay");
+        if (overlay) overlay.style.display = "none";
+      }
 
-    // ========== VERIFICACIÓN DE SESIÓN ==========
-    (function verificarSesionAlInicio() {
-        const token = localStorage.getItem('token');
-        const trabajadorStr = localStorage.getItem('trabajador');
+      // ========== VERIFICACIÓN DE SESIÓN ==========
+      (function verificarSesionAlInicio() {
+        const token = localStorage.getItem("token");
+        const trabajadorStr = localStorage.getItem("trabajador");
 
-        if (!token || !trabajadorStr || trabajadorStr === 'null' || trabajadorStr === 'undefined') {
-            localStorage.clear();
-            sessionStorage.clear();
-            window.location.replace('PAG.html');
-            return;
+        if (
+          !token ||
+          !trabajadorStr ||
+          trabajadorStr === "null" ||
+          trabajadorStr === "undefined"
+        ) {
+          localStorage.clear();
+          sessionStorage.clear();
+          window.location.replace("PAG.html");
+          return;
         }
 
-        fetch('/api/verificar-sesion-trabajador', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
+        fetch("/api/verificar-sesion-trabajador", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         })
-        .then(response => response.json())
-        .then(data => {
+          .then((response) => response.json())
+          .then((data) => {
             if (!data.autenticado) {
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.replace('PAG.html');
+              localStorage.clear();
+              sessionStorage.clear();
+              window.location.replace("PAG.html");
             } else {
-                ocultarLoading();
+              ocultarLoading();
             }
-        })
-        .catch(error => {
-            console.error('Error verificando sesión:', error);
+          })
+          .catch((error) => {
+            console.error("Error verificando sesión:", error);
             localStorage.clear();
             sessionStorage.clear();
-            window.location.replace('PAG.html');
-        });
-    })();
+            window.location.replace("PAG.html");
+          });
+      })();
 
-    // ========== BLOQUEAR BOTÓN ATRÁS ==========
-    (function bloquearBotonAtras() {
+      // ========== BLOQUEAR BOTÓN ATRÁS ==========
+      (function bloquearBotonAtras() {
         for (let i = 0; i < 100; i++) {
+          history.pushState(null, null, location.href);
+        }
+        window.addEventListener("popstate", function () {
+          if (
+            !localStorage.getItem("token") ||
+            !localStorage.getItem("trabajador")
+          ) {
+            window.location.replace("PAG.html");
+            return;
+          }
+          history.go(1);
+          setTimeout(() => {
             history.pushState(null, null, location.href);
-        }
-        window.addEventListener('popstate', function () {
-            if (!localStorage.getItem('token') || !localStorage.getItem('trabajador')) {
-                window.location.replace('PAG.html');
-                return;
-            }
-            history.go(1);
-            setTimeout(() => {
-                history.pushState(null, null, location.href);
-            }, 10);
+          }, 10);
         });
-    })();
+      })();
 
-    // ========== MODALES ==========
-    function mostrarModal(titulo, texto) {
-        document.getElementById('modalTitulo').textContent = titulo;
-        document.getElementById('modalTexto').textContent = texto;
-        document.getElementById('modalBotones').innerHTML = '<button class="modal-btn" onclick="cerrarModal()">Aceptar</button>';
-        document.getElementById('modalMensaje').style.display = 'flex';
-    }
+      // ========== MODALES ==========
+      function mostrarModal(titulo, texto) {
+        document.getElementById("modalTitulo").textContent = titulo;
+        document.getElementById("modalTexto").textContent = texto;
+        document.getElementById("modalBotones").innerHTML =
+          '<button class="modal-btn" onclick="cerrarModal()">Aceptar</button>';
+        document.getElementById("modalMensaje").style.display = "flex";
+      }
 
-    function mostrarModalConfirmacion(titulo, texto, accionSi) {
-        document.getElementById('modalTitulo').textContent = titulo;
-        document.getElementById('modalTexto').textContent = texto;
-        document.getElementById('modalBotones').innerHTML = `
-            <button class="modal-btn" id="btnConfirmarSi">Sí, continuar</button>
-            <button class="modal-btn cancelar" id="btnConfirmarNo">Cancelar</button>
-        `;
-        document.getElementById('btnConfirmarSi').onclick = function () {
-            cerrarModal();
-            if (accionSi) accionSi();
+      function mostrarModalConfirmacion(titulo, texto, accionSi) {
+        document.getElementById("modalTitulo").textContent = titulo;
+        document.getElementById("modalTexto").textContent = texto;
+
+        document.getElementById("modalBotones").innerHTML = `
+      <button class="modal-btn confirmar" id="btnConfirmarSi">
+          <i class="fas fa-door-open"></i> Cerrar Jornada
+      </button>
+
+      <button class="modal-btn cancelar" id="btnConfirmarNo">
+          Cancelar
+      </button>
+  `;
+
+        document.getElementById("btnConfirmarSi").onclick = function () {
+          cerrarModal();
+          if (accionSi) accionSi();
         };
-        document.getElementById('btnConfirmarNo').onclick = cerrarModal;
-        document.getElementById('modalMensaje').style.display = 'flex';
-    }
 
-    function cerrarModal() {
-        document.getElementById('modalMensaje').style.display = 'none';
-    }
+        document.getElementById("btnConfirmarNo").onclick = cerrarModal;
 
-    // ========== INFO CAJERO ==========
-    function cargarInfoCajero() {
-        const trabajadorStr = localStorage.getItem('trabajador');
-        if (trabajadorStr && trabajadorStr !== 'null' && trabajadorStr !== 'undefined') {
-            try {
-                const trabajador = JSON.parse(trabajadorStr);
-                document.getElementById('nombreCajero').textContent = trabajador.nombre || 'Trabajador';
-                document.getElementById('infoUsuario').textContent = 'Bienvenida al sistema';
-            } catch (e) {
-                console.error('Error parseando trabajador:', e);
-                document.getElementById('nombreCajero').textContent = 'Error al cargar datos';
-                setTimeout(() => window.location.replace('PAG.html'), 2000);
-            }
+        document.getElementById("modalMensaje").style.display = "flex";
+      }
+
+      function cerrarModal() {
+        document.getElementById("modalMensaje").style.display = "none";
+      }
+
+      // ========== INFO CAJERO ==========
+      function cargarInfoCajero() {
+        const trabajadorStr = localStorage.getItem("trabajador");
+        if (
+          trabajadorStr &&
+          trabajadorStr !== "null" &&
+          trabajadorStr !== "undefined"
+        ) {
+          try {
+            const trabajador = JSON.parse(trabajadorStr);
+            document.getElementById("nombreCajero").textContent =
+              trabajador.nombre || "Trabajador";
+            document.getElementById("infoUsuario").textContent =
+              "Bienvenida al sistema";
+          } catch (e) {
+            console.error("Error parseando trabajador:", e);
+            document.getElementById("nombreCajero").textContent =
+              "Error al cargar datos";
+            setTimeout(() => window.location.replace("PAG.html"), 2000);
+          }
         } else {
-            document.getElementById('nombreCajero').textContent = 'Sesión no iniciada';
-            mostrarModal('Sesión no iniciada', 'Por favor, inicie sesión nuevamente.');
-            setTimeout(() => window.location.replace('PAG.html'), 2000);
+          document.getElementById("nombreCajero").textContent =
+            "Sesión no iniciada";
+          mostrarModal(
+            "Sesión no iniciada",
+            "Por favor, inicie sesión nuevamente.",
+          );
+          setTimeout(() => window.location.replace("PAG.html"), 2000);
         }
-    }
+      }
 
-    // ========== TIPO DE VENTA (inline, sin modal overlay) ==========
-    function iniciarVenta() {
-        const section = document.getElementById('tipoVentaSection');
-        const isVisible = section.classList.contains('visible');
-        if (isVisible) {
-            section.classList.remove('visible');
+      // ========== TIPO DE VENTA (inline, sin modal overlay) ==========
+      function iniciarVenta() {
+        const section = document.getElementById("tipoVentaSection");
+
+        if (section.classList.contains("visible")) {
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+          });
+
+          setTimeout(() => {
+            section.classList.remove("visible");
+            document.body.classList.remove("scroll-activo");
+          }, 10);
         } else {
-            section.classList.add('visible');
-            setTimeout(() => {
-                section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }, 50);
+          section.classList.add("visible");
+          document.body.classList.add("scroll-activo");
+
+          setTimeout(() => {
+            section.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }, 100);
         }
-    }
+      }
+      function abrirVentaNormal() {
+        console.log("Click normal");
+        localStorage.setItem("tipoVenta", "normal");
+        window.location.href = "nueva_compra.html";
+      }
 
-    function abrirVentaNormal() {
-        localStorage.setItem('tipoVenta', 'normal');
-        window.location.href = 'nueva_compra.html';
-    }
+      function abrirVentaExpress() {
+        console.log("Click express");
+        localStorage.setItem("tipoVenta", "express");
+        window.location.href = "nueva_compra.html";
+      }
 
-    function abrirVentaExpress() {
-        localStorage.setItem('tipoVenta', 'express');
-        window.location.href = 'nueva_compra.html';
-    }
-
-    // ========== INVENTARIO ==========
-    function consultarInventario() {
+      // ========== INVENTARIO ==========
+      function consultarInventario() {
         mostrarLoading();
-        window.location.replace('inventario_caja.html');
-    }
+        window.location.replace("inventario_caja.html");
+      }
 
-    // ========== CERRAR JORNADA ==========
-    function mostrarModalCerrarJornada() {
+      // ========== CERRAR JORNADA ==========
+      function mostrarModalCerrarJornada() {
         mostrarModalConfirmacion(
-            'Cerrar Jornada',
-            '¿Está seguro que desea cerrar la jornada? Se cerrará su sesión.',
-            function () {
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.replace('PAG.html');
-            }
+          "Cerrar Jornada",
+          "¿Está seguro que desea cerrar la jornada? Se cerrará su sesión.",
+          function () {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.replace("PAG.html");
+          },
         );
-    }
+      }
 
-    // ========== RELOJ Y FECHA ==========
-    function actualizarReloj() {
+      // ========== RELOJ Y FECHA ==========
+      function actualizarReloj() {
         const ahora = new Date();
-        const opcFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        const fecha = ahora.toLocaleDateString('es-ES', opcFecha);
-        const hora = ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+        const opcFecha = {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        };
+        const fecha = ahora.toLocaleDateString("es-ES", opcFecha);
+        const hora = ahora.toLocaleTimeString("es-ES", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        });
 
-        const dateEl = document.getElementById('topBarDate');
-        const timeEl = document.getElementById('topBarTime');
-        if (dateEl) dateEl.innerHTML = `<i class="fas fa-calendar-alt"></i> ${fecha}`;
+        const dateEl = document.getElementById("topBarDate");
+        const timeEl = document.getElementById("topBarTime");
+        if (dateEl)
+          dateEl.innerHTML = `<i class="fas fa-calendar-alt"></i> ${fecha}`;
         if (timeEl) timeEl.innerHTML = `<i class="fas fa-clock"></i> ${hora}`;
-    }
+      }
 
-    // ========== INIT ==========
-    window.onload = function () {
+      history.scrollRestoration = "manual";
+
+      // ========== INIT ==========
+      window.onload = function () {
+        window.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: "instant",
+        });
+
         cargarInfoCajero();
         actualizarReloj();
         setInterval(actualizarReloj, 1000);
         ocultarLoading();
-    };
+      };
 
-    window.onclick = function (event) {
-        const modal = document.getElementById('modalMensaje');
+      window.onclick = function (event) {
+        const modal = document.getElementById("modalMensaje");
         if (event.target === modal) cerrarModal();
-    };
-</script>
-</body>
+      };
+    </script>
+  </body>
 </html>

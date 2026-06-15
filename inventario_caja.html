@@ -1,292 +1,364 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>Inventario - Caja</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="inventario_caja.css">
-</head>
-<body>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="inventario_caja.css" />
+  </head>
+  <body>
+    <div class="header-marcas">
+      <div class="header-marcas-scroll">
+        <div class="header-track">
+          <img src="imagenes/marcas/logo1.png" />
+          <img src="imagenes/marcas/logo2.png" />
+          <img src="imagenes/marcas/logo3.png" />
+          <img src="imagenes/marcas/logo4.png" />
+          <img src="imagenes/marcas/logo5.png" />
+          <img src="imagenes/marcas/logo6.png" />
 
-<div class="container">
-    <div class="top-nav">
-        <h2>📦 Inventario - Caja</h2>
-        <button class="btn-volver-top" onclick="volverMenuCaja()">← Volver a Caja</button>
+          <img src="imagenes/marcas/logo1.png" />
+          <img src="imagenes/marcas/logo2.png" />
+          <img src="imagenes/marcas/logo3.png" />
+          <img src="imagenes/marcas/logo4.png" />
+          <img src="imagenes/marcas/logo5.png" />
+          <img src="imagenes/marcas/logo6.png" />
+        </div>
+      </div>
     </div>
 
-    <div class="filtros">
-        <input type="text" id="searchInput" placeholder="🔍 Buscar por nombre o marca..." onkeyup="filtrarTabla()">
+    <div class="container">
+      <div class="top-nav">
+        <h2>📦 Inventario - Caja</h2>
+        <button class="btn-volver-top" onclick="volverMenuCaja()">
+          🏠 Volver a Caja
+        </button>
+      </div>
+
+      <div class="filtros">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="🔍 Buscar por nombre o marca..."
+          onkeyup="filtrarTabla()"
+        />
         <select id="categoriaFilter" onchange="filtrarTabla()">
-            <option value="">Todas las categorías</option>
+          <option value="">Todas las categorías</option>
         </select>
         <select id="estadoFilter" onchange="filtrarTabla()">
-            <option value="">Todos los estados</option>
-            <option value="Disponible">Disponible</option>
-            <option value="Agotado">Agotado</option>
-            <option value="Descontinuado">Descontinuado</option>
+          <option value="">Todos los estados</option>
+          <option value="Disponible">Disponible</option>
+          <option value="Agotado">Agotado</option>
+          <option value="Descontinuado">Descontinuado</option>
         </select>
         <select id="proveedorFilter" onchange="filtrarTabla()">
-            <option value="">Todos los proveedores</option>
+          <option value="">Todos los proveedores</option>
         </select>
-    </div>
+      </div>
 
-    <div class="table-container">
+      <div class="table-container">
         <table>
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Marca</th>
-                    <th>Categoría</th>
-                    <th>Precio Venta</th>
-                    <th>Stock</th>
-                    <th>Proveedor</th>
-                    <th>Estado</th>
-                </tr>
-            </thead>
-            <tbody id="cuerpoTabla">
-                <tr><td colspan="7" class="loading">Cargando inventario...<\/td></tr>
-            </tbody>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Marca</th>
+              <th>Categoría</th>
+              <th>Precio Venta</th>
+              <th>Stock</th>
+              <th>Proveedor</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="cuerpoTabla">
+            <tr>
+              <td colspan="7" class="loading">Cargando inventario...<\/td></td>
+            </tr>
+          </tbody>
         </table>
+      </div>
     </div>
-</div>
 
-<script>
-    // ========== PROTECCIÓN DE NAVEGACIÓN ==========
-    (function bloquearBotonAtras() {
-        const paginaMenuCaja = 'menu_caja.html';
-        const paginaLogin = 'PAG.html';
-        
-        const token = localStorage.getItem('token');
-        const trabajadorStr = localStorage.getItem('trabajador');
-        
-        if (!token || !trabajadorStr || trabajadorStr === 'null' || trabajadorStr === 'undefined') {
+    <script>
+      // ========== PROTECCIÓN DE NAVEGACIÓN ==========
+      (function bloquearBotonAtras() {
+        const paginaMenuCaja = "menu_caja.html";
+        const paginaLogin = "PAG.html";
+
+        const token = localStorage.getItem("token");
+        const trabajadorStr = localStorage.getItem("trabajador");
+
+        if (
+          !token ||
+          !trabajadorStr ||
+          trabajadorStr === "null" ||
+          trabajadorStr === "undefined"
+        ) {
+          window.location.replace(paginaLogin);
+          return;
+        }
+
+        fetch("/api/verificar-sesion-trabajador", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (!data.autenticado) {
+              localStorage.clear();
+              sessionStorage.clear();
+              window.location.replace(paginaLogin);
+            }
+          })
+          .catch((error) => {
+            console.error("Error verificando sesión:", error);
+            window.location.replace(paginaLogin);
+          });
+
+        for (let i = 0; i < 100; i++) {
+          history.pushState(null, null, location.href);
+        }
+
+        window.addEventListener("popstate", function () {
+          if (
+            !localStorage.getItem("token") ||
+            !localStorage.getItem("trabajador")
+          ) {
             window.location.replace(paginaLogin);
             return;
-        }
-        
-        fetch('/api/verificar-sesion-trabajador', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.autenticado) {
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.replace(paginaLogin);
-            }
-        })
-        .catch(error => {
-            console.error('Error verificando sesión:', error);
-            window.location.replace(paginaLogin);
-        });
-        
-        for (let i = 0; i < 100; i++) {
+          }
+          history.go(1);
+          setTimeout(() => {
             history.pushState(null, null, location.href);
-        }
-        
-        window.addEventListener('popstate', function() {
-            if (!localStorage.getItem('token') || !localStorage.getItem('trabajador')) {
-                window.location.replace(paginaLogin);
-                return;
-            }
-            history.go(1);
-            setTimeout(() => {
-                history.pushState(null, null, location.href);
-            }, 10);
+          }, 10);
         });
-    })();
-    
-    function volverMenuCaja() {
-        window.location.replace('menu_caja.html');
-    }
-    
-    let inventarioData = [];
-    let categoriasLista = [];
-    let proveedoresLista = [];
+      })();
 
-    async function cargarInventario() {
-        const tbody = document.getElementById('cuerpoTabla');
-        tbody.innerHTML = '<tr><td colspan="7" class="loading">Cargando inventario...<\/td><\/tr>';
-        
+      function volverMenuCaja() {
+        window.location.replace("menu_caja.html");
+      }
+
+      let inventarioData = [];
+      let categoriasLista = [];
+      let proveedoresLista = [];
+
+      async function cargarInventario() {
+        const tbody = document.getElementById("cuerpoTabla");
+        tbody.innerHTML =
+          '<tr><td colspan="7" class="loading">Cargando inventario...<\/td><\/tr>';
+
         try {
-            // Cargar productos
-            const resProd = await fetch('/api/productos');
-            if (!resProd.ok) throw new Error('Error al cargar productos');
-            let productos = await resProd.json();
-            
-            // Cargar categorías y proveedores
-            await Promise.all([cargarCategorias(), cargarProveedores()]);
-            
-            // Para cada producto, obtener su proveedor
-            const productosConTodo = await Promise.all(productos.map(async (p) => {
-                try {
-                    const resAbast = await fetch(`/api/producto-proveedor/${p.Id_Producto}`);
-                    const abast = await resAbast.json();
-                    p.Proveedor = abast.Nombre_Proveedor || 'Sin asignar';
-                } catch (e) {
-                    p.Proveedor = 'Sin asignar';
+          // Cargar productos
+          const resProd = await fetch("/api/productos");
+          if (!resProd.ok) throw new Error("Error al cargar productos");
+          let productos = await resProd.json();
+
+          // Cargar categorías y proveedores
+          await Promise.all([cargarCategorias(), cargarProveedores()]);
+
+          // Para cada producto, obtener su proveedor
+          const productosConTodo = await Promise.all(
+            productos.map(async (p) => {
+              try {
+                const resAbast = await fetch(
+                  `/api/producto-proveedor/${p.Id_Producto}`,
+                );
+                const abast = await resAbast.json();
+                p.Proveedor = abast.Nombre_Proveedor || "Sin asignar";
+              } catch (e) {
+                p.Proveedor = "Sin asignar";
+              }
+              // Asegurar que el stock sea un número válido
+              p.Stock = p.Stock !== undefined && p.Stock !== null ? p.Stock : 0;
+              // Normalizar estado
+              if (
+                !p.Nombre_Estado ||
+                p.Nombre_Estado === "Disponible1" ||
+                p.Nombre_Estado === "Disponible2"
+              ) {
+                if (p.Stock === 0) {
+                  p.Nombre_Estado = "Agotado";
+                } else if (p.Stock > 0) {
+                  p.Nombre_Estado = "Disponible";
+                } else {
+                  p.Nombre_Estado = p.Nombre_Estado || "Disponible";
                 }
-                // Asegurar que el stock sea un número válido
-                p.Stock = p.Stock !== undefined && p.Stock !== null ? p.Stock : 0;
-                // Normalizar estado
-                if (!p.Nombre_Estado || p.Nombre_Estado === 'Disponible1' || p.Nombre_Estado === 'Disponible2') {
-                    if (p.Stock === 0) {
-                        p.Nombre_Estado = 'Agotado';
-                    } else if (p.Stock > 0) {
-                        p.Nombre_Estado = 'Disponible';
-                    } else {
-                        p.Nombre_Estado = p.Nombre_Estado || 'Disponible';
-                    }
-                }
-                return p;
-            }));
-            
-            inventarioData = productosConTodo;
-            actualizarFiltroProveedores();
-            mostrarTabla();
-        } catch (error) {
-            console.error('Error:', error);
-            tbody.innerHTML = '<tr><td colspan="7" class="loading">❌ Error al cargar los datos. Verifica que el servidor esté corriendo.<\/td><\/tr>';
-        }
-    }
+              }
+              return p;
+            }),
+          );
 
-    async function cargarCategorias() {
+          inventarioData = productosConTodo;
+          actualizarFiltroProveedores();
+          mostrarTabla();
+        } catch (error) {
+          console.error("Error:", error);
+          tbody.innerHTML =
+            '<tr><td colspan="7" class="loading">❌ Error al cargar los datos. Verifica que el servidor esté corriendo.<\/td><\/tr>';
+        }
+      }
+
+      async function cargarCategorias() {
         try {
-            const res = await fetch('/api/categorias');
-            if (res.ok) {
-                categoriasLista = await res.json();
-                actualizarSelectCategorias();
-            }
+          const res = await fetch("/api/categorias");
+          if (res.ok) {
+            categoriasLista = await res.json();
+            actualizarSelectCategorias();
+          }
         } catch (error) {
-            console.error('Error cargando categorías:', error);
+          console.error("Error cargando categorías:", error);
         }
-    }
+      }
 
-    async function cargarProveedores() {
+      async function cargarProveedores() {
         try {
-            const res = await fetch('/api/proveedores');
-            if (res.ok) {
-                proveedoresLista = await res.json();
-            }
+          const res = await fetch("/api/proveedores");
+          if (res.ok) {
+            proveedoresLista = await res.json();
+          }
         } catch (error) {
-            console.error('Error cargando proveedores:', error);
+          console.error("Error cargando proveedores:", error);
         }
-    }
+      }
 
-    function actualizarSelectCategorias() {
-        const filterSelect = document.getElementById('categoriaFilter');
+      function actualizarSelectCategorias() {
+        const filterSelect = document.getElementById("categoriaFilter");
         const valorActual = filterSelect.value;
-        
-        filterSelect.innerHTML = '<option value="">Todas las categorías</option>';
-        
-        categoriasLista.forEach(c => {
-            if (c.Nombre) {
-                const opt = new Option(c.Nombre, c.Nombre);
-                filterSelect.add(opt);
-            }
-        });
-        
-        if (valorActual && categoriasLista.some(c => c.Nombre === valorActual)) {
-            filterSelect.value = valorActual;
-        }
-    }
 
-    function actualizarFiltroProveedores() {
-        const filterSelect = document.getElementById('proveedorFilter');
-        const proveedoresUnicos = [...new Set(inventarioData.map(p => p.Proveedor).filter(p => p && p !== 'Sin asignar'))];
-        
-        filterSelect.innerHTML = '<option value="">Todos los proveedores</option>';
-        
-        proveedoresUnicos.forEach(prov => {
-            const opt = new Option(prov, prov);
+        filterSelect.innerHTML =
+          '<option value="">Todas las categorías</option>';
+
+        categoriasLista.forEach((c) => {
+          if (c.Nombre) {
+            const opt = new Option(c.Nombre, c.Nombre);
             filterSelect.add(opt);
+          }
         });
-    }
 
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
+        if (
+          valorActual &&
+          categoriasLista.some((c) => c.Nombre === valorActual)
+        ) {
+          filterSelect.value = valorActual;
+        }
+      }
+
+      function actualizarFiltroProveedores() {
+        const filterSelect = document.getElementById("proveedorFilter");
+        const proveedoresUnicos = [
+          ...new Set(
+            inventarioData
+              .map((p) => p.Proveedor)
+              .filter((p) => p && p !== "Sin asignar"),
+          ),
+        ];
+
+        filterSelect.innerHTML =
+          '<option value="">Todos los proveedores</option>';
+
+        proveedoresUnicos.forEach((prov) => {
+          const opt = new Option(prov, prov);
+          filterSelect.add(opt);
         });
-    }
+      }
 
-    function mostrarTabla() {
-        const tbody = document.getElementById('cuerpoTabla');
-        const search = document.getElementById('searchInput').value.toLowerCase();
-        const catF = document.getElementById('categoriaFilter').value;
-        const estF = document.getElementById('estadoFilter').value;
-        const provF = document.getElementById('proveedorFilter').value;
+      function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function (m) {
+          if (m === "&") return "&amp;";
+          if (m === "<") return "&lt;";
+          if (m === ">") return "&gt;";
+          return m;
+        });
+      }
 
-        let filtrados = inventarioData.filter(p => {
-            const matchTxt = (p.Nombre && p.Nombre.toLowerCase().includes(search)) || 
-                           (p.Marca && p.Marca.toLowerCase().includes(search));
-            const matchCat = !catF || p.Nombre_Categoria === catF;
-            const matchEst = !estF || p.Nombre_Estado === estF;
-            const matchProv = !provF || p.Proveedor === provF;
-            return matchTxt && matchCat && matchEst && matchProv;
+      function mostrarTabla() {
+        const tbody = document.getElementById("cuerpoTabla");
+        const search = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+        const catF = document.getElementById("categoriaFilter").value;
+        const estF = document.getElementById("estadoFilter").value;
+        const provF = document.getElementById("proveedorFilter").value;
+
+        let filtrados = inventarioData.filter((p) => {
+          const matchTxt =
+            (p.Nombre && p.Nombre.toLowerCase().includes(search)) ||
+            (p.Marca && p.Marca.toLowerCase().includes(search));
+          const matchCat = !catF || p.Nombre_Categoria === catF;
+          const matchEst = !estF || p.Nombre_Estado === estF;
+          const matchProv = !provF || p.Proveedor === provF;
+          return matchTxt && matchCat && matchEst && matchProv;
         });
 
         // Ordenar: primero los que tienen stock > 0, luego los agotados
         filtrados.sort((a, b) => {
-            if (a.Stock > 0 && b.Stock === 0) return -1;
-            if (a.Stock === 0 && b.Stock > 0) return 1;
-            return 0;
+          if (a.Stock > 0 && b.Stock === 0) return -1;
+          if (a.Stock === 0 && b.Stock > 0) return 1;
+          return 0;
         });
 
         if (filtrados.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="loading">📭 No hay productos que coincidan con los filtros<\/td><\/tr>';
-            return;
+          tbody.innerHTML =
+            '<tr><td colspan="7" class="loading">📭 No hay productos que coincidan con los filtros<\/td><\/tr>';
+          return;
         }
 
-        tbody.innerHTML = filtrados.map(p => {
-            let stockClass = '';
+        tbody.innerHTML = filtrados
+          .map((p) => {
+            let stockClass = "";
             let stockText = `${p.Stock} unidades`;
             if (p.Stock === 0) {
-                stockClass = 'stock-cero';
-                stockText = 'Agotado';
+              stockClass = "stock-cero";
+              stockText = "Agotado";
             } else if (p.Stock <= 5) {
-                stockClass = 'stock-bajo';
+              stockClass = "stock-bajo";
             } else {
-                stockClass = 'stock-normal';
+              stockClass = "stock-normal";
             }
-            
-            let estadoClass = '';
-            if (p.Nombre_Estado === 'Disponible') estadoClass = 'status-Disponible';
-            else if (p.Nombre_Estado === 'Agotado') estadoClass = 'status-Agotado';
-            else if (p.Nombre_Estado === 'Descontinuado') estadoClass = 'status-Descontinuado';
-            
+
+            let estadoClass = "";
+            if (p.Nombre_Estado === "Disponible")
+              estadoClass = "status-Disponible";
+            else if (p.Nombre_Estado === "Agotado")
+              estadoClass = "status-Agotado";
+            else if (p.Nombre_Estado === "Descontinuado")
+              estadoClass = "status-Descontinuado";
+
             return `
             <tr>
                 <td><strong>${escapeHtml(p.Nombre)}</strong></td>
-                <td>${escapeHtml(p.Marca || 'N/A')}</td>
-                <td>${escapeHtml(p.Nombre_Categoria || 'Sin categoría')}</td>
+                <td>${escapeHtml(p.Marca || "N/A")}</td>
+                <td>${escapeHtml(p.Nombre_Categoria || "Sin categoría")}</td>
                 <td>C$ ${parseFloat(p.Precio).toFixed(2)}</span>
                 <td class="${stockClass}">${stockText}</span>
                 <td>${escapeHtml(p.Proveedor)}</span>
-                <td><span class="status-badge ${estadoClass}">${p.Nombre_Estado || 'Disponible'}</span></span>
+                <td><span class="status-badge ${estadoClass}">${p.Nombre_Estado || "Disponible"}</span></span>
             </tr>
-        `}).join('');
-    }
+        `;
+          })
+          .join("");
+      }
 
-    function filtrarTabla() { 
-        mostrarTabla(); 
-    }
+      function filtrarTabla() {
+        mostrarTabla();
+      }
 
-    window.onload = () => {
+      window.onload = () => {
         cargarInventario();
-    };
-</script>
-
-</body>
+      };
+    </script>
+  </body>
 </html>

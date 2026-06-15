@@ -1,361 +1,252 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Evaluar Trabajador - Tienda Chepita</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="evaluar_trabajador.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Playfair+Display:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      .et-main-title h1 {
+        font-family: "Playfair Display", serif;
+        background: linear-gradient(135deg, #caa0d8, #b57acb);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 32px;
+      }
 
+      .et-filter-btn,
+      .et-clear-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 42px;
+      }
+
+      .et-filter-btn {
+        background: linear-gradient(135deg, #e7b6d4, #caa0d8);
+        color: white;
+      }
+      .et-clear-btn {
+        background: #ef4444;
+        color: white;
+      }
+
+      .et-loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 60px;
+        gap: 10px;
+        color: #64748b;
+      }
+
+      .et-footer {
+        text-align: center;
+        padding: 20px 30px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+      }
+
+      @media (max-width: 768px) {
         body {
-            font-family: 'Poppins', sans-serif;
-            background: #f3f4f6;
-            min-height: 100vh;
-            padding-top: 110px;
+          padding-top: 80px;
         }
-
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="10" cy="10" r="2" fill="rgba(255,255,255,0.05)"/><circle cx="90" cy="20" r="3" fill="rgba(255,255,255,0.05)"/><circle cx="50" cy="85" r="4" fill="rgba(255,255,255,0.05)"/></svg>');
-            background-repeat: repeat;
-            pointer-events: none;
-        }
-
-        .top-bar {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            height: 100px;
-            background: linear-gradient(90deg, #e7b6d4, #caa0d8);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-            z-index: 1000;
-        }
-
-        .brands-container {
-            width: 80%;
-            overflow: hidden;
-        }
-
-        .brands-track {
-            display: flex;
-            gap: 60px;
-            animation: moverMarcas 25s linear infinite;
-        }
-
-        .brands-track img {
-            height: 60px;
-            width: auto;
-            object-fit: contain;
-        }
-
-        @keyframes moverMarcas {
-            from { transform: translateX(0); }
-            to { transform: translateX(-50%); }
-        }
-
-        .clock-box {
-            color: white;
-            font-weight: bold;
-        }
-
-        .et-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.97);
-            border-radius: 32px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
-            overflow: hidden;
-        }
-
-        .et-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 30px;
-            background: linear-gradient(135deg, #e7b6d4, #caa0d8);
-            color: white;
-        }
-
-        .et-badge {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.15);
-            padding: 8px 20px;
-            border-radius: 40px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .et-badge i {
-            font-size: 16px;
-        }
-
-        .et-header-date {
-            font-size: 13px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 8px 16px;
-            border-radius: 40px;
-        }
-
-        .et-main-title {
-            text-align: center;
-            padding: 40px 30px 20px;
-        }
-
-        .et-main-title h1 {
-            font-family: 'Playfair Display', serif;
-            background: linear-gradient(135deg, #caa0d8, #b57acb);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-size: 32px;
-        }
-
         .et-filters {
-            display: flex;
-            gap: 15px;
-            padding: 20px 30px;
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-            flex-wrap: wrap;
-            align-items: flex-end;
+          flex-direction: column;
         }
-
-        .et-filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .et-filter-group label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #64748b;
-        }
-
         .et-filter-group select {
-            padding: 10px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 14px;
-            background: white;
-            cursor: pointer;
-            min-width: 150px;
+          width: 100%;
         }
-
-        .et-filter-btn, .et-clear-btn, .et-back-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            height: 42px;
+        .et-filter-btn,
+        .et-clear-btn,
+        .et-back-btn {
+          width: 100%;
+          justify-content: center;
         }
-
-        .et-filter-btn {
-            background: linear-gradient(135deg, #e7b6d4, #caa0d8);
-            color: white;
-        }
-        .et-clear-btn { background: #ef4444; color: white; }
-        .et-back-btn { background: #64748b; color: white; }
-
         .et-table-container {
-            padding: 0 30px 30px;
+          overflow-x: auto;
         }
-
         .et-table {
-            width: 100%;
-            border-collapse: collapse;
+          min-width: 650px;
         }
-
-        .et-table th {
-            background: #f1f5f9;
-            padding: 14px 16px;
-            text-align: left;
-            font-weight: 700;
-            color: #1e293b;
-            border-bottom: 2px solid #e2e8f0;
-        }
-
-        .et-table td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #e2e8f0;
-            color: #334155;
-        }
-
-        .et-table tbody tr:hover {
-            background: #f8fafc;
-        }
-
-        .et-puntaje {
-            font-weight: 700;
-            color: #A63C89;
-            font-size: 16px;
-        }
-
-        .et-loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 60px;
-            gap: 10px;
-            color: #64748b;
-        }
-
-        .et-footer {
-            text-align: center;
-            padding: 20px 30px;
-            background: #f8fafc;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        @media (max-width: 768px) {
-            body { padding-top: 80px; }
-            .top-bar { height: 70px; }
-            .brands-track img { height: 40px; }
-            .et-filters { flex-direction: column; }
-            .et-filter-group select { width: 100%; }
-            .et-filter-btn, .et-clear-btn, .et-back-btn { width: 100%; justify-content: center; }
-            .et-table-container { overflow-x: auto; }
-            .et-table { min-width: 650px; }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
+    <div class="header-marcas">
+      <div class="header-marcas-scroll">
+        <div class="header-track">
+          <img src="imagenes/marcas/logo1.png" />
+          <img src="imagenes/marcas/logo2.png" />
+          <img src="imagenes/marcas/logo3.png" />
+          <img src="imagenes/marcas/logo4.png" />
+          <img src="imagenes/marcas/logo5.png" />
+          <img src="imagenes/marcas/logo6.png" />
 
-<header class="top-bar">
-    <div class="brands-container">
-        <div class="brands-track">
-            <img src="imagenes/marcas/logo1.png">
-            <img src="imagenes/marcas/logo2.png">
-            <img src="imagenes/marcas/logo3.png">
-            <img src="imagenes/marcas/logo4.png">
-            <img src="imagenes/marcas/logo5.png">
-            <img src="imagenes/marcas/logo6.png">
-            <img src="imagenes/marcas/logo1.png">
-            <img src="imagenes/marcas/logo2.png">
-            <img src="imagenes/marcas/logo3.png">
-            <img src="imagenes/marcas/logo4.png">
-            <img src="imagenes/marcas/logo5.png">
-            <img src="imagenes/marcas/logo6.png">
+          <img src="imagenes/marcas/logo1.png" />
+          <img src="imagenes/marcas/logo2.png" />
+          <img src="imagenes/marcas/logo3.png" />
+          <img src="imagenes/marcas/logo4.png" />
+          <img src="imagenes/marcas/logo5.png" />
+          <img src="imagenes/marcas/logo6.png" />
         </div>
-    </div>
-    <div class="clock-box" id="currentDate"></div>
-</header>
-
-<div class="et-container">
-    <div class="et-header">
-        <div class="et-badge"><i class="fas fa-star"></i><span>Evaluación de Desempeño</span></div>
-        <div class="et-header-date" id="headerDate"></div>
+      </div>
     </div>
 
-    <div class="et-main-title">
-        <h1>EVALUACIÓN DE TRABAJADORES</h1>
-    </div>
+    <div class="et-container">
+      <div class="et-header">
+        <div class="et-header-info">
+          <h2>Evaluación de Desempeño</h2>
+        </div>
 
-    <div class="et-filters">
+        <button
+          class="et-back-btn"
+          onclick="window.location.href = 'menu_admin.html'"
+        >
+          <i class="fas fa-arrow-left"></i> Volver
+        </button>
+      </div>
+
+      <div class="et-filters">
         <div class="et-filter-group">
-            <label><i class="fas fa-calendar"></i> Año</label>
-            <select id="filterYear"><option value="">Todos los años</option></select>
+          <label><i class="fas fa-calendar"></i> Año</label>
+          <select id="filterYear">
+            <option value="">Todos los años</option>
+          </select>
         </div>
         <div class="et-filter-group">
-            <label><i class="fas fa-calendar-alt"></i> Mes</label>
-            <select id="filterMonth">
-                <option value="">Todos los meses</option>
-                <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
-                <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
-                <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
-                <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
-            </select>
+          <label><i class="fas fa-calendar-alt"></i> Mes</label>
+          <select id="filterMonth">
+            <option value="">Todos los meses</option>
+            <option value="1">Enero</option>
+            <option value="2">Febrero</option>
+            <option value="3">Marzo</option>
+            <option value="4">Abril</option>
+            <option value="5">Mayo</option>
+            <option value="6">Junio</option>
+            <option value="7">Julio</option>
+            <option value="8">Agosto</option>
+            <option value="9">Septiembre</option>
+            <option value="10">Octubre</option>
+            <option value="11">Noviembre</option>
+            <option value="12">Diciembre</option>
+          </select>
         </div>
-        <button class="et-filter-btn" onclick="aplicarFiltros()"><i class="fas fa-search"></i> Filtrar</button>
-        <button class="et-clear-btn" onclick="limpiarFiltros()"><i class="fas fa-eraser"></i> Limpiar</button>
-        <button class="et-back-btn" onclick="window.location.href='menu_admin.html'"><i class="fas fa-arrow-left"></i> Volver</button>
+        <button class="et-filter-btn" onclick="aplicarFiltros()">
+          <i class="fas fa-search"></i> Filtrar
+        </button>
+        <button class="et-clear-btn" onclick="limpiarFiltros()">
+          <i class="fas fa-eraser"></i> Limpiar
+        </button>
+      </div>
+
+      <div class="et-table-container">
+        <div class="et-loading" id="loadingMessage">
+          <i class="fas fa-spinner fa-spin"></i> Cargando...
+        </div>
+        <div id="resultadosEvaluacion" style="display: none">
+          <table class="et-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Trabajador</th>
+                <th>Ventas</th>
+                <th>Días Activos</th>
+                <th>Promedio Diario</th>
+                <th>Puntaje Total</th>
+                <th>Premio</th>
+              </tr>
+            </thead>
+            <tbody id="tablaEvaluacion"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="et-footer">
+        <p>
+          <i class="fas fa-chart-simple"></i> Sistema de Evaluación de Desempeño
+          - Versión 1.0
+        </p>
+      </div>
     </div>
 
-    <div class="et-table-container">
-        <div class="et-loading" id="loadingMessage"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
-        <div id="resultadosEvaluacion" style="display: none;">
-            <table class="et-table">
-                <thead><tr><th>ID</th><th>Trabajador</th><th>Ventas</th><th>Días Activos</th><th>Promedio Diario</th><th>Puntaje Total</th><th>Premio</th></tr></thead>
-                <tbody id="tablaEvaluacion"></tbody>
-            </table>
-        </div>
-    </div>
+    <script>
+      function obtenerPremio(puntaje) {
+        if (puntaje >= 50)
+          return { texto: "🏆 C$ 1,000 + Diploma", clase: "premio-oro" };
+        if (puntaje >= 40) return { texto: "💰 C$ 750", clase: "premio-plata" };
+        if (puntaje >= 30)
+          return { texto: "💰 C$ 500", clase: "premio-bronce" };
+        if (puntaje >= 20) return { texto: "💰 C$ 250", clase: "premio-cobre" };
+        if (puntaje >= 10)
+          return { texto: "🎁 Vale C$ 100", clase: "premio-vale" };
+        return { texto: "❌ Sin premio", clase: "premio-nada" };
+      }
 
-    <div class="et-footer"><p><i class="fas fa-chart-simple"></i> Sistema de Evaluación de Desempeño - Versión 1.0</p></div>
-</div>
+      /*  function mostrarFecha() {
+        const fecha = new Date().toLocaleDateString("es-ES", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+        document.getElementById("currentDate").innerHTML =
+          `<i class="fas fa-calendar-alt"></i> ${fecha}`;
+        document.getElementById("headerDate").innerHTML =
+          `<i class="fas fa-calendar-alt"></i> ${fecha}`;
+      }*/
 
-<script>
-    function obtenerPremio(puntaje) {
-        if (puntaje >= 50) return { texto: '🏆 C$ 1,000 + Diploma', clase: 'premio-oro' };
-        if (puntaje >= 40) return { texto: '💰 C$ 750', clase: 'premio-plata' };
-        if (puntaje >= 30) return { texto: '💰 C$ 500', clase: 'premio-bronce' };
-        if (puntaje >= 20) return { texto: '💰 C$ 250', clase: 'premio-cobre' };
-        if (puntaje >= 10) return { texto: '🎁 Vale C$ 100', clase: 'premio-vale' };
-        return { texto: '❌ Sin premio', clase: 'premio-nada' };
-    }
-
-    function mostrarFecha() {
-        const fecha = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        document.getElementById('currentDate').innerHTML = `<i class="fas fa-calendar-alt"></i> ${fecha}`;
-        document.getElementById('headerDate').innerHTML = `<i class="fas fa-calendar-alt"></i> ${fecha}`;
-    }
-
-    function cargarAnios() {
-        const select = document.getElementById('filterYear');
+      function cargarAnios() {
+        const select = document.getElementById("filterYear");
         const añoActual = new Date().getFullYear();
         select.innerHTML = '<option value="">Todos los años</option>';
         for (let i = añoActual; i >= añoActual - 5; i--) {
-            select.innerHTML += `<option value="${i}">${i}</option>`;
+          select.innerHTML += `<option value="${i}">${i}</option>`;
         }
-    }
+      }
 
-    async function cargarEvaluacion(year, month) {
-        const loadingDiv = document.getElementById('loadingMessage');
-        const resultadosDiv = document.getElementById('resultadosEvaluacion');
-        const tablaBody = document.getElementById('tablaEvaluacion');
-        
-        loadingDiv.style.display = 'flex';
-        resultadosDiv.style.display = 'none';
-        
+      async function cargarEvaluacion(year, month) {
+        const loadingDiv = document.getElementById("loadingMessage");
+        const resultadosDiv = document.getElementById("resultadosEvaluacion");
+        const tablaBody = document.getElementById("tablaEvaluacion");
+
+        loadingDiv.style.display = "flex";
+        resultadosDiv.style.display = "none";
+
         try {
-            let url = '/api/puntos-vendedores';
-            const params = [];
-            if (year) params.push(`year=${year}`);
-            if (month) params.push(`month=${month}`);
-            if (params.length > 0) url += `?${params.join('&')}`;
-            
-            const respuesta = await fetch(url);
-            if (!respuesta.ok) throw new Error(`Error HTTP: ${respuesta.status}`);
-            
-            const datos = await respuesta.json();
-            
-            if (!datos.length) {
-                tablaBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;">📭 No hay datos de ventas para el período seleccionado.</td></tr>';
-            } else {
-                tablaBody.innerHTML = '';
-                datos.forEach(trabajador => {
-                    const premio = obtenerPremio(trabajador.puntaje_total);
-                    tablaBody.innerHTML += `
+          let url = "/api/puntos-vendedores";
+          const params = [];
+          if (year) params.push(`year=${year}`);
+          if (month) params.push(`month=${month}`);
+          if (params.length > 0) url += `?${params.join("&")}`;
+
+          const respuesta = await fetch(url);
+          if (!respuesta.ok) throw new Error(`Error HTTP: ${respuesta.status}`);
+
+          const datos = await respuesta.json();
+
+          if (!datos.length) {
+            tablaBody.innerHTML =
+              '<tr><td colspan="7" style="text-align:center;padding:40px;">📭 No hay datos de ventas para el período seleccionado.</td></tr>';
+          } else {
+            tablaBody.innerHTML = "";
+            datos.forEach((trabajador) => {
+              const premio = obtenerPremio(trabajador.puntaje_total);
+              tablaBody.innerHTML += `
                         <tr>
                             <td>${trabajador.id_trabajador}</td>
                             <td><strong>${trabajador.nombre_completo}</strong></td>
@@ -366,49 +257,72 @@
                             <td><span class="${premio.clase}">${premio.texto}</span></td>
                         </tr>
                     `;
-                });
-            }
-            
-            loadingDiv.style.display = 'none';
-            resultadosDiv.style.display = 'block';
+            });
+          }
+
+          loadingDiv.style.display = "none";
+          resultadosDiv.style.display = "block";
         } catch (error) {
-            console.error('Error:', error);
-            loadingDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error al cargar los datos. Verifica que el servidor esté corriendo.';
+          console.error("Error:", error);
+          loadingDiv.innerHTML =
+            '<i class="fas fa-exclamation-triangle"></i> Error al cargar los datos. Verifica que el servidor esté corriendo.';
         }
-    }
+      }
 
-    function aplicarFiltros() {
-        const year = document.getElementById('filterYear').value;
-        const month = document.getElementById('filterMonth').value;
+      function aplicarFiltros() {
+        const year = document.getElementById("filterYear").value;
+        const month = document.getElementById("filterMonth").value;
         cargarEvaluacion(year, month);
-    }
+      }
 
-    function limpiarFiltros() {
-        document.getElementById('filterYear').value = '';
-        document.getElementById('filterMonth').value = '';
-        cargarEvaluacion('', '');
-    }
+      function limpiarFiltros() {
+        document.getElementById("filterYear").value = "";
+        document.getElementById("filterMonth").value = "";
+        cargarEvaluacion("", "");
+      }
 
-    mostrarFecha();
-    cargarAnios();
-    cargarEvaluacion('', '');
-</script>
+      /*mostrarFecha();*/
+      cargarAnios();
+      cargarEvaluacion("", "");
+    </script>
 
-<style>
-    .premio-oro, .premio-plata, .premio-bronce, .premio-cobre, .premio-vale, .premio-nada {
+    <style>
+      .premio-oro,
+      .premio-plata,
+      .premio-bronce,
+      .premio-cobre,
+      .premio-vale,
+      .premio-nada {
         padding: 4px 12px;
         border-radius: 20px;
         font-size: 12px;
         font-weight: bold;
         display: inline-block;
-    }
-    .premio-oro { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; }
-    .premio-plata { background: linear-gradient(135deg, #f0fdf4, #dcfce7); color: #166534; }
-    .premio-bronce { background: linear-gradient(135deg, #fefce8, #fef08a); color: #854d0e; }
-    .premio-cobre { background: linear-gradient(135deg, #fff7ed, #fed7aa); color: #9a3412; }
-    .premio-vale { background: linear-gradient(135deg, #e0f2fe, #bae6fd); color: #0369a1; }
-    .premio-nada { background: #f1f5f9; color: #64748b; }
-</style>
-
-</body>
+      }
+      .premio-oro {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        color: #92400e;
+      }
+      .premio-plata {
+        background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+        color: #166534;
+      }
+      .premio-bronce {
+        background: linear-gradient(135deg, #fefce8, #fef08a);
+        color: #854d0e;
+      }
+      .premio-cobre {
+        background: linear-gradient(135deg, #fff7ed, #fed7aa);
+        color: #9a3412;
+      }
+      .premio-vale {
+        background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+        color: #0369a1;
+      }
+      .premio-nada {
+        background: #f1f5f9;
+        color: #64748b;
+      }
+    </style>
+  </body>
 </html>

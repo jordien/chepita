@@ -1,456 +1,557 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Panel de Administrador - Tienda Chepita</title>
     <!-- METAS ANTI-CACHÉ -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="menu_admin.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Playfair+Display:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="menu_admin.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
     <style>
-        .modal-mensaje {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
+      .modal-mensaje {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(25, 18, 30, 0.55);
+        backdrop-filter: blur(10px);
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        animation: fadeOverlay 0.25s ease;
+      }
 
-        .modal-contenido {
-            background: white;
-            padding: 30px;
-            border-radius: 24px;
-            text-align: center;
-            max-width: 380px;
-            width: 90%;
-            animation: fadeInModal 0.3s ease-out;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+      @keyframes fadeOverlay {
+        from {
+          opacity: 0;
         }
+        to {
+          opacity: 1;
+        }
+      }
 
-        @keyframes fadeInModal {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
+      .modal-contenido {
+        position: relative;
+        width: 92%;
+        max-width: 470px;
 
-        .modal-contenido h3 {
-            font-size: 24px;
-            margin-bottom: 15px;
-            font-weight: 700;
-        }
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(14px);
 
-        .modal-contenido h3.exito {
-            color: #10b981;
-        }
+        border-radius: 28px;
 
-        .modal-contenido h3.error {
-            color: #dc2626;
-        }
+        border: 1px solid rgba(231, 200, 91, 0.45);
 
-        .modal-contenido h3.advertencia {
-            color: #f59e0b;
-        }
+        box-shadow:
+          0 25px 60px rgba(0, 0, 0, 0.18),
+          0 0 0 1px rgba(255, 255, 255, 0.3);
 
-        .modal-contenido p {
-            color: #1e293b;
-            margin-bottom: 25px;
-            font-size: 15px;
-            line-height: 1.5;
-        }
+        padding: 35px 30px 28px;
 
-        .modal-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
+        text-align: center;
 
-        .modal-btn {
-            background: linear-gradient(135deg, #e7b6d4, #caa0d8);
-            color: white;
-            border: none;
-            padding: 10px 28px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
+        animation: modalEntrada 0.35s ease;
+      }
 
-        .modal-btn:hover {
-            background: #7c3aed;
-            transform: translateY(-2px);
+      @keyframes modalEntrada {
+        from {
+          opacity: 0;
+          transform: translateY(25px) scale(0.95);
         }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
 
-        .modal-btn.cancelar {
-            background: #e2e8f0;
-            color: #475569;
-        }
+      .modal-contenido h3 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #6f4b7d;
+        margin-bottom: 12px;
+      }
 
-        .modal-btn.cancelar:hover {
-            background: #cbd5e1;
-            transform: translateY(-2px);
-        }
+      .modal-contenido p {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #64748b;
+        margin-bottom: 28px;
+      }
+
+      .modal-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+      }
+
+      .modal-contenido::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+
+        border-radius: 28px;
+        padding: 2px;
+
+        background: linear-gradient(135deg, #fffdf0, #ffe89a, #d9ae33, #fff7bf);
+
+        -webkit-mask:
+          linear-gradient(#fff 0 0) content-box,
+          linear-gradient(#fff 0 0);
+
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+
+        pointer-events: none;
+      }
+
+      .modal-icon {
+        width: 78px;
+        height: 78px;
+
+        margin: 0 auto 18px;
+
+        border-radius: 50%;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background: linear-gradient(135deg, #fff4d6, #ffe89a);
+
+        box-shadow:
+          0 10px 25px rgba(231, 200, 91, 0.25),
+          0 0 0 8px rgba(255, 232, 154, 0.18);
+      }
+
+      .modal-icon i {
+        font-size: 34px;
+        color: #d97706;
+      }
+
+      .modal-btn {
+        border: none;
+        border-radius: 50px;
+        padding: 12px 26px;
+
+        font-size: 14px;
+        font-weight: 600;
+
+        cursor: pointer;
+
+        transition: 0.25s ease;
+      }
+
+      .modal-btn:hover {
+        transform: translateY(-2px);
+      }
+
+      .modal-btn.cancelar {
+        background: #f3e8ff;
+        color: #b57acb;
+      }
+
+      .modal-btn.confirmar {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+
+        color: white;
+
+        box-shadow: 0 8px 20px rgba(220, 38, 38, 0.25);
+      }
+
+      .modal-btn.confirmar:hover {
+        box-shadow: 0 12px 25px rgba(220, 38, 38, 0.35);
+      }
     </style>
-</head>
-<body>
-
-<header class="top-bar">
-    <div class="brands-container">
-        <div class="brands-track">
-            <img src="imagenes/marcas/logo1.png">
-            <img src="imagenes/marcas/logo2.png">
-            <img src="imagenes/marcas/logo3.png">
-            <img src="imagenes/marcas/logo4.png">
-            <img src="imagenes/marcas/logo5.png">
-            <img src="imagenes/marcas/logo6.png">
-            <img src="imagenes/marcas/logo1.png">
-            <img src="imagenes/marcas/logo2.png">
-            <img src="imagenes/marcas/logo3.png">
-            <img src="imagenes/marcas/logo4.png">
-            <img src="imagenes/marcas/logo5.png">
-            <img src="imagenes/marcas/logo6.png">
-        </div>
-    </div>
-    <div class="clock-box" id="currentDate"></div>
-</header>
-
+  </head>
+  <body>
     <div class="admin-container">
-        <div class="admin-header">
-            <div class="admin-badge">
-                <i class="fas fa-user-shield"></i>
-                <span>Administrador</span>
-            </div>
-            <div class="header-date" id="headerDate"></div>
+      <div class="admin-header">
+        <div class="admin-badge">
+          <i class="fas fa-user-shield"></i>
+          <span>Administrador</span>
         </div>
 
-        <div class="main-title">
-            <h1>TIENDA CHEPITA</h1>
-            <p class="subtitle">Sistema de Gestion Administrativa</p>
+        <div class="main-title-inline">
+          <h1>TIENDA CHEPITA</h1>
+          <p class="subtitle">Panel Administrativo</p>
         </div>
 
-        <div class="welcome-card">
-            <div class="welcome-icon">
-                <i class="fas fa-store"></i>
+        <div class="welcome-card-header">
+          <div class="welcome-icon-small">
+            <i class="fas fa-user"></i>
+          </div>
+
+          <div class="welcome-text">
+            <h3 id="bienvenidaAdmin">Cargando...</h3>
+
+            <p>Bienvenido al sistema</p>
+
+            <div class="datetime-row">
+              <div class="clock-box" id="topBarDate"></div>
+              <div class="clock-box" id="topBarTime"></div>
             </div>
-            <div class="welcome-text">
-                <h3 id="bienvenidaAdmin">Bienvenido, Administrador!</h3>
-                <p>Seleccione una opcion para gestionar el sistema</p>
-            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modules-grid">
+        <div class="module-card" onclick="location.href = 'inventario.html'">
+          <div class="module-icon">
+            <i class="fas fa-boxes"></i>
+          </div>
+          <div class="module-info">
+            <h3>Inventario</h3>
+            <p>Gestion de productos y stock</p>
+          </div>
+          <div class="module-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
         </div>
 
-        <div class="modules-grid">
-            <div class="module-card" onclick="location.href='inventario.html'">
-                <div class="module-icon">
-                    <i class="fas fa-boxes"></i>
-                </div>
-                <div class="module-info">
-                    <h3>Inventario</h3>
-                    <p>Gestion de productos y stock</p>
-                </div>
-                <div class="module-arrow">
-                    <i class="fas fa-arrow-right"></i>
-                </div>
-            </div>
-
-            <div class="module-card" onclick="location.href='proveedor.html'">
-                <div class="module-icon">
-                    <i class="fas fa-handshake"></i>
-                </div>
-                <div class="module-info">
-                    <h3>Proveedores</h3>
-                    <p>Gestion de proveedores</p>
-                </div>
-                <div class="module-arrow">
-                    <i class="fas fa-arrow-right"></i>
-                </div>
-            </div>
-
-            <div class="module-card" onclick="location.href='historial.html'">
-                <div class="module-icon">
-                    <i class="fas fa-history"></i>
-                </div>
-                <div class="module-info">
-                    <h3>Historial de Ventas</h3>
-                    <p>Consulta de transacciones</p>
-                </div>
-                <div class="module-arrow">
-                    <i class="fas fa-arrow-right"></i>
-                </div>
-            </div>
-
-            <div class="module-card" onclick="location.href='evaluar_trabajador.html'">
-                <div class="module-icon">
-                    <i class="fas fa-star"></i>
-                </div>
-                <div class="module-info">
-                    <h3>Evaluar Trabajador</h3>
-                    <p>Evaluaciones de desempeno</p>
-                </div>
-                <div class="module-arrow">
-                    <i class="fas fa-arrow-right"></i>
-                </div>
-            </div>
-
-            <div class="module-card" onclick="location.href='personal.html'">
-                <div class="module-icon">
-                    <i class="fas fa-user-plus"></i>
-                </div>
-                <div class="module-info">
-                    <h3>Gestion de Personal</h3>
-                    <p>Registro y gestion de empleados</p>
-                </div>
-                <div class="module-arrow">
-                    <i class="fas fa-arrow-right"></i>
-                </div>
-            </div>
-
-            <!-- NUEVA OPCION: FINANZAS / ESTADO DE RESULTADOS -->
-            <div class="module-card" onclick="location.href='finanza.html'">
-                <div class="module-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="module-info">
-                    <h3>Finanzas</h3>
-                    <p>Estado de Resultados - Ingresos y Egresos</p>
-                </div>
-                <div class="module-arrow">
-                    <i class="fas fa-arrow-right"></i>
-                </div>
-            </div>
+        <div class="module-card" onclick="location.href = 'proveedor.html'">
+          <div class="module-icon">
+            <i class="fas fa-handshake"></i>
+          </div>
+          <div class="module-info">
+            <h3>Proveedores</h3>
+            <p>Gestion de proveedores</p>
+          </div>
+          <div class="module-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
         </div>
 
-        <div class="logout-section">
-            <button class="btn-logout" onclick="mostrarModalCerrarSesion()">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Cerrar Sesion</span>
-            </button>
+        <div class="module-card" onclick="location.href = 'historial.html'">
+          <div class="module-icon">
+            <i class="fas fa-history"></i>
+          </div>
+          <div class="module-info">
+            <h3>Historial de Ventas</h3>
+            <p>Consulta de transacciones</p>
+          </div>
+          <div class="module-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
         </div>
 
-        <div class="admin-footer">
-            <p><i class="fas fa-database"></i> Sistema de Gestion Comercial - Version 3.0</p>
-            <p><i class="fas fa-copyright"></i> 2025 Tienda Chepita - Todos los derechos reservados</p>
+        <div
+          class="module-card"
+          onclick="location.href = 'evaluar_trabajador.html'"
+        >
+          <div class="module-icon">
+            <i class="fas fa-star"></i>
+          </div>
+          <div class="module-info">
+            <h3>Evaluar Trabajador</h3>
+            <p>Evaluaciones de desempeno</p>
+          </div>
+          <div class="module-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
         </div>
+
+        <div class="module-card" onclick="location.href = 'personal.html'">
+          <div class="module-icon">
+            <i class="fas fa-user-plus"></i>
+          </div>
+          <div class="module-info">
+            <h3>Gestion de Personal</h3>
+            <p>Registro y gestion de empleados</p>
+          </div>
+          <div class="module-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <!-- NUEVA OPCION: FINANZAS / ESTADO DE RESULTADOS -->
+        <div class="module-card" onclick="location.href = 'finanza.html'">
+          <div class="module-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div class="module-info">
+            <h3>Finanzas</h3>
+            <p>Estado de Resultados - Ingresos y Egresos</p>
+          </div>
+          <div class="module-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="logout-section">
+        <button class="btn-logout" onclick="mostrarModalCerrarSesion()">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Cerrar Sesion</span>
+        </button>
+      </div>
+
+      <div class="admin-footer">
+        <p>
+          <i class="fas fa-copyright"></i> 2026 Tienda Chepita - Todos los
+          derechos reservados
+        </p>
+      </div>
     </div>
 
     <div id="modalMensaje" class="modal-mensaje">
-        <div class="modal-contenido">
-            <h3 id="modalTitulo"></h3>
-            <p id="modalTexto"></p>
-            <div class="modal-buttons" id="modalBotones">
-                <button class="modal-btn" onclick="cerrarModal()">Aceptar</button>
-            </div>
+      <div class="modal-contenido">
+        <div class="modal-icon">
+          <i class="fas fa-exclamation-triangle"></i>
         </div>
+
+        <h3 id="modalTitulo"></h3>
+        <p id="modalTexto"></p>
+
+        <div class="modal-buttons" id="modalBotones">
+          <button class="modal-btn" onclick="cerrarModal()">Aceptar</button>
+        </div>
+      </div>
     </div>
 
     <script>
-        let accionConfirmar = null;
+      let accionConfirmar = null;
 
-        // ========== VERIFICACION DE SESION CON TOKEN ==========
-        (function verificarSesionAlInicio() {
-            const token = localStorage.getItem('token');
-            const tipoUsuario = localStorage.getItem('tipoUsuario');
-            
-            // Si no hay token o no es admin, redirigir al login
-            if (!token || tipoUsuario !== 'admin') {
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.replace('PAG.html');
-                return;
-            }
-            
-            // Verificar token con el servidor
-            fetch('/api/verificar-sesion', {
-                method: 'GET',
-                headers: {
-                    'x-auth-token': token,
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.autenticado) {
-                    localStorage.clear();
-                    sessionStorage.clear();
-                    window.location.replace('PAG.html');
-                } else {
-                    // Mostrar nombre del admin si esta disponible
-                    const adminUser = localStorage.getItem('adminUser');
-                    if (adminUser) {
-                        document.getElementById('bienvenidaAdmin').innerHTML = 'Bienvenido, ' + adminUser + '!';
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error verificando sesion:', error);
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.replace('PAG.html');
-            });
-        })();
+      // ========== VERIFICACION DE SESION CON TOKEN ==========
+      (function verificarSesionAlInicio() {
+        const token = localStorage.getItem("token");
+        const tipoUsuario = localStorage.getItem("tipoUsuario");
 
-        // ========== BLOQUEAR BOTON ATRAS DEL NAVEGADOR ==========
-        (function bloquearBotonAtras() {
-            const paginaActual = 'menu_admin.html';
-            const paginaLogin = 'PAG.html';
-            
-            const token = localStorage.getItem('token');
-            const tipoUsuario = localStorage.getItem('tipoUsuario');
-            
-            if (!token || tipoUsuario !== 'admin') {
-                window.location.replace(paginaLogin);
-                return;
+        // Si no hay token o no es admin, redirigir al login
+        if (!token || tipoUsuario !== "admin") {
+          localStorage.clear();
+          sessionStorage.clear();
+          window.location.replace("PAG.html");
+          return;
+        }
+
+        // Verificar token con el servidor
+        fetch("/api/verificar-sesion", {
+          method: "GET",
+          headers: {
+            "x-auth-token": token,
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (!data.autenticado) {
+              localStorage.clear();
+              sessionStorage.clear();
+              window.location.replace("PAG.html");
+            } else {
+              // Mostrar nombre del admin si esta disponible
+              const adminUser = localStorage.getItem("adminUser");
+              if (adminUser) {
+                document.getElementById("bienvenidaAdmin").innerHTML =
+                  "Bienvenido, " + adminUser + "!";
+              }
             }
-            
-            history.replaceState({ pagina: paginaActual, protegido: true, nivel: 0 }, '', location.href);
-            
-            for (let i = 1; i <= 100; i++) {
-                history.pushState({ 
-                    pagina: paginaActual, 
-                    protegido: true, 
+          })
+          .catch((error) => {
+            console.error("Error verificando sesion:", error);
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.replace("PAG.html");
+          });
+      })();
+
+      // ========== BLOQUEAR BOTON ATRAS DEL NAVEGADOR ==========
+      (function bloquearBotonAtras() {
+        const paginaActual = "menu_admin.html";
+        const paginaLogin = "PAG.html";
+
+        const token = localStorage.getItem("token");
+        const tipoUsuario = localStorage.getItem("tipoUsuario");
+
+        if (!token || tipoUsuario !== "admin") {
+          window.location.replace(paginaLogin);
+          return;
+        }
+
+        history.replaceState(
+          { pagina: paginaActual, protegido: true, nivel: 0 },
+          "",
+          location.href,
+        );
+
+        for (let i = 1; i <= 100; i++) {
+          history.pushState(
+            {
+              pagina: paginaActual,
+              protegido: true,
+              nivel: i,
+              timestamp: Date.now(),
+            },
+            "",
+            location.href,
+          );
+        }
+
+        let ultimoPopState = 0;
+
+        window.addEventListener("popstate", function (event) {
+          const ahora = Date.now();
+          const estado = event.state;
+
+          if (ahora - ultimoPopState < 150) {
+            return;
+          }
+          ultimoPopState = ahora;
+
+          const tokenActual = localStorage.getItem("token");
+          const tipoActual = localStorage.getItem("tipoUsuario");
+          const sesionValida = tokenActual && tipoActual === "admin";
+
+          if (!sesionValida) {
+            window.location.replace(paginaLogin);
+            return;
+          }
+
+          const esEstadoValido =
+            estado &&
+            estado.protegido === true &&
+            estado.pagina === paginaActual;
+
+          if (!esEstadoValido) {
+            window.location.replace(paginaActual);
+            return;
+          }
+
+          setTimeout(() => {
+            if (
+              localStorage.getItem("token") &&
+              localStorage.getItem("tipoUsuario") === "admin"
+            ) {
+              for (let i = 1; i <= 5; i++) {
+                history.pushState(
+                  {
+                    pagina: paginaActual,
+                    protegido: true,
                     nivel: i,
-                    timestamp: Date.now() 
-                }, '', location.href);
+                    timestamp: Date.now(),
+                  },
+                  "",
+                  location.href,
+                );
+              }
             }
-            
-            let ultimoPopState = 0;
-            
-            window.addEventListener('popstate', function(event) {
-                const ahora = Date.now();
-                const estado = event.state;
-                
-                if (ahora - ultimoPopState < 150) {
-                    return;
-                }
-                ultimoPopState = ahora;
-                
-                const tokenActual = localStorage.getItem('token');
-                const tipoActual = localStorage.getItem('tipoUsuario');
-                const sesionValida = tokenActual && tipoActual === 'admin';
-                
-                if (!sesionValida) {
-                    window.location.replace(paginaLogin);
-                    return;
-                }
-                
-                const esEstadoValido = estado && estado.protegido === true && estado.pagina === paginaActual;
-                
-                if (!esEstadoValido) {
-                    window.location.replace(paginaActual);
-                    return;
-                }
-                
-                setTimeout(() => {
-                    if (localStorage.getItem('token') && localStorage.getItem('tipoUsuario') === 'admin') {
-                        for (let i = 1; i <= 5; i++) {
-                            history.pushState({ 
-                                pagina: paginaActual, 
-                                protegido: true, 
-                                nivel: i,
-                                timestamp: Date.now() 
-                            }, '', location.href);
-                        }
-                    }
-                }, 50);
-            });
-        })();
+          }, 50);
+        });
+      })();
 
-        function mostrarModal(titulo, texto, tipo) {
-            const modal = document.getElementById('modalMensaje');
-            const tituloElem = document.getElementById('modalTitulo');
-            const textoElem = document.getElementById('modalTexto');
-            const botonesDiv = document.getElementById('modalBotones');
-            
-            tituloElem.textContent = titulo;
-            tituloElem.className = tipo === 'exito' ? 'exito' : (tipo === 'advertencia' ? 'advertencia' : 'error');
-            textoElem.textContent = texto;
-            
-            botonesDiv.innerHTML = '<button class="modal-btn" onclick="cerrarModal()">Aceptar</button>';
-            accionConfirmar = null;
-            
-            modal.style.display = 'flex';
-        }
-        
-        function mostrarModalConfirmacion(titulo, texto, accionSi) {
-            const modal = document.getElementById('modalMensaje');
-            const tituloElem = document.getElementById('modalTitulo');
-            const textoElem = document.getElementById('modalTexto');
-            const botonesDiv = document.getElementById('modalBotones');
-            
-            tituloElem.textContent = titulo;
-            tituloElem.className = 'advertencia';
-            textoElem.textContent = texto;
-            
-            botonesDiv.innerHTML = `
-                <button class="modal-btn" id="btnConfirmarSi">Si, continuar</button>
-                <button class="modal-btn cancelar" id="btnConfirmarNo">Cancelar</button>
-            `;
-            
-            document.getElementById('btnConfirmarSi').onclick = function() {
-                cerrarModal();
-                if (accionSi) accionSi();
-            };
-            document.getElementById('btnConfirmarNo').onclick = function() {
-                cerrarModal();
-            };
-            
-            accionConfirmar = accionSi;
-            modal.style.display = 'flex';
-        }
-        
-        function cerrarModal() {
-            document.getElementById('modalMensaje').style.display = 'none';
-            accionConfirmar = null;
-        }
-        
-        function mostrarFecha() {
-            const fecha = new Date();
-            const options = { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                weekday: 'long'
-            };
-            const fechaFormateada = fecha.toLocaleDateString('es-ES', options);
-            const dateElements = document.querySelectorAll('#currentDate, #headerDate');
-            dateElements.forEach(element => {
-                if (element) {
-                    element.innerHTML = '<i class="fas fa-calendar-alt"></i> ' + fechaFormateada;
-                }
-            });
-        }
-        
-        function mostrarModalCerrarSesion() {
-            mostrarModalConfirmacion('Cerrar Sesion', 'Esta seguro que desea cerrar sesion?', function() {
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.replace('PAG.html');
-            });
-        }
-        
-        // Inicializar
-        mostrarFecha();
-        
-        window.onclick = function(event) {
-            const modal = document.getElementById('modalMensaje');
-            if (event.target === modal) {
-                cerrarModal();
-            }
+      function mostrarModal(titulo, texto, tipo) {
+        const modal = document.getElementById("modalMensaje");
+        const tituloElem = document.getElementById("modalTitulo");
+        const textoElem = document.getElementById("modalTexto");
+        const botonesDiv = document.getElementById("modalBotones");
+
+        tituloElem.textContent = titulo;
+        tituloElem.className =
+          tipo === "exito"
+            ? "exito"
+            : tipo === "advertencia"
+              ? "advertencia"
+              : "error";
+        textoElem.textContent = texto;
+
+        botonesDiv.innerHTML =
+          '<button class="modal-btn" onclick="cerrarModal()">Aceptar</button>';
+        accionConfirmar = null;
+
+        modal.style.display = "flex";
+      }
+
+      function mostrarModalConfirmacion(titulo, texto, accionSi) {
+        const modal = document.getElementById("modalMensaje");
+        const tituloElem = document.getElementById("modalTitulo");
+        const textoElem = document.getElementById("modalTexto");
+        const botonesDiv = document.getElementById("modalBotones");
+
+        tituloElem.textContent = titulo;
+        tituloElem.className = "advertencia";
+        textoElem.textContent = texto;
+
+        botonesDiv.innerHTML = `
+    <button class="modal-btn confirmar" id="btnConfirmarSi">
+        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+    </button>
+
+    <button class="modal-btn cancelar" id="btnConfirmarNo">
+        Cancelar
+    </button>
+`;
+
+        document.getElementById("btnConfirmarSi").onclick = function () {
+          cerrarModal();
+          if (accionSi) accionSi();
         };
+        document.getElementById("btnConfirmarNo").onclick = function () {
+          cerrarModal();
+        };
+
+        accionConfirmar = accionSi;
+        modal.style.display = "flex";
+      }
+
+      function cerrarModal() {
+        document.getElementById("modalMensaje").style.display = "none";
+        accionConfirmar = null;
+      }
+
+      function mostrarFecha() {
+        const fecha = new Date();
+        const options = {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          weekday: "long",
+        };
+        const fechaFormateada = fecha.toLocaleDateString("es-ES", options);
+        const dateElements = document.querySelectorAll(
+          "#currentDate, #headerDate",
+        );
+        dateElements.forEach((element) => {
+          if (element) {
+            element.innerHTML =
+              '<i class="fas fa-calendar-alt"></i> ' + fechaFormateada;
+          }
+        });
+      }
+
+      function mostrarModalCerrarSesion() {
+        mostrarModalConfirmacion(
+          "Cerrar Sesion",
+          "Esta seguro que desea cerrar sesion?",
+          function () {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.replace("PAG.html");
+          },
+        );
+      }
+
+      // Inicializar
+      mostrarFecha();
+
+      window.onclick = function (event) {
+        const modal = document.getElementById("modalMensaje");
+        if (event.target === modal) {
+          cerrarModal();
+        }
+      };
     </script>
-</body>
+  </body>
 </html>

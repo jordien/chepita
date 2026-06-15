@@ -1,434 +1,586 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gestion de Personal - Tienda Chepita</title>
-    <link rel="stylesheet" href="personal.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
+    <link rel="stylesheet" href="personal.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="header-marcas">
+      <div class="header-marcas-scroll">
+        <div class="header-track">
+          <img src="imagenes/marcas/logo1.png" />
+          <img src="imagenes/marcas/logo2.png" />
+          <img src="imagenes/marcas/logo3.png" />
+          <img src="imagenes/marcas/logo4.png" />
+          <img src="imagenes/marcas/logo5.png" />
+          <img src="imagenes/marcas/logo6.png" />
+
+          <img src="imagenes/marcas/logo1.png" />
+          <img src="imagenes/marcas/logo2.png" />
+          <img src="imagenes/marcas/logo3.png" />
+          <img src="imagenes/marcas/logo4.png" />
+          <img src="imagenes/marcas/logo5.png" />
+          <img src="imagenes/marcas/logo6.png" />
+        </div>
+      </div>
+    </div>
     <div class="personal-container">
-        <!-- Header -->
-        <div class="personal-header">
-            <div class="header-left">
-                <i class="fas fa-users"></i>
-                <h1>Gestion de Personal</h1>
-            </div>
-            <button class="btn-back" onclick="window.location.href='menu_admin.html'">
-                <i class="fas fa-arrow-left"></i> Volver al Menu
-            </button>
+      <!-- Header -->
+      <div class="personal-header">
+        <div class="header-left">
+          <i class="fas fa-users"></i>
+          <h1>Gestion de Personal</h1>
+        </div>
+        <button
+          class="btn-back"
+          onclick="window.location.href = 'menu_admin.html'"
+        >
+          <i class="fas fa-arrow-left"></i> Volver al Menu
+        </button>
+      </div>
+
+      <!-- Lista de trabajadores -->
+      <div class="list-card">
+        <div class="list-header">
+          <h2><i class="fas fa-list"></i> Lista de Trabajadores</h2>
+          <button class="btn-add-trabajador" onclick="toggleFormulario()">
+            <i class="fas fa-user-plus"></i> Agregar Trabajador
+          </button>
         </div>
 
-        <!-- Lista de trabajadores -->
-        <div class="list-card">
-            <div class="list-header">
-                <h2><i class="fas fa-list"></i> Lista de Trabajadores</h2>
-                <button class="btn-add-trabajador" onclick="toggleFormulario()">
-                    <i class="fas fa-user-plus"></i> Agregar Trabajador
-                </button>
+        <!-- Formulario para agregar trabajador (oculto por defecto) -->
+        <div class="form-card-collapse" id="formCard" style="display: none">
+          <h3><i class="fas fa-user-plus"></i> Agregar Nuevo Trabajador</h3>
+          <form id="formTrabajador">
+            <div class="form-row">
+              <div class="form-group">
+                <label><i class="fas fa-user"></i> Nombre Completo:</label>
+                <input
+                  type="text"
+                  id="nombreCompleto"
+                  placeholder="Ej: Maria Gonzalez Perez"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label
+                  ><i class="fas fa-envelope"></i> Correo Electronico:</label
+                >
+                <input
+                  type="email"
+                  id="email"
+                  placeholder="ejemplo@correo.com"
+                  required
+                />
+                <small
+                  >Se enviara un enlace para que configure su contrasena</small
+                >
+              </div>
             </div>
 
-            <!-- Formulario para agregar trabajador (oculto por defecto) -->
-            <div class="form-card-collapse" id="formCard" style="display: none;">
-                <h3><i class="fas fa-user-plus"></i> Agregar Nuevo Trabajador</h3>
-                <form id="formTrabajador">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label><i class="fas fa-user"></i> Nombre Completo:</label>
-                            <input type="text" id="nombreCompleto" placeholder="Ej: Maria Gonzalez Perez" required>
-                        </div>
-                        <div class="form-group">
-                            <label><i class="fas fa-envelope"></i> Correo Electronico:</label>
-                            <input type="email" id="email" placeholder="ejemplo@correo.com" required>
-                            <small>Se enviara un enlace para que configure su contrasena</small>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label><i class="fas fa-phone"></i> Numero de Celular:</label>
-                            <input type="tel" id="celular" placeholder="Ej: 88901234" maxlength="8" required>
-                            <small>8 digitos, solo numeros</small>
-                        </div>
-                        <div class="form-group">
-                            <label><i class="fas fa-building"></i> Compañía Telefónica:</label>
-                            <select id="compania" required>
-                                <option value="">Seleccionar compañía...</option>
-                                <option value="Claro">Claro</option>
-                                <option value="Tigo">Tigo</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label><i class="fas fa-dollar-sign"></i> Salario (C$):</label>
-                            <input type="number" id="salario" placeholder="Ej: 12000" step="0.01" required>
-                        </div>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn-save">
-                            <i class="fas fa-save"></i> Guardar Trabajador
-                        </button>
-                        <button type="button" class="btn-cancel" onclick="toggleFormulario()">
-                            <i class="fas fa-times"></i> Cancelar
-                        </button>
-                    </div>
-                </form>
+            <div class="form-row">
+              <div class="form-group">
+                <label><i class="fas fa-phone"></i> Numero de Celular:</label>
+                <input
+                  type="tel"
+                  id="celular"
+                  placeholder="Ej: 88901234"
+                  maxlength="8"
+                  required
+                />
+                <small>8 digitos, solo numeros</small>
+              </div>
+              <div class="form-group">
+                <label
+                  ><i class="fas fa-building"></i> Compañía Telefónica:</label
+                >
+                <select id="compania" required>
+                  <option value="">Seleccionar compañía...</option>
+                  <option value="Claro">Claro</option>
+                  <option value="Tigo">Tigo</option>
+                </select>
+              </div>
             </div>
 
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="buscarTrabajador" placeholder="Buscar por nombre, celular o email..." onkeyup="filtrarTrabajadores()">
+            <div class="form-row">
+              <div class="form-group">
+                <label><i class="fas fa-dollar-sign"></i> Salario (C$):</label>
+                <input
+                  type="number"
+                  id="salario"
+                  placeholder="Ej: 12000"
+                  step="0.01"
+                  required
+                />
+              </div>
             </div>
-            <div class="table-container">
-                <table class="personal-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre Completo</th>
-                            <th>Email</th>
-                            <th>Celular</th>
-                            <th>Compañía</th>
-                            <th>Salario</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaTrabajadores">
-                        <tr><td colspan="8" style="text-align: center;">Cargando trabajadores...</td></tr>
-                    </tbody>
-                </table>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-save">
+                <i class="fas fa-save"></i> Guardar Trabajador
+              </button>
+              <button
+                type="button"
+                class="btn-cancel"
+                onclick="toggleFormulario()"
+              >
+                <i class="fas fa-times"></i> Cancelar
+              </button>
             </div>
+          </form>
         </div>
+
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            id="buscarTrabajador"
+            placeholder="Buscar por nombre, celular o email..."
+            onkeyup="filtrarTrabajadores()"
+          />
+        </div>
+        <div class="table-container">
+          <table class="personal-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre Completo</th>
+                <th>Email</th>
+                <th>Celular</th>
+                <th>Compañía</th>
+                <th>Salario</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tablaTrabajadores">
+              <tr>
+                <td colspan="8" style="text-align: center">
+                  Cargando trabajadores...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- Modal de confirmacion -->
     <div class="custom-modal-overlay" id="confirmModal">
-        <div class="custom-modal">
-            <h3>Confirmar accion</h3>
-            <p id="confirmMessage">¿Esta seguro de que desea realizar esta accion?</p>
-            <div class="custom-modal-buttons">
-                <button class="custom-modal-btn confirm" id="confirmYes">Si, continuar</button>
-                <button class="custom-modal-btn cancel" id="confirmNo">Cancelar</button>
-            </div>
+      <div class="custom-modal">
+        <h3>Confirmar accion</h3>
+        <p id="confirmMessage">
+          ¿Esta seguro de que desea realizar esta accion?
+        </p>
+        <div class="custom-modal-buttons">
+          <button class="custom-modal-btn confirm" id="confirmYes">
+            Si, continuar
+          </button>
+          <button class="custom-modal-btn cancel" id="confirmNo">
+            Cancelar
+          </button>
         </div>
+      </div>
     </div>
 
     <!-- Modal de exito global -->
     <div class="success-modal-overlay" id="successModal">
-        <div class="success-modal">
-            <h3>Exito</h3>
-            <p id="successMessage">Operacion realizada exitosamente</p>
-            <button class="success-modal-btn" onclick="cerrarSuccessModal()">Aceptar</button>
-        </div>
+      <div class="success-modal">
+        <h3>Exito</h3>
+        <p id="successMessage">Operacion realizada exitosamente</p>
+        <button class="success-modal-btn" onclick="cerrarSuccessModal()">
+          Aceptar
+        </button>
+      </div>
     </div>
 
     <!-- Modal de error -->
     <div class="error-modal-overlay" id="errorModal">
-        <div class="error-modal">
-            <h3>Error</h3>
-            <p id="errorMessage">Ha ocurrido un error</p>
-            <button class="error-modal-btn" onclick="cerrarErrorModal()">Aceptar</button>
-        </div>
+      <div class="error-modal">
+        <h3>Error</h3>
+        <p id="errorMessage">Ha ocurrido un error</p>
+        <button class="error-modal-btn" onclick="cerrarErrorModal()">
+          Aceptar
+        </button>
+      </div>
     </div>
 
     <!-- Modal para editar trabajador -->
     <div class="edit-modal-overlay" id="editModal">
-        <div class="edit-modal edit-modal-compact">
-            <div class="edit-modal-header">
-                <i class="fas fa-edit"></i>
-                <h2>Editar Trabajador</h2>
-                <button class="edit-modal-close" onclick="cerrarEditModal()">&times;</button>
-            </div>
-            <input type="hidden" id="editId">
-            <div class="edit-form-row">
-                <div class="edit-form-group">
-                    <label><i class="fas fa-user"></i> Nombre</label>
-                    <input type="text" id="editNombre" placeholder="Nombre completo">
-                </div>
-                <div class="edit-form-group">
-                    <label><i class="fas fa-envelope"></i> Email</label>
-                    <input type="email" id="editEmail" placeholder="correo@ejemplo.com">
-                </div>
-            </div>
-            <div class="edit-form-row">
-                <div class="edit-form-group">
-                    <label><i class="fas fa-building"></i> Compañía</label>
-                    <select id="editCompania">
-                        <option value="Claro">Claro</option>
-                        <option value="Tigo">Tigo</option>
-                    </select>
-                </div>
-                <div class="edit-form-group">
-                    <label><i class="fas fa-phone"></i> Celular</label>
-                    <input type="tel" id="editCelular" maxlength="8" placeholder="8 digitos">
-                </div>
-            </div>
-            <div class="edit-form-row">
-                <div class="edit-form-group">
-                    <label><i class="fas fa-dollar-sign"></i> Salario (C$)</label>
-                    <input type="number" id="editSalario" step="0.01" placeholder="Salario">
-                </div>
-                <div class="edit-form-group">
-                    <label><i class="fas fa-toggle-on"></i> Estado</label>
-                    <select id="editActivo" style="width: 100%;">
-                        <option value="1">Activo</option>
-                        <option value="0">Inactivo</option>
-                    </select>
-                </div>
-            </div>
-            <div class="edit-form-group password-info-group">
-                <label><i class="fas fa-lock"></i> Contrasena</label>
-                <div class="password-info" id="editPasswordStatus">
-                    <i class="fas fa-info-circle"></i> 
-                    <span>Contrasena pendiente de configuracion</span>
-                </div>
-            </div>
-            
-            <!-- Mensaje de error dentro del modal -->
-            <div id="editErrorMessage" style="display: none; background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 10px; margin: 0 24px 15px 24px; text-align: center; font-size: 14px;">
-                <i class="fas fa-exclamation-circle"></i> <span id="editErrorText">Error</span>
-            </div>
-            
-            <!-- Mensaje de exito dentro del modal -->
-            <div id="editSuccessMessage" style="display: none; background: #dcfce7; color: #166534; padding: 12px; border-radius: 10px; margin: 0 24px 15px 24px; text-align: center; font-size: 14px;">
-                <i class="fas fa-check-circle"></i> <span id="editSuccessText">Trabajador actualizado exitosamente</span>
-            </div>
-            
-            <div class="edit-modal-buttons">
-                <button class="edit-modal-save" onclick="actualizarTrabajador()">
-                    <i class="fas fa-save"></i> Guardar Cambios
-                </button>
-                <button class="edit-modal-cancel" onclick="cerrarEditModal()">
-                    <i class="fas fa-times"></i> Cancelar
-                </button>
-            </div>
+      <div class="edit-modal edit-modal-compact">
+        <div class="edit-modal-header">
+          <i class="fas fa-edit"></i>
+          <h2>Editar Trabajador</h2>
+          <button class="edit-modal-close" onclick="cerrarEditModal()">
+            &times;
+          </button>
         </div>
+        <input type="hidden" id="editId" />
+        <div class="edit-form-row">
+          <div class="edit-form-group">
+            <label><i class="fas fa-user"></i> Nombre</label>
+            <input type="text" id="editNombre" placeholder="Nombre completo" />
+          </div>
+          <div class="edit-form-group">
+            <label><i class="fas fa-envelope"></i> Email</label>
+            <input
+              type="email"
+              id="editEmail"
+              placeholder="correo@ejemplo.com"
+            />
+          </div>
+        </div>
+        <div class="edit-form-row">
+          <div class="edit-form-group">
+            <label><i class="fas fa-building"></i> Compañía</label>
+            <select id="editCompania">
+              <option value="Claro">Claro</option>
+              <option value="Tigo">Tigo</option>
+            </select>
+          </div>
+          <div class="edit-form-group">
+            <label><i class="fas fa-phone"></i> Celular</label>
+            <input
+              type="tel"
+              id="editCelular"
+              maxlength="8"
+              placeholder="8 digitos"
+            />
+          </div>
+        </div>
+        <div class="edit-form-row">
+          <div class="edit-form-group">
+            <label><i class="fas fa-dollar-sign"></i> Salario (C$)</label>
+            <input
+              type="number"
+              id="editSalario"
+              step="0.01"
+              placeholder="Salario"
+            />
+          </div>
+          <div class="edit-form-group">
+            <label><i class="fas fa-toggle-on"></i> Estado</label>
+            <select id="editActivo" style="width: 100%">
+              <option value="1">Activo</option>
+              <option value="0">Inactivo</option>
+            </select>
+          </div>
+        </div>
+        <div class="edit-form-group password-info-group">
+          <label><i class="fas fa-lock"></i> Contrasena</label>
+          <div class="password-info" id="editPasswordStatus">
+            <i class="fas fa-info-circle"></i>
+            <span>Contrasena pendiente de configuracion</span>
+          </div>
+        </div>
+
+        <!-- Mensaje de error dentro del modal -->
+        <div
+          id="editErrorMessage"
+          style="
+            display: none;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 10px;
+            margin: 0 24px 15px 24px;
+            text-align: center;
+            font-size: 14px;
+          "
+        >
+          <i class="fas fa-exclamation-circle"></i>
+          <span id="editErrorText">Error</span>
+        </div>
+
+        <!-- Mensaje de exito dentro del modal -->
+        <div
+          id="editSuccessMessage"
+          style="
+            display: none;
+            background: #dcfce7;
+            color: #166534;
+            padding: 12px;
+            border-radius: 10px;
+            margin: 0 24px 15px 24px;
+            text-align: center;
+            font-size: 14px;
+          "
+        >
+          <i class="fas fa-check-circle"></i>
+          <span id="editSuccessText">Trabajador actualizado exitosamente</span>
+        </div>
+
+        <div class="edit-modal-buttons">
+          <button class="edit-modal-save" onclick="actualizarTrabajador()">
+            <i class="fas fa-save"></i> Guardar Cambios
+          </button>
+          <button class="edit-modal-cancel" onclick="cerrarEditModal()">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+        </div>
+      </div>
     </div>
 
     <script>
-        let trabajadoresData = [];
-        let editSuccessTimeout = null;
-        
-        // Almacenamiento local de compañías (sin afectar BD)
-        function obtenerCompania(idTrabajador) {
-            const companias = JSON.parse(localStorage.getItem('companias_trabajadores') || '{}');
-            return companias[String(idTrabajador)] || 'Claro';
+      let trabajadoresData = [];
+      let editSuccessTimeout = null;
+
+      // Almacenamiento local de compañías (sin afectar BD)
+      function obtenerCompania(idTrabajador) {
+        const companias = JSON.parse(
+          localStorage.getItem("companias_trabajadores") || "{}",
+        );
+        return companias[String(idTrabajador)] || "Claro";
+      }
+
+      function guardarCompania(idTrabajador, compania) {
+        const companias = JSON.parse(
+          localStorage.getItem("companias_trabajadores") || "{}",
+        );
+        companias[String(idTrabajador)] = compania;
+        localStorage.setItem(
+          "companias_trabajadores",
+          JSON.stringify(companias),
+        );
+      }
+
+      function toggleFormulario() {
+        const formCard = document.getElementById("formCard");
+        const isHidden = formCard.style.display === "none";
+        formCard.style.display = isHidden ? "block" : "none";
+
+        if (isHidden) {
+          // Scroll suave al formulario
+          formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+          document.getElementById("nombreCompleto").focus();
+        } else {
+          // Limpiar formulario al ocultar
+          document.getElementById("formTrabajador").reset();
         }
-        
-        function guardarCompania(idTrabajador, compania) {
-            const companias = JSON.parse(localStorage.getItem('companias_trabajadores') || '{}');
-            companias[String(idTrabajador)] = compania;
-            localStorage.setItem('companias_trabajadores', JSON.stringify(companias));
+      }
+
+      function mostrarConfirmacion(mensaje, accionSi) {
+        document.getElementById("confirmMessage").innerText = mensaje;
+        const modal = document.getElementById("confirmModal");
+        modal.style.display = "flex";
+
+        const btnSi = document.getElementById("confirmYes");
+        const btnNo = document.getElementById("confirmNo");
+
+        const newBtnSi = btnSi.cloneNode(true);
+        const newBtnNo = btnNo.cloneNode(true);
+        btnSi.parentNode.replaceChild(newBtnSi, btnSi);
+        btnNo.parentNode.replaceChild(newBtnNo, btnNo);
+
+        newBtnSi.onclick = () => {
+          modal.style.display = "none";
+          accionSi();
+        };
+        newBtnNo.onclick = () => {
+          modal.style.display = "none";
+        };
+      }
+
+      function mostrarExito(mensaje, callback) {
+        document.getElementById("successMessage").innerText = mensaje;
+        const modal = document.getElementById("successModal");
+        modal.style.display = "flex";
+
+        const btn = document.querySelector("#successModal .success-modal-btn");
+        btn.onclick = () => {
+          modal.style.display = "none";
+          if (callback) callback();
+        };
+      }
+
+      function mostrarError(mensaje) {
+        document.getElementById("errorMessage").innerText = mensaje;
+        document.getElementById("errorModal").style.display = "flex";
+      }
+
+      function cerrarErrorModal() {
+        document.getElementById("errorModal").style.display = "none";
+      }
+
+      function cerrarSuccessModal() {
+        document.getElementById("successModal").style.display = "none";
+      }
+
+      function cerrarEditModal() {
+        document.getElementById("editModal").style.display = "none";
+        // Limpiar mensaje de exito al cerrar
+        const successMsg = document.getElementById("editSuccessMessage");
+        successMsg.style.display = "none";
+        if (editSuccessTimeout) {
+          clearTimeout(editSuccessTimeout);
+        }
+      }
+
+      function mostrarExitoEnEdit(mensaje) {
+        const successMsg = document.getElementById("editSuccessMessage");
+        const successText = document.getElementById("editSuccessText");
+        successText.innerText = mensaje;
+        successMsg.style.display = "block";
+
+        // Ocultar mensaje despues de 3 segundos
+        if (editSuccessTimeout) {
+          clearTimeout(editSuccessTimeout);
+        }
+        editSuccessTimeout = setTimeout(() => {
+          successMsg.style.display = "none";
+        }, 3000);
+      }
+
+      function mostrarErrorEnEdit(mensaje) {
+        const errorMsg = document.getElementById("editErrorMessage");
+        const errorText = document.getElementById("editErrorText");
+        errorText.innerText = mensaje;
+        errorMsg.style.display = "block";
+
+        // Ocultar mensaje despues de 5 segundos
+        setTimeout(() => {
+          errorMsg.style.display = "none";
+        }, 5000);
+      }
+
+      function ocultarErrorEnEdit() {
+        document.getElementById("editErrorMessage").style.display = "none";
+      }
+
+      function abrirEditModal(trabajador) {
+        // Ocultar mensaje de exito y error si estaban visibles
+        const successMsg = document.getElementById("editSuccessMessage");
+        successMsg.style.display = "none";
+        ocultarErrorEnEdit();
+
+        document.getElementById("editId").value = trabajador.Id_Trabajador;
+        document.getElementById("editNombre").value = trabajador.NombreCompleto;
+        document.getElementById("editEmail").value = trabajador.email || "";
+        document.getElementById("editCompania").value = obtenerCompania(
+          trabajador.Id_Trabajador,
+        );
+        document.getElementById("editCelular").value = trabajador.Celular || "";
+        document.getElementById("editSalario").value = trabajador.Salario || "";
+        document.getElementById("editActivo").value = trabajador.Activo;
+
+        const passwordStatus = document.getElementById("editPasswordStatus");
+        if (
+          trabajador.debe_cambiar_password === 1 ||
+          trabajador.debe_cambiar_password === true
+        ) {
+          passwordStatus.innerHTML =
+            '<i class="fas fa-clock"></i> <span>Contrasena temporal - Pendiente</span>';
+          passwordStatus.style.background = "#fff3e0";
+          passwordStatus.style.color = "#e67e22";
+        } else {
+          passwordStatus.innerHTML =
+            '<i class="fas fa-check-circle"></i> <span>Contrasena ya configurada</span>';
+          passwordStatus.style.background = "#e8f5e9";
+          passwordStatus.style.color = "#27ae60";
         }
 
-        function toggleFormulario() {
-            const formCard = document.getElementById('formCard');
-            const isHidden = formCard.style.display === 'none';
-            formCard.style.display = isHidden ? 'block' : 'none';
-            
-            if (isHidden) {
-                // Scroll suave al formulario
-                formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                document.getElementById('nombreCompleto').focus();
-            } else {
-                // Limpiar formulario al ocultar
-                document.getElementById('formTrabajador').reset();
+        document.getElementById("editModal").style.display = "flex";
+      }
+
+      async function cargarTrabajadores() {
+        const tabla = document.getElementById("tablaTrabajadores");
+
+        try {
+          const respuesta = await fetch("/api/trabajadores");
+          const trabajadores = await respuesta.json();
+
+          if (!respuesta.ok) {
+            throw new Error(
+              trabajadores.error || "Error al conectar con la base de datos",
+            );
+          }
+
+          trabajadoresData = trabajadores;
+
+          // Inicializar compañías por defecto en localStorage para nuevos trabajadores
+          const companias = JSON.parse(
+            localStorage.getItem("companias_trabajadores") || "{}",
+          );
+          let cambios = false;
+
+          trabajadores.forEach((trabajador) => {
+            if (!companias.hasOwnProperty(String(trabajador.Id_Trabajador))) {
+              companias[String(trabajador.Id_Trabajador)] = "Claro";
+              cambios = true;
             }
+          });
+
+          if (cambios) {
+            localStorage.setItem(
+              "companias_trabajadores",
+              JSON.stringify(companias),
+            );
+          }
+
+          mostrarTrabajadores();
+        } catch (error) {
+          console.error("Error cargando trabajadores:", error);
+          tabla.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #c00;">Error al cargar los datos. Asegurate que el servidor este funcionando</td></tr>`;
+        }
+      }
+
+      function mostrarTrabajadores() {
+        const tabla = document.getElementById("tablaTrabajadores");
+        const busqueda = document
+          .getElementById("buscarTrabajador")
+          .value.toLowerCase();
+
+        const filteredData = trabajadoresData.filter((trabajador) => {
+          return (
+            trabajador.NombreCompleto.toLowerCase().includes(busqueda) ||
+            (trabajador.Celular && trabajador.Celular.includes(busqueda)) ||
+            (trabajador.email &&
+              trabajador.email.toLowerCase().includes(busqueda))
+          );
+        });
+
+        if (filteredData.length === 0) {
+          tabla.innerHTML =
+            '<tr><td colspan="8" style="text-align: center;">No se encontraron trabajadores.</td></tr>';
+          return;
         }
 
-        function mostrarConfirmacion(mensaje, accionSi) {
-            document.getElementById('confirmMessage').innerText = mensaje;
-            const modal = document.getElementById('confirmModal');
-            modal.style.display = 'flex';
-            
-            const btnSi = document.getElementById('confirmYes');
-            const btnNo = document.getElementById('confirmNo');
-            
-            const newBtnSi = btnSi.cloneNode(true);
-            const newBtnNo = btnNo.cloneNode(true);
-            btnSi.parentNode.replaceChild(newBtnSi, btnSi);
-            btnNo.parentNode.replaceChild(newBtnNo, btnNo);
-            
-            newBtnSi.onclick = () => {
-                modal.style.display = 'none';
-                accionSi();
-            };
-            newBtnNo.onclick = () => {
-                modal.style.display = 'none';
-            };
-        }
-        
-        function mostrarExito(mensaje, callback) {
-            document.getElementById('successMessage').innerText = mensaje;
-            const modal = document.getElementById('successModal');
-            modal.style.display = 'flex';
-            
-            const btn = document.querySelector('#successModal .success-modal-btn');
-            btn.onclick = () => {
-                modal.style.display = 'none';
-                if (callback) callback();
-            };
-        }
-        
-        function mostrarError(mensaje) {
-            document.getElementById('errorMessage').innerText = mensaje;
-            document.getElementById('errorModal').style.display = 'flex';
-        }
-        
-        function cerrarErrorModal() {
-            document.getElementById('errorModal').style.display = 'none';
-        }
-        
-        function cerrarSuccessModal() {
-            document.getElementById('successModal').style.display = 'none';
-        }
+        tabla.innerHTML = "";
+        filteredData.forEach((trabajador) => {
+          const estadoClass =
+            trabajador.Activo == 1 ? "estado-activo" : "estado-inactivo";
+          const estadoTexto = trabajador.Activo == 1 ? "Activo" : "Inactivo";
+          const salario = trabajador.Salario
+            ? `C$ ${parseFloat(trabajador.Salario).toFixed(2)}`
+            : "N/A";
+          const email = trabajador.email || "No registrado";
+          const compania = obtenerCompania(trabajador.Id_Trabajador);
 
-        function cerrarEditModal() {
-            document.getElementById('editModal').style.display = 'none';
-            // Limpiar mensaje de exito al cerrar
-            const successMsg = document.getElementById('editSuccessMessage');
-            successMsg.style.display = 'none';
-            if (editSuccessTimeout) {
-                clearTimeout(editSuccessTimeout);
-            }
-        }
+          const passwordPending =
+            trabajador.debe_cambiar_password === 1 ||
+            trabajador.debe_cambiar_password === true;
+          const passwordIcon = passwordPending
+            ? '<i class="fas fa-clock" style="color: #e67e22;" title="Contrasena pendiente"></i>'
+            : '<i class="fas fa-check-circle" style="color: #27ae60;" title="Contrasena configurada"></i>';
 
-        function mostrarExitoEnEdit(mensaje) {
-            const successMsg = document.getElementById('editSuccessMessage');
-            const successText = document.getElementById('editSuccessText');
-            successText.innerText = mensaje;
-            successMsg.style.display = 'block';
-            
-            // Ocultar mensaje despues de 3 segundos
-            if (editSuccessTimeout) {
-                clearTimeout(editSuccessTimeout);
-            }
-            editSuccessTimeout = setTimeout(() => {
-                successMsg.style.display = 'none';
-            }, 3000);
-        }
+          // Badge para la compañía
+          const companiaBadge =
+            compania === "Claro"
+              ? '<span class="badge-claro">Claro</span>'
+              : '<span class="badge-tigo">Tigo</span>';
 
-        function mostrarErrorEnEdit(mensaje) {
-            const errorMsg = document.getElementById('editErrorMessage');
-            const errorText = document.getElementById('editErrorText');
-            errorText.innerText = mensaje;
-            errorMsg.style.display = 'block';
-            
-            // Ocultar mensaje despues de 5 segundos
-            setTimeout(() => {
-                errorMsg.style.display = 'none';
-            }, 5000);
-        }
-
-        function ocultarErrorEnEdit() {
-            document.getElementById('editErrorMessage').style.display = 'none';
-        }
-
-        function abrirEditModal(trabajador) {
-            // Ocultar mensaje de exito y error si estaban visibles
-            const successMsg = document.getElementById('editSuccessMessage');
-            successMsg.style.display = 'none';
-            ocultarErrorEnEdit();
-            
-            document.getElementById('editId').value = trabajador.Id_Trabajador;
-            document.getElementById('editNombre').value = trabajador.NombreCompleto;
-            document.getElementById('editEmail').value = trabajador.email || '';
-            document.getElementById('editCompania').value = obtenerCompania(trabajador.Id_Trabajador);
-            document.getElementById('editCelular').value = trabajador.Celular || '';
-            document.getElementById('editSalario').value = trabajador.Salario || '';
-            document.getElementById('editActivo').value = trabajador.Activo;
-            
-            const passwordStatus = document.getElementById('editPasswordStatus');
-            if (trabajador.debe_cambiar_password === 1 || trabajador.debe_cambiar_password === true) {
-                passwordStatus.innerHTML = '<i class="fas fa-clock"></i> <span>Contrasena temporal - Pendiente</span>';
-                passwordStatus.style.background = '#fff3e0';
-                passwordStatus.style.color = '#e67e22';
-            } else {
-                passwordStatus.innerHTML = '<i class="fas fa-check-circle"></i> <span>Contrasena ya configurada</span>';
-                passwordStatus.style.background = '#e8f5e9';
-                passwordStatus.style.color = '#27ae60';
-            }
-            
-            document.getElementById('editModal').style.display = 'flex';
-        }
-
-        async function cargarTrabajadores() {
-            const tabla = document.getElementById('tablaTrabajadores');
-            
-            try {
-                const respuesta = await fetch('/api/trabajadores');
-                const trabajadores = await respuesta.json();
-
-                if (!respuesta.ok) {
-                    throw new Error(trabajadores.error || "Error al conectar con la base de datos");
-                }
-
-                trabajadoresData = trabajadores;
-                
-                // Inicializar compañías por defecto en localStorage para nuevos trabajadores
-                const companias = JSON.parse(localStorage.getItem('companias_trabajadores') || '{}');
-                let cambios = false;
-                
-                trabajadores.forEach(trabajador => {
-                    if (!companias.hasOwnProperty(String(trabajador.Id_Trabajador))) {
-                        companias[String(trabajador.Id_Trabajador)] = 'Claro';
-                        cambios = true;
-                    }
-                });
-                
-                if (cambios) {
-                    localStorage.setItem('companias_trabajadores', JSON.stringify(companias));
-                }
-                
-                mostrarTrabajadores();
-
-            } catch (error) {
-                console.error("Error cargando trabajadores:", error);
-                tabla.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #c00;">Error al cargar los datos. Asegurate que el servidor este funcionando</td></tr>`;
-            }
-        }
-
-        function mostrarTrabajadores() {
-            const tabla = document.getElementById('tablaTrabajadores');
-            const busqueda = document.getElementById('buscarTrabajador').value.toLowerCase();
-
-            const filteredData = trabajadoresData.filter(trabajador => {
-                return trabajador.NombreCompleto.toLowerCase().includes(busqueda) ||
-                       (trabajador.Celular && trabajador.Celular.includes(busqueda)) ||
-                       (trabajador.email && trabajador.email.toLowerCase().includes(busqueda));
-            });
-
-            if (filteredData.length === 0) {
-                tabla.innerHTML = '<tr><td colspan="8" style="text-align: center;">No se encontraron trabajadores.</td></tr>';
-                return;
-            }
-
-            tabla.innerHTML = "";
-            filteredData.forEach(trabajador => {
-                const estadoClass = trabajador.Activo == 1 ? 'estado-activo' : 'estado-inactivo';
-                const estadoTexto = trabajador.Activo == 1 ? 'Activo' : 'Inactivo';
-                const salario = trabajador.Salario ? `C$ ${parseFloat(trabajador.Salario).toFixed(2)}` : 'N/A';
-                const email = trabajador.email || 'No registrado';
-                const compania = obtenerCompania(trabajador.Id_Trabajador);
-                
-                const passwordPending = (trabajador.debe_cambiar_password === 1 || trabajador.debe_cambiar_password === true);
-                const passwordIcon = passwordPending ? '<i class="fas fa-clock" style="color: #e67e22;" title="Contrasena pendiente"></i>' : '<i class="fas fa-check-circle" style="color: #27ae60;" title="Contrasena configurada"></i>';
-                
-                // Badge para la compañía
-                const companiaBadge = compania === 'Claro' ? 
-                    '<span class="badge-claro">Claro</span>' : 
-                    '<span class="badge-tigo">Tigo</span>';
-                
-                const fila = `
+          const fila = `
                     <tr>
                         <td>${trabajador.Id_Trabajador}</td>
                         <td>${trabajador.NombreCompleto} ${passwordIcon}</td>
                         <td><small>${email}</small></td>
-                        <td>${trabajador.Celular || 'N/A'}</td>
+                        <td>${trabajador.Celular || "N/A"}</td>
                         <td>${companiaBadge}</td>
                         <td>${salario}</td>
                         <td><span class="${estadoClass}">${estadoTexto}</span></td>
@@ -439,221 +591,241 @@
                         </td>
                     </tr>
                 `;
-                tabla.innerHTML += fila;
-            });
+          tabla.innerHTML += fila;
+        });
+      }
+
+      function filtrarTrabajadores() {
+        mostrarTrabajadores();
+      }
+
+      function editarTrabajador(id) {
+        const trabajador = trabajadoresData.find((t) => t.Id_Trabajador === id);
+        if (trabajador) {
+          abrirEditModal(trabajador);
+        }
+      }
+
+      async function actualizarTrabajador() {
+        const id = document.getElementById("editId").value;
+        const nombre = document.getElementById("editNombre").value.trim();
+        const email = document.getElementById("editEmail").value.trim();
+        const celular = document.getElementById("editCelular").value.trim();
+        const salario = document.getElementById("editSalario").value;
+        const activo = document.getElementById("editActivo").value;
+        const compania = document.getElementById("editCompania").value;
+
+        // Limpiar error anterior
+        ocultarErrorEnEdit();
+
+        if (!nombre) {
+          mostrarErrorEnEdit("El nombre completo es requerido");
+          return;
         }
 
-        function filtrarTrabajadores() {
-            mostrarTrabajadores();
+        if (!email) {
+          mostrarErrorEnEdit("El correo electronico es requerido");
+          return;
         }
 
-        function editarTrabajador(id) {
-            const trabajador = trabajadoresData.find(t => t.Id_Trabajador === id);
-            if (trabajador) {
-                abrirEditModal(trabajador);
-            }
+        if (!celular) {
+          mostrarErrorEnEdit("El numero de celular es requerido");
+          return;
         }
 
-        async function actualizarTrabajador() {
-            const id = document.getElementById('editId').value;
-            const nombre = document.getElementById('editNombre').value.trim();
-            const email = document.getElementById('editEmail').value.trim();
-            const celular = document.getElementById('editCelular').value.trim();
-            const salario = document.getElementById('editSalario').value;
-            const activo = document.getElementById('editActivo').value;
-            const compania = document.getElementById('editCompania').value;
+        if (celular.length !== 8 || !/^\d+$/.test(celular)) {
+          mostrarErrorEnEdit("El numero de celular debe tener 8 digitos");
+          return;
+        }
 
-            // Limpiar error anterior
-            ocultarErrorEnEdit();
+        // Validar que el celular no exista en otro trabajador
+        const celularDuplicado = trabajadoresData.some(
+          (t) => t.Id_Trabajador != id && t.Celular === celular,
+        );
+        if (celularDuplicado) {
+          mostrarErrorEnEdit(
+            "Este numero de celular ya esta asignado a otro trabajador",
+          );
+          return;
+        }
 
-            if (!nombre) {
-                mostrarErrorEnEdit('El nombre completo es requerido');
-                return;
-            }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          mostrarErrorEnEdit("Ingrese un correo electronico valido");
+          return;
+        }
 
-            if (!email) {
-                mostrarErrorEnEdit('El correo electronico es requerido');
-                return;
-            }
+        const saveBtn = document.querySelector(".edit-modal-save");
+        const originalText = saveBtn.innerHTML;
+        saveBtn.innerHTML =
+          '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+        saveBtn.disabled = true;
 
-            if (!celular) {
-                mostrarErrorEnEdit('El numero de celular es requerido');
-                return;
-            }
+        try {
+          const respuesta = await fetch(`/api/trabajadores/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              NombreCompleto: nombre,
+              Celular: celular,
+              email: email,
+              Salario: salario,
+              Activo: activo,
+            }),
+          });
 
-            if (celular.length !== 8 || !/^\d+$/.test(celular)) {
-                mostrarErrorEnEdit('El numero de celular debe tener 8 digitos');
-                return;
-            }
+          const resultado = await respuesta.json();
 
-            // Validar que el celular no exista en otro trabajador
-            const celularDuplicado = trabajadoresData.some(t => 
-                t.Id_Trabajador != id && t.Celular === celular
+          if (!respuesta.ok) {
+            throw new Error(resultado.error || "Error al actualizar");
+          }
+
+          // Guardar compañía en localStorage
+          guardarCompania(id, compania);
+
+          // Actualizar los datos locales
+          const index = trabajadoresData.findIndex(
+            (t) => t.Id_Trabajador == id,
+          );
+          if (index !== -1) {
+            trabajadoresData[index].NombreCompleto = nombre;
+            trabajadoresData[index].email = email;
+            trabajadoresData[index].Celular = celular;
+            trabajadoresData[index].Salario = salario;
+            trabajadoresData[index].Activo = activo;
+          }
+
+          // Actualizar la tabla
+          mostrarTrabajadores();
+
+          // Mostrar mensaje de exito dentro del modal
+          mostrarExitoEnEdit("Trabajador actualizado exitosamente");
+
+          // Actualizar el estado de la contrasena en el modal
+          const passwordStatus = document.getElementById("editPasswordStatus");
+          passwordStatus.innerHTML =
+            '<i class="fas fa-check-circle"></i> <span>Contrasena ya configurada</span>';
+          passwordStatus.style.background = "#e8f5e9";
+          passwordStatus.style.color = "#27ae60";
+        } catch (error) {
+          mostrarErrorEnEdit(
+            error.message || "Error al actualizar el trabajador",
+          );
+        } finally {
+          saveBtn.innerHTML = originalText;
+          saveBtn.disabled = false;
+        }
+      }
+
+      document
+        .getElementById("formTrabajador")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const nombre = document.getElementById("nombreCompleto").value.trim();
+          const email = document.getElementById("email").value.trim();
+          const celular = document.getElementById("celular").value.trim();
+          const salario = document.getElementById("salario").value;
+          const compania = document.getElementById("compania").value;
+
+          if (!nombre) {
+            mostrarError("Por favor, ingrese el nombre completo");
+            return;
+          }
+
+          if (!email) {
+            mostrarError("Por favor, ingrese el correo electronico");
+            return;
+          }
+
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(email)) {
+            mostrarError(
+              "Ingrese un correo electronico valido (ejemplo: usuario@gmail.com)",
             );
-            if (celularDuplicado) {
-                mostrarErrorEnEdit('Este numero de celular ya esta asignado a otro trabajador');
-                return;
+            return;
+          }
+
+          if (!celular) {
+            mostrarError("Por favor, ingrese el numero de celular");
+            return;
+          }
+
+          if (celular.length !== 8 || !/^\d+$/.test(celular)) {
+            mostrarError("El numero de celular debe tener 8 digitos");
+            return;
+          }
+
+          // Validar que el celular no este duplicado
+          const celularDuplicado = trabajadoresData.some(
+            (t) => t.Celular === celular,
+          );
+          if (celularDuplicado) {
+            mostrarError(
+              "Este numero de celular ya esta asignado a otro trabajador",
+            );
+            return;
+          }
+
+          if (!salario || salario <= 0) {
+            mostrarError("Por favor, ingrese un salario valido");
+            return;
+          }
+
+          if (!compania) {
+            mostrarError("Por favor, seleccione una compañía telefónica");
+            return;
+          }
+
+          const submitBtn = document.querySelector("#formTrabajador .btn-save");
+          const originalText = submitBtn.innerHTML;
+          submitBtn.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+          submitBtn.disabled = true;
+
+          try {
+            const respuesta = await fetch("/api/trabajadores", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                NombreCompleto: nombre,
+                Celular: celular,
+                email: email,
+                Salario: salario,
+                Activo: 1,
+              }),
+            });
+
+            const resultado = await respuesta.json();
+
+            if (!respuesta.ok) {
+              throw new Error(
+                resultado.error || "Error al guardar el trabajador",
+              );
             }
 
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                mostrarErrorEnEdit('Ingrese un correo electronico valido');
-                return;
+            // Guardar compañía en localStorage para el nuevo trabajador
+            if (resultado.Id_Trabajador) {
+              guardarCompania(resultado.Id_Trabajador, compania);
             }
 
-            const saveBtn = document.querySelector('.edit-modal-save');
-            const originalText = saveBtn.innerHTML;
-            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-            saveBtn.disabled = true;
-
-            try {
-                const respuesta = await fetch(`/api/trabajadores/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        NombreCompleto: nombre,
-                        Celular: celular,
-                        email: email,
-                        Salario: salario,
-                        Activo: activo
-                    })
-                });
-
-                const resultado = await respuesta.json();
-
-                if (!respuesta.ok) {
-                    throw new Error(resultado.error || 'Error al actualizar');
-                }
-
-                // Guardar compañía en localStorage
-                guardarCompania(id, compania);
-
-                // Actualizar los datos locales
-                const index = trabajadoresData.findIndex(t => t.Id_Trabajador == id);
-                if (index !== -1) {
-                    trabajadoresData[index].NombreCompleto = nombre;
-                    trabajadoresData[index].email = email;
-                    trabajadoresData[index].Celular = celular;
-                    trabajadoresData[index].Salario = salario;
-                    trabajadoresData[index].Activo = activo;
-                }
-                
-                // Actualizar la tabla
-                mostrarTrabajadores();
-                
-                // Mostrar mensaje de exito dentro del modal
-                mostrarExitoEnEdit('Trabajador actualizado exitosamente');
-                
-                // Actualizar el estado de la contrasena en el modal
-                const passwordStatus = document.getElementById('editPasswordStatus');
-                passwordStatus.innerHTML = '<i class="fas fa-check-circle"></i> <span>Contrasena ya configurada</span>';
-                passwordStatus.style.background = '#e8f5e9';
-                passwordStatus.style.color = '#27ae60';
-
-            } catch (error) {
-                mostrarErrorEnEdit(error.message || 'Error al actualizar el trabajador');
-            } finally {
-                saveBtn.innerHTML = originalText;
-                saveBtn.disabled = false;
-            }
-        }
-
-        document.getElementById('formTrabajador').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const nombre = document.getElementById('nombreCompleto').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const celular = document.getElementById('celular').value.trim();
-            const salario = document.getElementById('salario').value;
-            const compania = document.getElementById('compania').value;
-
-            if (!nombre) {
-                mostrarError('Por favor, ingrese el nombre completo');
-                return;
-            }
-
-            if (!email) {
-                mostrarError('Por favor, ingrese el correo electronico');
-                return;
-            }
-
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                mostrarError('Ingrese un correo electronico valido (ejemplo: usuario@gmail.com)');
-                return;
-            }
-
-            if (!celular) {
-                mostrarError('Por favor, ingrese el numero de celular');
-                return;
-            }
-
-            if (celular.length !== 8 || !/^\d+$/.test(celular)) {
-                mostrarError('El numero de celular debe tener 8 digitos');
-                return;
-            }
-
-            // Validar que el celular no este duplicado
-            const celularDuplicado = trabajadoresData.some(t => t.Celular === celular);
-            if (celularDuplicado) {
-                mostrarError('Este numero de celular ya esta asignado a otro trabajador');
-                return;
-            }
-
-            if (!salario || salario <= 0) {
-                mostrarError('Por favor, ingrese un salario valido');
-                return;
-            }
-
-            if (!compania) {
-                mostrarError('Por favor, seleccione una compañía telefónica');
-                return;
-            }
-
-            const submitBtn = document.querySelector('#formTrabajador .btn-save');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-            submitBtn.disabled = true;
-
-            try {
-                const respuesta = await fetch('/api/trabajadores', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        NombreCompleto: nombre,
-                        Celular: celular,
-                        email: email,
-                        Salario: salario,
-                        Activo: 1
-                    })
-                });
-
-                const resultado = await respuesta.json();
-
-                if (!respuesta.ok) {
-                    throw new Error(resultado.error || 'Error al guardar el trabajador');
-                }
-
-                // Guardar compañía en localStorage para el nuevo trabajador
-                if (resultado.Id_Trabajador) {
-                    guardarCompania(resultado.Id_Trabajador, compania);
-                }
-
-                mostrarExito('Trabajador agregado exitosamente. Se ha enviado un email para que configure su contrasena.', () => {
-                    document.getElementById('formTrabajador').reset();
-                    toggleFormulario(); // Ocultar formulario
-                    cargarTrabajadores();
-                });
-
-            } catch (error) {
-                mostrarError(error.message || 'Error al guardar el trabajador');
-            } finally {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }
+            mostrarExito(
+              "Trabajador agregado exitosamente. Se ha enviado un email para que configure su contrasena.",
+              () => {
+                document.getElementById("formTrabajador").reset();
+                toggleFormulario(); // Ocultar formulario
+                cargarTrabajadores();
+              },
+            );
+          } catch (error) {
+            mostrarError(error.message || "Error al guardar el trabajador");
+          } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+          }
         });
 
-        cargarTrabajadores();
+      cargarTrabajadores();
     </script>
-</body>
+  </body>
 </html>
