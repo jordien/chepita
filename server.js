@@ -1,16 +1,12 @@
 /**
  * ============================================================================
  * @file server.js
- * @description Servidor principal del Sistema de Gestión Comercial "Chepita"
- * @version 3.0 - Con sistema QR para vendedores (PWA)
+ * @description Servidor de CAJA LOCAL del Sistema de Gestión Comercial "Chepita"
+ * @version 3.0 - Conectado a BASE DE DATOS RAILWAY (compartida con APP)
  * ============================================================================
  * 
- * 📌 PROCEDIMIENTOS ALMACENADOS UTILIZADOS EN ESTE SERVIDOR:
- * ============================================================================
- * 
- * 1. sp_listar_categorias      → GET /api/categorias           → Lista todas las categorías
- * 2. sp_listar_consumos        → GET /api/consumos             → Lista todos los consumos internos
- * 3. sp_productos_bajo_stock   → GET /api/productos/bajo-stock → Lista productos con stock < 10
+ * 📌 Este servidor se ejecuta en la CAJA LOCAL y se conecta a la base de datos
+ *    centralizada en Railway, compartiendo datos con la aplicación web.
  * 
  * ============================================================================
  */
@@ -32,17 +28,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
+// ================= CONEXIÓN A MYSQL - RAILWAY (compartida con APP) =================
 const db = mysql.createConnection({
-    host: '127.0.0.1', 
-    user: 'root',
-    password: '',
-    database: 'chepita7',
-    port: 3306
+    host: process.env.MYSQLHOST || 'acela.proxy.rlwy.net',
+    user: process.env.MYSQLUSER || 'root',
+    password: process.env.MYSQLPASSWORD || 'MFaPbrOIWcBNrrvrxBNcfClvNNtFIoSt',
+    database: process.env.MYSQLDATABASE || 'railway',
+    port: process.env.MYSQLPORT || 49485
 });
 
 db.connect(err => {
-    if (err) return console.error('Error de conexion:', err.message);
-    console.log('✅ Conexion exitosa a la base de datos chepita7');
+    if (err) return console.error('❌ Error de conexion a Railway:', err.message);
+    console.log('✅ CAJA LOCAL - Conectada exitosamente a la base de datos RAILWAY');
+    console.log('✅ Datos sincronizados con la aplicación web');
     
     crearTablaTokens();
     crearTablaRecuperacionTokens();
@@ -1518,8 +1516,6 @@ app.get('/api/ventas', (req, res) => {
             return res.status(500).json({ error: err.sqlMessage });
         }
         
-        // Filtrar: solo devolver compras que TENGAN órdenes válidas
-        // Si Producto es NULL, significa que esta factura NO tiene órdenes
         const comprasConOrdenes = results.filter(r => r.Producto !== null);
         
         res.json(comprasConOrdenes);
@@ -1545,7 +1541,6 @@ app.post('/api/compras', (req, res) => {
     
     console.log('💳 POST /api/compras recibido:', { Num_Factura, Id_cliente, Id_Vendedor, Id_Canal, Id_Metodo, Fecha, Monto });
     
-    // VALIDACIÓN ESTRICTA
     if (!Num_Factura) {
         console.error('❌ Falta Num_Factura');
         return res.status(400).json({ error: 'Num_Factura es obligatoria' });
@@ -1607,7 +1602,6 @@ app.post('/api/ordenes', (req, res) => {
     
     console.log('📝 POST /api/ordenes recibido:', { Id_Producto, NumFactura, CantidadVendida, Subtotal, Fecha, PrecioUnitario });
     
-    // VALIDACIÓN ESTRICTA
     if (!Id_Producto) {
         console.error('❌ Falta Id_Producto');
         return res.status(400).json({ error: 'Id_Producto es obligatorio' });
@@ -1638,7 +1632,6 @@ app.post('/api/ordenes', (req, res) => {
         return res.status(400).json({ error: 'PrecioUnitario debe ser un número mayor a 0' });
     }
     
-    // Verificar que el producto existe
     const checkProductoSql = 'SELECT Id_Producto FROM producto WHERE Id_Producto = ?';
     db.query(checkProductoSql, [Id_Producto], (err, results) => {
         if (err) {
@@ -1653,7 +1646,6 @@ app.post('/api/ordenes', (req, res) => {
         
         console.log('✅ Producto verificado:', Id_Producto);
         
-        // Insertar orden
         const insertSql = `INSERT INTO orden (Id_Producto, NumFactura, CantidadVendida, Subtotal, Fecha, PrecioUnitario) 
                           VALUES (?, ?, ?, ?, ?, ?)`;
         
@@ -1665,13 +1657,11 @@ app.post('/api/ordenes', (req, res) => {
             
             console.log('✅ Orden insertada - ID:', result.insertId);
             
-            // Actualizar stock
             const updateStockSql = `UPDATE stock SET Cantidad = Cantidad - ? WHERE Id_Producto = ?`;
             
             db.query(updateStockSql, [CantidadVendida, Id_Producto], (err2, result2) => {
                 if (err2) {
                     console.error('⚠️  Advertencia: Error al actualizar stock:', err2);
-                    // No lanzar error aquí, la orden ya se guardó
                     return res.status(500).json({ error: 'Orden guardada pero error al actualizar stock: ' + err2.message });
                 }
                 
@@ -1912,7 +1902,6 @@ app.get('/api/ventas-detalle', (req, res) => {
 });
 
 // ================= ENDPOINT TOP-PRODUCTOS CORREGIDO (CON CATEGORÍA) =================
-// ================= ENDPOINT TOP-PRODUCTOS CORREGIDO (SIN DUPLICADOS) =================
 app.get('/api/top-productos', (req, res) => {
     const { periodo = 'mes', limite = 100, fecha, desde, hasta, anio, mes } = req.query;
     
@@ -1956,7 +1945,6 @@ app.get('/api/top-productos', (req, res) => {
         params = [fechaInicioStr];
     }
     
-    // 🔧 CORREGIDO: Agrupar correctamente por ID de producto para evitar duplicados
     const sql = `
         SELECT 
             p.Id_Producto,
@@ -1988,7 +1976,6 @@ app.get('/api/top-productos', (req, res) => {
 app.get('/api/estadisticas-ventas-anio', (req, res) => {
     const { anio } = req.query;
     
-    // 🔧 CORREGIDO: Sumar TODAS las unidades, no solo top 5
     const sqlVentas = `
         SELECT COALESCE(SUM(o.CantidadVendida), 0) as total_unidades, COUNT(DISTINCT c.Num_Factura) as cantidad_ventas
         FROM compra c
@@ -2016,7 +2003,6 @@ app.get('/api/estadisticas-ventas-anio', (req, res) => {
         ORDER BY total DESC
     `;
     
-    // 🔧 CORREGIDO: Top 5 productos (sin duplicados)
     const sqlTopProductos = `
         SELECT p.Nombre as nombre, COALESCE(cat.Nombre, 'Sin categoría') as categoria, SUM(o.CantidadVendida) as cantidad
         FROM orden o
@@ -2066,7 +2052,6 @@ app.get('/api/estadisticas-ventas-anio', (req, res) => {
             dataMensual[v.mes - 1] = parseInt(v.total) || 0;
         });
         
-        // 🔧 CORREGIDO: total_unidades ahora es el total REAL, no solo top 5
         const totalUnidades = parseInt(ventas[0][0]?.total_unidades) || 0;
         
         res.json({
@@ -2200,7 +2185,6 @@ app.get('/api/top-clientes', (req, res) => {
         params = [fechaInicioStr];
     }
     
-    // 🔧 CORREGIDO: Usar CantidadVendida en lugar de COUNT
     const sql = `
         SELECT 
             CONCAT(COALESCE(cl.Nombre, 'Cliente'), ' ', COALESCE(cl.Apellido, '')) as nombre,
@@ -2208,74 +2192,6 @@ app.get('/api/top-clientes', (req, res) => {
         FROM compra c
         LEFT JOIN clientes cl ON c.Id_cliente = cl.Id_cliente
         INNER JOIN orden o ON c.Num_Factura = o.NumFactura
-        WHERE c.Id_cliente IS NOT NULL ${whereCondition}
-        GROUP BY c.Id_cliente, cl.Nombre, cl.Apellido
-        HAVING compras > 0
-        ORDER BY compras DESC
-        LIMIT ?
-    `;
-    
-    db.query(sql, [...params, parseInt(limite)], (err, results) => {
-        if (err) {
-            console.error('Error en /api/top-clientes:', err);
-            return res.status(500).json({ error: err.message });
-        }
-        res.json(results);
-    });
-});
-
-// ================= ENDPOINT TOP-CLIENTES CORREGIDO =================
-app.get('/api/top-clientes', (req, res) => {
-    const { periodo = 'mes', limite = 10, fecha, desde, hasta, anio, mes } = req.query;
-    
-    let whereCondition = '';
-    let params = [];
-    
-    if (fecha) {
-        whereCondition = 'AND DATE(c.Fecha) = ?';
-        params = [fecha];
-    } else if (desde && hasta) {
-        whereCondition = 'AND DATE(c.Fecha) BETWEEN ? AND ?';
-        params = [desde, hasta];
-    } else if (anio && mes) {
-        const primerDia = `${anio}-${String(mes).padStart(2, '0')}-01`;
-        const ultimoDia = new Date(parseInt(anio), parseInt(mes), 0).toISOString().split('T')[0];
-        whereCondition = 'AND DATE(c.Fecha) BETWEEN ? AND ?';
-        params = [primerDia, ultimoDia];
-    } else if (anio) {
-        whereCondition = 'AND YEAR(c.Fecha) = ?';
-        params = [anio];
-    } else {
-        let fechaInicio = new Date();
-        switch(periodo) {
-            case 'dia':
-                fechaInicio.setDate(fechaInicio.getDate() - 1);
-                break;
-            case 'semana':
-                fechaInicio.setDate(fechaInicio.getDate() - 7);
-                break;
-            case 'mes':
-                fechaInicio.setDate(fechaInicio.getDate() - 30);
-                break;
-            case 'año':
-                fechaInicio.setFullYear(fechaInicio.getFullYear() - 1);
-                break;
-            default:
-                fechaInicio.setDate(fechaInicio.getDate() - 30);
-        }
-        const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
-        whereCondition = 'AND c.Fecha >= ?';
-        params = [fechaInicioStr];
-    }
-    
-    const sql = `
-        SELECT 
-            CONCAT(COALESCE(cl.Nombre, 'Cliente'), ' ', COALESCE(cl.Apellido, '')) as nombre,
-            COUNT(c.Num_Factura) as compras,
-            COUNT(o.Id_Producto) as unidades_compradas
-        FROM compra c
-        LEFT JOIN clientes cl ON c.Id_cliente = cl.Id_cliente
-        LEFT JOIN orden o ON c.Num_Factura = o.NumFactura
         WHERE c.Id_cliente IS NOT NULL ${whereCondition}
         GROUP BY c.Id_cliente, cl.Nombre, cl.Apellido
         HAVING compras > 0
@@ -3206,7 +3122,6 @@ app.get('/api/verificar-sesion', (req, res) => {
 });
 
 // ================= RECUPERACIÓN UNIFICADA (TRABAJADORES Y ADMIN) =================
-// Este endpoint busca el email en ambas tablas y envía el enlace correspondiente
 app.post('/api/recuperar-password-unificado', (req, res) => {
     const { email } = req.body;
     
@@ -3214,7 +3129,6 @@ app.post('/api/recuperar-password-unificado', (req, res) => {
         return res.status(400).json({ success: false, message: 'Por favor, ingrese su correo electrónico' });
     }
     
-    // Buscar en administradores primero
     db.query(`SELECT id, usuario, email, 'admin' as tipo FROM usuarios_admin WHERE email = ?`, [email], (err, adminResults) => {
         if (err) {
             console.error('Error en recuperación admin:', err);
@@ -3257,7 +3171,6 @@ app.post('/api/recuperar-password-unificado', (req, res) => {
                 res.json({ success: true, message: 'Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.' });
             });
         } else {
-            // Buscar en trabajadores
             db.query(`SELECT Id_Trabajador, NombreCompleto, email, 'trabajador' as tipo FROM trabajadores WHERE email = ? AND Activo = 1`, [email], (err, trabajadoresResults) => {
                 if (err) {
                     console.error('Error en recuperación trabajador:', err);
@@ -3308,7 +3221,6 @@ app.post('/api/recuperar-password-unificado', (req, res) => {
                         });
                     });
                 } else {
-                    // No se encontró en ninguna tabla
                     console.log(`📧 Correo no registrado: ${email}`);
                     res.json({ success: true, message: 'Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.' });
                 }
@@ -3319,7 +3231,6 @@ app.post('/api/recuperar-password-unificado', (req, res) => {
 
 // ================= PANEL FINANCIERO - ENDPOINTS COMPLETOS =================
 
-// 1. Obtener ventas brutas, IVA y ventas netas por período
 app.get('/api/financiero/ventas-detalle', (req, res) => {
     const { desde, hasta, anio, mes } = req.query;
     
@@ -3374,7 +3285,6 @@ app.get('/api/financiero/ventas-detalle', (req, res) => {
     });
 });
 
-// 2. Costo de Ventas (COGS) detallado por producto
 app.get('/api/financiero/costo-ventas', (req, res) => {
     const { desde, hasta, anio, mes } = req.query;
     
@@ -3437,7 +3347,6 @@ app.get('/api/financiero/costo-ventas', (req, res) => {
     });
 });
 
-// 3. Gastos operativos (salarios, mermas, consumos)
 app.get('/api/financiero/gastos-operativos', (req, res) => {
     const { desde, hasta, anio, mes } = req.query;
     
@@ -3459,14 +3368,12 @@ app.get('/api/financiero/gastos-operativos', (req, res) => {
         fechaFin = new Date().toISOString().split('T')[0];
     }
     
-    // Salarios del período (proporcionales)
     const sqlSalarios = `
         SELECT COALESCE(SUM(Salario), 0) as total_salarios
         FROM trabajadores
         WHERE Activo = 1
     `;
     
-    // Mermas/Perdidas del período (valor estimado por precio de producto)
     const sqlMermas = `
         SELECT COALESCE(SUM(m.Cantidad * p.Precio), 0) as total_mermas
         FROM merma m
@@ -3475,7 +3382,6 @@ app.get('/api/financiero/gastos-operativos', (req, res) => {
         WHERE DATE(pd.Fecha) BETWEEN ? AND ?
     `;
     
-    // Consumo interno del período
     const sqlConsumos = `
         SELECT COALESCE(SUM(ci.Cantidad * p.Precio), 0) as total_consumos
         FROM consumo_interno ci
@@ -3510,12 +3416,10 @@ app.get('/api/financiero/gastos-operativos', (req, res) => {
     });
 });
 
-// 4. Estado de Resultados completo
 app.get('/api/financiero/estado-resultados', async (req, res) => {
     const { desde, hasta, anio, mes } = req.query;
     
     try {
-        // Obtener ventas
         const ventasPromise = new Promise((resolve, reject) => {
             let whereCondition = '';
             let params = [];
@@ -3549,7 +3453,6 @@ app.get('/api/financiero/estado-resultados', async (req, res) => {
             });
         });
         
-        // Obtener costo de ventas
         const costoPromise = new Promise((resolve, reject) => {
             let whereCondition = '';
             let params = [];
@@ -3584,7 +3487,6 @@ app.get('/api/financiero/estado-resultados', async (req, res) => {
             });
         });
         
-        // Obtener gastos operativos
         let fechaInicio, fechaFin;
         if (desde && hasta) {
             fechaInicio = desde;
@@ -3653,7 +3555,6 @@ app.get('/api/financiero/estado-resultados', async (req, res) => {
     }
 });
 
-// 5. IVA por declarar
 app.get('/api/financiero/iva-declarar', (req, res) => {
     const { desde, hasta, anio, mes } = req.query;
     
@@ -3694,7 +3595,6 @@ app.get('/api/financiero/iva-declarar', (req, res) => {
         const ventasBrutas = parseFloat(results[0]?.ventas_brutas) || 0;
         const ivaCobrado = ventasBrutas * 0.15;
         
-        // Simular IVA pagado en compras (aprox 15% del costo de ventas)
         const sqlCompras = `
             SELECT COALESCE(SUM(a.Precio_Compra * a.Cantidad_Entrada), 0) as total_compras
             FROM abastecimiento a
@@ -3718,9 +3618,7 @@ app.get('/api/financiero/iva-declarar', (req, res) => {
     });
 });
 
-// 6. Punto de equilibrio
 app.get('/api/financiero/punto-equilibrio', (req, res) => {
-    // Costos fijos mensuales estimados
     const sqlCostosFijos = `
         SELECT 
             (SELECT COALESCE(SUM(Salario), 0) FROM trabajadores WHERE Activo = 1) as salarios_mensuales,
@@ -3729,7 +3627,6 @@ app.get('/api/financiero/punto-equilibrio', (req, res) => {
             1000 as otros_gastos_fijos
     `;
     
-    // Margen de contribución promedio
     const sqlMargenContribucion = `
         SELECT 
             AVG(p.Precio - COALESCE(a.Precio_Compra, p.Precio * 0.6)) as margen_promedio
@@ -3769,7 +3666,6 @@ app.get('/api/financiero/punto-equilibrio', (req, res) => {
     });
 });
 
-// 7. Productos más y menos rentables
 app.get('/api/financiero/rentabilidad-productos', (req, res) => {
     const sql = `
         SELECT 
@@ -3810,7 +3706,6 @@ app.get('/api/financiero/rentabilidad-productos', (req, res) => {
     });
 });
 
-// 8. Comparativo ingresos vs egresos por período (para gráficas)
 app.get('/api/financiero/comparativo-periodos', (req, res) => {
     const { anio } = req.query;
     const añoActual = parseInt(anio) || new Date().getFullYear();
@@ -3843,7 +3738,6 @@ app.get('/api/financiero/comparativo-periodos', (req, res) => {
             egresosData[r.mes - 1] = parseFloat(r.egresos_costo) || 0;
         });
         
-        // Agregar gastos operativos mensuales estimados
         const gastosOperativosMensuales = 20000;
         const egresosTotales = egresosData.map(e => e + gastosOperativosMensuales);
         
@@ -3857,7 +3751,6 @@ app.get('/api/financiero/comparativo-periodos', (req, res) => {
     });
 });
 
-// 9. Flujo de caja
 app.get('/api/financiero/flujo-caja', (req, res) => {
     const { desde, hasta, anio, mes } = req.query;
     
@@ -3882,7 +3775,6 @@ app.get('/api/financiero/flujo-caja', (req, res) => {
         params = [fechaInicio.toISOString().split('T')[0]];
     }
     
-    // Entradas de efectivo (ventas)
     const sqlEntradas = `
         SELECT 
             c.Fecha,
@@ -3895,7 +3787,6 @@ app.get('/api/financiero/flujo-caja', (req, res) => {
         ORDER BY c.Fecha
     `;
     
-    // Salidas de efectivo (pagos a proveedores)
     const sqlSalidas = `
         SELECT 
             pp.Fecha,
@@ -3931,7 +3822,6 @@ app.get('/api/financiero/flujo-caja', (req, res) => {
         const totalSalidas = salidasList.reduce((sum, s) => sum + s.monto, 0);
         const saldoNeto = totalEntradas - totalSalidas;
         
-        // Calcular saldo diario acumulado
         let saldoAcumulado = 0;
         const movimientos = [];
         
@@ -3968,7 +3858,6 @@ app.get('/api/financiero/flujo-caja', (req, res) => {
     });
 });
 
-// 10. Gastos por categoría
 app.get('/api/financiero/gastos-categoria', (req, res) => {
     const { desde, hasta, anio, mes } = req.query;
     
@@ -4052,10 +3941,6 @@ app.get('/api/financiero/gastos-categoria', (req, res) => {
     });
 });
 
-
-
-
-
 // ================= INICIO DEL SERVIDOR =================
 
 setTimeout(() => {
@@ -4064,24 +3949,21 @@ setTimeout(() => {
 }, 2000);
 
 const PORT = 3000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`
     ╔══════════════════════════════════════════════════════════╗
-    ║     🚀 SERVIDOR TIENDA CHEPITA - CORRIENDO 🚀            
+    ║     🖥️  CAJA LOCAL - SISTEMA CHEPITA 🖥️                   ║
     ╠══════════════════════════════════════════════════════════╣
-    ║  📡 Puerto: ${PORT}                                         
-    ║  🌐 URL: http://localhost:${PORT}                      
-    ║  📧 Sistema de emails activado                           
-    ║  🔐 Autenticación de trabajadores activada (MD5 + bcrypt)
-    ║  🔐 Recuperación de contraseña por email activada        
-    ║  🔒 5 intentos de login - Bloqueo 15 minutos             
-    ║  🔒 Admin: bcrypt + control de intentos                  
-    ║  🔒 Admin: contraseña mínima 8 caracteres                
-    ║  📱 QR Vendedores: SISTEMA ACTIVADO ✅                    
-    ║  📊 Endpoints corregidos para Dashboard:                 
-    ║     - /api/top-productos (con categorías)                
-    ║     - /api/top-clientes (con unidades)                   
-    ║     - /api/perdidas-estadisticas (solo unidades)         
+    ║  📡 Puerto: ${PORT}                                          ║
+    ║  🌐 URL: http://localhost:${PORT}                       ║
+    ║  🗄️  Base de datos: RAILWAY (compartida)                  ║
+    ║  ✅ Sincronización: ACTIVADA con la APP                   ║
+    ║                                                           ║
+    ║  📧 Sistema de emails activado                            ║
+    ║  🔐 Autenticación de trabajadores activada                ║
+    ║  🔐 Recuperación de contraseña por email activada         ║
+    ║  🔒 5 intentos de login - Bloqueo 15 minutos              ║
+    ║  📱 QR Vendedores: SISTEMA ACTIVADO ✅                     ║
     ╚══════════════════════════════════════════════════════════╝
     `);
 });
