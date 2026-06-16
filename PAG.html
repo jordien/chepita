@@ -42,7 +42,9 @@
             ></i>
           </div>
 
-          <form id="loginForm" onsubmit="return handleLogin(event);">
+         <form id="loginForm" onsubmit="return handleLogin(event);" autocomplete="off">
+          <input type="text" style="display:none" tabindex="-1" aria-hidden="true">
+<input type="password" style="display:none" tabindex="-1" aria-hidden="true">
             <div class="input-group">
               <label>BUSCAR USUARIO</label>
               <div class="search-wrapper">
@@ -71,6 +73,10 @@
                   type="password"
                   id="password"
                   placeholder="Ingrese su contraseña"
+                  autocomplete="off"
+  readonly
+  onfocus="this.removeAttribute('readonly'); this.type='password';"
+  style="-webkit-text-security: disc;"
                 />
               </div>
             </div>
@@ -306,7 +312,14 @@
         document.getElementById("usuarioId").value = "";
         document.getElementById("usuarioNombre").value = "";
         document.getElementById("usuarioTipo").value = "";
-        document.getElementById("password").value = "";
+
+// Resetear campo contraseña
+    const pwd = document.getElementById("password");
+    pwd.type = "text";
+    pwd.value = "";
+    pwd.setAttribute("readonly", true);
+
+        
         document.getElementById("busquedaUsuario").focus();
         document.getElementById("errorMessage").style.display = "none";
         document.getElementById("warningMessage").style.display = "none";
