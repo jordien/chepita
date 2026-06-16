@@ -2,7 +2,7 @@
  * ============================================================================
  * @file server.js
  * @description Servidor de CAJA LOCAL del Sistema de Gestión Comercial "Chepita"
- * @version 3.1 - CONSULTA DE PRODUCTOS OPTIMIZADA
+ * @version 3.2 - EVALUACIÓN CON ASISTENCIA
  * ============================================================================
  * 
  * 📌 Este servidor se ejecuta en la CAJA LOCAL y se conecta a la base de datos
@@ -54,6 +54,18 @@ const transporter = nodemailer.createTransport({
     auth: {
         user: 'isabelchepita678@gmail.com',
         pass: 'cazx kvss xagg zepm'
+    },
+    tls: {
+        rejectUnauthorized: false
+    }
+});
+
+// Verificación de conexión con Gmail
+transporter.verify((error, success) => {
+    if (error) {
+        console.error('❌ Error de conexión con Gmail:', error.message);
+    } else {
+        console.log('✅ Conexión con Gmail establecida correctamente');
     }
 });
 
@@ -260,6 +272,7 @@ app.post('/api/trabajadores/cambiar-password', async (req, res) => {
     });
 });
 
+// ================= CREAR TRABAJADOR CON ENVÍO DE EMAIL =================
 app.post('/api/trabajadores', async (req, res) => {
     const { NombreCompleto, Celular, Salario, Activo, email } = req.body;
     
@@ -271,6 +284,12 @@ app.post('/api/trabajadores', async (req, res) => {
     }
     if (!email || email.trim() === '') {
         return res.status(400).json({ error: 'El correo electrónico es requerido' });
+    }
+    
+    // Validación de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: 'Formato de correo electrónico inválido' });
     }
     
     db.query(`SELECT * FROM trabajadores WHERE email = ?`, [email], async (err, results) => {
@@ -317,7 +336,7 @@ app.post('/api/trabajadores', async (req, res) => {
                     to: email,
                     subject: '🎉 Bienvenido a Chepita - Configura tu cuenta',
                     html: `
-                        <div style="font-family: Arial, sans-serif; border: 2px solid #A63C89; padding: 20px; border-radius: 10px;">
+                        <div style="font-family: Arial, sans-serif; border: 2px solid #A63C89; padding: 20px; border-radius: 10px; max-width: 500px; margin: 0 auto;">
                             <h2 style="color: #A63C89;">🎉 ¡Bienvenido a Chepita, ${NombreCompleto}!</h2>
                             <p>Has sido registrado en nuestro sistema de gestión.</p>
                             <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 15px 0;">
@@ -326,23 +345,76 @@ app.post('/api/trabajadores', async (req, res) => {
                                 <p><strong>🔑 Contraseña temporal:</strong> 1234</p>
                             </div>
                             <div style="text-align: center; margin: 25px 0;">
-                                <a href="${registroLink}" style="background-color: #A63C89; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">Configurar mi cuenta</a>
+                                <a href="${registroLink}" style="background-color: #A63C89; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Configurar mi cuenta</a>
                             </div>
-                            <p style="color: #666;">Este enlace es válido por 48 horas.</p>
+                            <p style="color: #666; font-size: 12px;">Este enlace es válido por 48 horas.</p>
                             <hr>
                             <p style="color: #999; font-size: 11px;">Tienda Chepita - Sistema de Gestión Comercial</p>
                         </div>
                     `
                 };
                 
-                transporter.sendMail(mailOptions, (error) => {
+                console.log(`📧 Intentando enviar email de bienvenida a: ${email}`);
+                
+                transporter.sendMail(mailOptions, (error, info) => {
                     if (error) {
-                        console.error("Error al enviar email:", error);
-                        return res.json({ message: "Trabajador agregado, pero no se pudo enviar el email. Verifica la configuración de Gmail.", Id_Trabajador: idTrabajador });
+                        console.error('❌ Error al enviar email de bienvenida:', error.message);
+                        return res.json({ 
+                            message: "Trabajador agregado exitosamente. No se pudo enviar el email, pero puede iniciar con la contraseña temporal 1234.", 
+                            Id_Trabajador: idTrabajador,
+                            email_enviado: false,
+                            error: error.message
+                        });
                     }
-                    res.json({ message: "Trabajador agregado. Se ha enviado un email para configurar su contraseña.", Id_Trabajador: idTrabajador });
+                    console.log(`✅ Email de bienvenida enviado exitosamente a: ${email}`);
+                    console.log(`📧 ID del mensaje: ${info.messageId}`);
+                    res.json({ 
+                        message: "Trabajador agregado exitosamente. Se ha enviado un email para configurar su contraseña.", 
+                        Id_Trabajador: idTrabajador,
+                        email_enviado: true
+                    });
                 });
             });
+        });
+    });
+});
+
+// ================= ENDPOINT DE PRUEBA DE EMAIL =================
+app.post('/api/test-email', (req, res) => {
+    const { email } = req.body;
+    
+    if (!email) {
+        return res.status(400).json({ success: false, message: 'Email requerido' });
+    }
+    
+    const mailOptions = {
+        from: 'Tienda Chepita <isabelchepita678@gmail.com>',
+        to: email,
+        subject: '✅ Prueba de correo - Chepita',
+        html: `
+            <div style="font-family: Arial, sans-serif; border: 2px solid #A63C89; padding: 20px; border-radius: 10px;">
+                <h2 style="color: #A63C89;">✅ Prueba de correo exitosa</h2>
+                <p>El sistema de correos de Chepita está funcionando correctamente.</p>
+                <p>Este es un mensaje de prueba para verificar que los emails se están enviando.</p>
+                <hr>
+                <p style="color: #999; font-size: 11px;">Tienda Chepita - Sistema de Gestión Comercial</p>
+            </div>
+        `
+    };
+    
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('❌ Error test email:', error.message);
+            return res.status(500).json({ 
+                success: false, 
+                message: 'Error al enviar email: ' + error.message
+            });
+        }
+        console.log('✅ Test email enviado a:', email);
+        res.json({ 
+            success: true, 
+            message: 'Email de prueba enviado a ' + email,
+            messageId: info.messageId
         });
     });
 });
@@ -1679,7 +1751,107 @@ app.post('/api/ordenes', (req, res) => {
         });
     });
 });
-
+// ================= EVALUACIÓN COMPLETA (PUNTOS + ASISTENCIA) =================
+app.get('/api/evaluacion-completa', (req, res) => {
+    const { year, month } = req.query;
+    
+    // Obtener todos los trabajadores activos
+    const sqlTrabajadores = `SELECT Id_Trabajador, NombreCompleto FROM trabajadores WHERE Activo = 1`;
+    
+    db.query(sqlTrabajadores, (err, trabajadores) => {
+        if (err) {
+            console.error('Error obteniendo trabajadores:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        if (trabajadores.length === 0) {
+            return res.json([]);
+        }
+        
+        const resultados = [];
+        let completados = 0;
+        
+        trabajadores.forEach((trabajador) => {
+            const id = trabajador.Id_Trabajador;
+            const nombre = trabajador.NombreCompleto;
+            
+            // 1. Obtener ventas del trabajador (SIN filtro de año/mes)
+            let sqlVentas = `
+                SELECT 
+                    COUNT(DISTINCT c.Num_Factura) as total_ventas,
+                    COUNT(DISTINCT DATE(c.Fecha)) as dias_ventas,
+                    COALESCE(SUM(c.Monto), 0) as total_ventas_cordobas
+                FROM compra c
+                WHERE c.Id_Vendedor = ? AND c.Fecha IS NOT NULL
+            `;
+            
+            let paramsVentas = [id];
+            
+            db.query(sqlVentas, paramsVentas, (err, ventasResult) => {
+                if (err) {
+                    console.error('Error obteniendo ventas:', err);
+                    completados++;
+                    return;
+                }
+                
+                const ventas = ventasResult[0] || { 
+                    total_ventas: 0, 
+                    dias_ventas: 0, 
+                    total_ventas_cordobas: 0
+                };
+                
+                // 2. Obtener asistencias REALES del trabajador (SIN filtro de año/mes)
+                let sqlAsistencia = `
+                    SELECT 
+                        COUNT(DISTINCT fecha) as dias_asistencia
+                    FROM asistencia_registros
+                    WHERE id_vendedor = ? AND estado = 'completo'
+                `;
+                
+                let paramsAsistencia = [id];
+                
+                db.query(sqlAsistencia, paramsAsistencia, (err, asistenciaResult) => {
+                    if (err) {
+                        console.error('Error obteniendo asistencias:', err);
+                        completados++;
+                        return;
+                    }
+                    
+                    const asistencia = asistenciaResult[0] || { dias_asistencia: 0 };
+                    
+                    const totalVentas = parseInt(ventas.total_ventas) || 0;
+                    const diasVentas = parseInt(ventas.dias_ventas) || 0;
+                    const diasAsistencia = parseInt(asistencia.dias_asistencia) || 0;
+                    
+                    const promedioDiario = diasVentas > 0 ? parseFloat((totalVentas / diasVentas).toFixed(2)) : 0;
+                    
+                    // Calcular puntaje: 30% ventas, 30% días con ventas, 40% días con asistencia
+                    const puntajeTotal = parseFloat(
+                        ((totalVentas * 0.3) + (diasVentas * 0.3) + (diasAsistencia * 0.4)).toFixed(2)
+                    );
+                    
+                    resultados.push({
+                        id_trabajador: id,
+                        nombre_completo: nombre,
+                        total_ventas: totalVentas,
+                        dias_ventas: diasVentas,
+                        dias_asistencia: diasAsistencia,
+                        promedio_diario: promedioDiario,
+                        puntaje_total: puntajeTotal,
+                        total_ventas_cordobas: parseFloat(ventas.total_ventas_cordobas || 0)
+                    });
+                    
+                    completados++;
+                    
+                    if (completados === trabajadores.length) {
+                        resultados.sort((a, b) => b.puntaje_total - a.puntaje_total);
+                        res.json(resultados);
+                    }
+                });
+            });
+        });
+    });
+});
 // ================= ESTADÍSTICAS =================
 
 app.get('/api/puntos-vendedores', (req, res) => {
@@ -3961,8 +4133,10 @@ app.listen(PORT, '0.0.0.0', () => {
     ║  🗄️  Base de datos: RAILWAY (compartida)                  ║
     ║  ✅ Sincronización: ACTIVADA con la APP                   ║
     ║  ⚡ CONSULTA PRODUCTOS: OPTIMIZADA                        ║
+    ║  📊 EVALUACIÓN CON ASISTENCIA: ACTIVADA                   ║
     ║                                                           ║
     ║  📧 Sistema de emails activado                            ║
+    ║  📧 Email: isabelchepita678@gmail.com                     ║
     ║  🔐 Autenticación de trabajadores activada                ║
     ║  🔐 Recuperación de contraseña por email activada         ║
     ║  🔒 5 intentos de login - Bloqueo 15 minutos              ║

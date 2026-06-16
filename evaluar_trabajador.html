@@ -61,6 +61,67 @@
         border-top: 1px solid #e2e8f0;
       }
 
+      .premio-oro,
+      .premio-plata,
+      .premio-bronce,
+      .premio-cobre,
+      .premio-vale,
+      .premio-nada {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        display: inline-block;
+      }
+      .premio-oro {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        color: #92400e;
+      }
+      .premio-plata {
+        background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+        color: #166534;
+      }
+      .premio-bronce {
+        background: linear-gradient(135deg, #fefce8, #fef08a);
+        color: #854d0e;
+      }
+      .premio-cobre {
+        background: linear-gradient(135deg, #fff7ed, #fed7aa);
+        color: #9a3412;
+      }
+      .premio-vale {
+        background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+        color: #0369a1;
+      }
+      .premio-nada {
+        background: #f1f5f9;
+        color: #64748b;
+      }
+
+      .et-puntaje {
+        font-weight: 700;
+        color: #4a1d6d;
+        font-size: 16px;
+      }
+
+      .et-asistencia-numero {
+        font-weight: 700;
+        font-size: 18px;
+        color: #2e7d32;
+      }
+
+      .et-asistencia-cero {
+        font-weight: 700;
+        font-size: 18px;
+        color: #c62828;
+      }
+
+      .et-asistencia-simulada {
+        font-size: 12px;
+        color: #999;
+        font-weight: 400;
+      }
+
       @media (max-width: 768px) {
         body {
           padding-top: 80px;
@@ -81,7 +142,7 @@
           overflow-x: auto;
         }
         .et-table {
-          min-width: 650px;
+          min-width: 750px;
         }
       }
     </style>
@@ -111,6 +172,12 @@
       <div class="et-header">
         <div class="et-header-info">
           <h2>Evaluación de Desempeño</h2>
+          <p style="color: #666; font-size: 13px; margin-top: 4px;">
+            <i class="fas fa-info-circle"></i> Puntaje = Ventas (30%) + Días con Ventas (30%) + Días con Asistencia (40%)
+          </p>
+          <p style="color: #888; font-size: 12px; margin-top: 4px;">
+            <i class="fas fa-info-circle"></i> La asistencia se calcula automáticamente basada en los días que vendió
+          </p>
         </div>
 
         <button
@@ -165,9 +232,10 @@
                 <th>ID</th>
                 <th>Trabajador</th>
                 <th>Ventas</th>
-                <th>Días Activos</th>
-                <th>Promedio Diario</th>
-                <th>Puntaje Total</th>
+                <th>Días Ventas</th>
+                <th>Asistencia</th>
+                <th>Promedio</th>
+                <th>Puntaje</th>
                 <th>Premio</th>
               </tr>
             </thead>
@@ -179,7 +247,7 @@
       <div class="et-footer">
         <p>
           <i class="fas fa-chart-simple"></i> Sistema de Evaluación de Desempeño
-          - Versión 1.0
+          - Versión 2.0 (Asistencia Automática)
         </p>
       </div>
     </div>
@@ -187,28 +255,15 @@
     <script>
       function obtenerPremio(puntaje) {
         if (puntaje >= 50)
-          return { texto: "🏆 C$ 1,000 + Diploma", clase: "premio-oro" };
-        if (puntaje >= 40) return { texto: "💰 C$ 750", clase: "premio-plata" };
+          return { texto: "C$ 1,000 + Diploma", clase: "premio-oro" };
+        if (puntaje >= 40) return { texto: "C$ 750", clase: "premio-plata" };
         if (puntaje >= 30)
-          return { texto: "💰 C$ 500", clase: "premio-bronce" };
-        if (puntaje >= 20) return { texto: "💰 C$ 250", clase: "premio-cobre" };
+          return { texto: "C$ 500", clase: "premio-bronce" };
+        if (puntaje >= 20) return { texto: "C$ 250", clase: "premio-cobre" };
         if (puntaje >= 10)
-          return { texto: "🎁 Vale C$ 100", clase: "premio-vale" };
-        return { texto: "❌ Sin premio", clase: "premio-nada" };
+          return { texto: "Vale C$ 100", clase: "premio-vale" };
+        return { texto: "Sin premio", clase: "premio-nada" };
       }
-
-      /*  function mostrarFecha() {
-        const fecha = new Date().toLocaleDateString("es-ES", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
-        document.getElementById("currentDate").innerHTML =
-          `<i class="fas fa-calendar-alt"></i> ${fecha}`;
-        document.getElementById("headerDate").innerHTML =
-          `<i class="fas fa-calendar-alt"></i> ${fecha}`;
-      }*/
 
       function cargarAnios() {
         const select = document.getElementById("filterYear");
@@ -228,7 +283,7 @@
         resultadosDiv.style.display = "none";
 
         try {
-          let url = "/api/puntos-vendedores";
+          let url = "/api/evaluacion-completa";
           const params = [];
           if (year) params.push(`year=${year}`);
           if (month) params.push(`month=${month}`);
@@ -241,22 +296,41 @@
 
           if (!datos.length) {
             tablaBody.innerHTML =
-              '<tr><td colspan="7" style="text-align:center;padding:40px;">📭 No hay datos de ventas para el período seleccionado.</td></tr>';
+              '<tr><td colspan="8" style="text-align:center;padding:40px;">📭 No hay datos para el período seleccionado.</td></tr>';
           } else {
             tablaBody.innerHTML = "";
             datos.forEach((trabajador) => {
               const premio = obtenerPremio(trabajador.puntaje_total);
+              
+              // 🔥 ASISTENCIA = DÍAS DE VENTAS (simulado)
+              const diasAsistencia = trabajador.dias_ventas || 0;
+              const asistenciaNumero = diasAsistencia;
+              const asistenciaClase = asistenciaNumero > 0 ? 'et-asistencia-numero' : 'et-asistencia-cero';
+
+              // Recalcular puntaje con asistencia = días de ventas
+              const totalVentas = trabajador.total_ventas || 0;
+              const diasVentas = trabajador.dias_ventas || 0;
+              const puntajeRecalculado = parseFloat(
+                ((totalVentas * 0.3) + (diasVentas * 0.3) + (diasAsistencia * 0.4)).toFixed(2)
+              );
+
+              const premioRecalculado = obtenerPremio(puntajeRecalculado);
+
               tablaBody.innerHTML += `
-                        <tr>
-                            <td>${trabajador.id_trabajador}</td>
-                            <td><strong>${trabajador.nombre_completo}</strong></td>
-                            <td>${trabajador.total_ventas}</td>
-                            <td>${trabajador.dias_activos}</td>
-                            <td>${trabajador.promedio_diario}</td>
-                            <td class="et-puntaje">${trabajador.puntaje_total}</td>
-                            <td><span class="${premio.clase}">${premio.texto}</span></td>
-                        </tr>
-                    `;
+                <tr>
+                  <td>${trabajador.id_trabajador}</td>
+                  <td><strong>${trabajador.nombre_completo}</strong></td>
+                  <td>${trabajador.total_ventas}</td>
+                  <td>${trabajador.dias_ventas}</td>
+                  <td>
+                    <span class="${asistenciaClase}">${asistenciaNumero}</span>
+                    <span class="et-asistencia-simulada">(automática)</span>
+                  </td>
+                  <td>${trabajador.promedio_diario || 0}</td>
+                  <td class="et-puntaje"><strong>${puntajeRecalculado}</strong></td>
+                  <td><span class="${premioRecalculado.clase}">${premioRecalculado.texto}</span></td>
+                </tr>
+              `;
             });
           }
 
@@ -281,48 +355,8 @@
         cargarEvaluacion("", "");
       }
 
-      /*mostrarFecha();*/
       cargarAnios();
       cargarEvaluacion("", "");
     </script>
-
-    <style>
-      .premio-oro,
-      .premio-plata,
-      .premio-bronce,
-      .premio-cobre,
-      .premio-vale,
-      .premio-nada {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: bold;
-        display: inline-block;
-      }
-      .premio-oro {
-        background: linear-gradient(135deg, #fef3c7, #fde68a);
-        color: #92400e;
-      }
-      .premio-plata {
-        background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-        color: #166534;
-      }
-      .premio-bronce {
-        background: linear-gradient(135deg, #fefce8, #fef08a);
-        color: #854d0e;
-      }
-      .premio-cobre {
-        background: linear-gradient(135deg, #fff7ed, #fed7aa);
-        color: #9a3412;
-      }
-      .premio-vale {
-        background: linear-gradient(135deg, #e0f2fe, #bae6fd);
-        color: #0369a1;
-      }
-      .premio-nada {
-        background: #f1f5f9;
-        color: #64748b;
-      }
-    </style>
   </body>
 </html>
