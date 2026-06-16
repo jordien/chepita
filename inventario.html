@@ -124,7 +124,7 @@
           </thead>
           <tbody id="cuerpoTabla">
             <tr>
-              <td colspan="7" class="loading">Cargando inventario...</td>
+              <td colspan="7" class="loading">Cargando inventario...<\/td>
             </tr>
           </tbody>
         </table>
@@ -762,6 +762,11 @@
       let perdidasData = [];
       let perdidaEditandoId = null;
 
+      // ========== VARIABLES DE PAGINACIÓN ==========
+      let paginaActualInventario = 1;
+      let totalPaginasInventario = 1;
+      let productosCompletos = [];
+
       function soloNumeros(event) {
         const charCode = event.which ? event.which : event.keyCode;
         if (charCode < 48 || charCode > 57) {
@@ -1231,6 +1236,7 @@
         );
       }
 
+      // ========== CARGA DE INVENTARIO CON PAGINACIÓN ==========
       async function cargarInventario() {
         try {
           const [resProd, resProv] = await Promise.all([
@@ -1256,7 +1262,10 @@
           }
 
           inventarioData = productos;
-          mostrarTabla();
+          productosCompletos = [...productos];
+          totalPaginasInventario = Math.ceil(productos.length / 50);
+          paginaActualInventario = 1;
+          mostrarPaginaInventario();
         } catch (error) {
           mostrarMensaje("Error", "No se pudieron cargar los datos", true);
         }
@@ -1276,42 +1285,102 @@
 
       function mostrarTabla() {
         const tbody = document.getElementById("cuerpoTabla");
-        const search = document
-          .getElementById("searchInput")
-          .value.toLowerCase();
-        const catF = document.getElementById("categoriaFilter").value;
-        const estF = document.getElementById("estadoFilter").value;
 
-        const filtrados = inventarioData.filter((p) => {
-          const matchTxt =
-            p.Nombre.toLowerCase().includes(search) ||
-            (p.Marca && p.Marca.toLowerCase().includes(search));
-          const matchCat = !catF || p.Nombre_Categoria === catF;
-          const matchEst = !estF || p.Nombre_Estado === estF;
-          return matchTxt && matchCat && matchEst;
-        });
-
-        if (filtrados.length === 0) {
+        if (inventarioData.length === 0) {
           tbody.innerHTML =
-            '<tr><td colspan="7" class="loading">No hay resultados</td></tr>';
+            '<tr><td colspan="7" class="loading">No hay resultados<\/td><\/tr>';
           return;
         }
 
-        tbody.innerHTML = filtrados
+        tbody.innerHTML = inventarioData
           .map(
             (p) => `
             <tr onclick="manejarClickFila(${p.Id_Producto})" style="cursor: ${modoActual ? "pointer" : "default"}">
                 <td><strong>${escapeHtml(p.Nombre)}</strong></td>
-                <td>${escapeHtml(p.Marca || "N/A")}</td>
-                <td>${escapeHtml(p.Nombre_Categoria)}</td>
-                <td>C$ ${parseFloat(p.Precio).toFixed(2)}</td>
-                <td class="stock-valor">${p.Stock}</td>
-                <td>${escapeHtml(p.Proveedor)}</td>
-                <td><span class="status-badge status-${p.Nombre_Estado}">${p.Nombre_Estado}</span></td>
-            </tr>
+                <td>${escapeHtml(p.Marca || "N/A")}</span>
+                <td>${escapeHtml(p.Nombre_Categoria)}</span>
+                <td>C$ ${parseFloat(p.Precio).toFixed(2)}</span>
+                <td class="stock-valor">${p.Stock}</span>
+                <td>${escapeHtml(p.Proveedor)}</span>
+                <td><span class="status-badge status-${p.Nombre_Estado}">${p.Nombre_Estado}</span></span>
+             </tr>
         `,
           )
           .join("");
+      }
+
+      // ========== FUNCIONES DE PAGINACIÓN ==========
+      function mostrarPaginaInventario() {
+        const inicio = (paginaActualInventario - 1) * 50;
+        const fin = inicio + 50;
+        inventarioData = productosCompletos.slice(inicio, fin);
+        mostrarTabla();
+        actualizarControlesPaginacion();
+        
+        // Scroll suave al inicio de la tabla
+        const tableContainer = document.querySelector('.table-container');
+        if (tableContainer) {
+          tableContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+
+      function cambiarPaginaInventario(pagina) {
+        if (pagina < 1 || pagina > totalPaginasInventario) return;
+        paginaActualInventario = pagina;
+        mostrarPaginaInventario();
+      }
+
+      function actualizarControlesPaginacion() {
+        let paginacionDiv = document.getElementById('paginacionControles');
+        if (!paginacionDiv) {
+          paginacionDiv = document.createElement('div');
+          paginacionDiv.id = 'paginacionControles';
+          paginacionDiv.className = 'paginacion-container';
+          const tableContainer = document.querySelector('.table-container');
+          if (tableContainer) {
+            tableContainer.appendChild(paginacionDiv);
+          }
+        }
+        
+        if (totalPaginasInventario <= 1) {
+          paginacionDiv.style.display = 'none';
+          return;
+        }
+        
+        paginacionDiv.style.display = 'flex';
+        paginacionDiv.style.justifyContent = 'center';
+        paginacionDiv.style.alignItems = 'center';
+        paginacionDiv.style.gap = '8px';
+        paginacionDiv.style.marginTop = '20px';
+        paginacionDiv.style.padding = '10px';
+        paginacionDiv.style.flexWrap = 'wrap';
+        
+        let html = '';
+        
+        html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(${paginaActualInventario - 1})" ${paginaActualInventario === 1 ? 'disabled' : ''}>« Anterior</button>`;
+        
+        let inicio = Math.max(1, paginaActualInventario - 2);
+        let fin = Math.min(totalPaginasInventario, paginaActualInventario + 2);
+        
+        if (inicio > 1) {
+          html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(1)">1</button>`;
+          if (inicio > 2) html += `<span class="paginacion-puntos">...</span>`;
+        }
+        
+        for (let i = inicio; i <= fin; i++) {
+          html += `<button class="btn-paginacion ${i === paginaActualInventario ? 'active' : ''}" onclick="cambiarPaginaInventario(${i})">${i}</button>`;
+        }
+        
+        if (fin < totalPaginasInventario) {
+          if (fin < totalPaginasInventario - 1) html += `<span class="paginacion-puntos">...</span>`;
+          html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(${totalPaginasInventario})">${totalPaginasInventario}</button>`;
+        }
+        
+        html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(${paginaActualInventario + 1})" ${paginaActualInventario === totalPaginasInventario ? 'disabled' : ''}>Siguiente »</button>`;
+        
+        html += `<span style="margin-left: 15px; color: #666; font-size: 13px;">Página ${paginaActualInventario} de ${totalPaginasInventario}</span>`;
+        
+        paginacionDiv.innerHTML = html;
       }
 
       function toggleModo(modo) {
@@ -1613,7 +1682,21 @@
       }
 
       function filtrarTabla() {
-        mostrarTabla();
+        const search = document.getElementById("searchInput").value.toLowerCase();
+        const catF = document.getElementById("categoriaFilter").value;
+        const estF = document.getElementById("estadoFilter").value;
+        
+        let filtrados = productosCompletos.filter((p) => {
+          const matchTxt = p.Nombre.toLowerCase().includes(search) || (p.Marca && p.Marca.toLowerCase().includes(search));
+          const matchCat = !catF || p.Nombre_Categoria === catF;
+          const matchEst = !estF || p.Nombre_Estado === estF;
+          return matchTxt && matchCat && matchEst;
+        });
+        
+        inventarioData = filtrados;
+        totalPaginasInventario = Math.ceil(filtrados.length / 50);
+        paginaActualInventario = 1;
+        mostrarPaginaInventario();
       }
 
       function generarInforme() {
@@ -1628,7 +1711,7 @@
       }
 
       // ================= FUNCIONES DE CONSUMO INTERNO =================
-
+      // (Todas tus funciones originales de consumo interno se mantienen igual)
       async function cargarProductosParaConsumo() {
         try {
           const respuesta = await fetch("/api/productos");
@@ -1969,7 +2052,7 @@
       }
 
       // ================= FUNCIONES DE PERDIDAS =================
-
+      // (Todas tus funciones originales de pérdidas se mantienen igual)
       async function cargarProductosParaPerdida() {
         try {
           const respuesta = await fetch("/api/productos");

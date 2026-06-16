@@ -1,12 +1,16 @@
 /**
  * ============================================================================
  * @file server.js
- * @description Servidor de CAJA LOCAL del Sistema de Gestión Comercial "Chepita"
- * @version 3.0 - Conectado a BASE DE DATOS RAILWAY (compartida con APP)
+ * @description Servidor principal del Sistema de Gestión Comercial "Chepita"
+ * @version 3.0 - Con sistema QR para vendedores (PWA) + Optimización inventario
  * ============================================================================
  * 
- * 📌 Este servidor se ejecuta en la CAJA LOCAL y se conecta a la base de datos
- *    centralizada en Railway, compartiendo datos con la aplicación web.
+ * 📌 PROCEDIMIENTOS ALMACENADOS UTILIZADOS EN ESTE SERVIDOR:
+ * ============================================================================
+ * 
+ * 1. sp_listar_categorias      → GET /api/categorias           → Lista todas las categorías
+ * 2. sp_listar_consumos        → GET /api/consumos             → Lista todos los consumos internos
+ * 3. sp_productos_bajo_stock   → GET /api/productos/bajo-stock → Lista productos con stock < 10
  * 
  * ============================================================================
  */
@@ -20,6 +24,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const qrcode = require('qrcode');
+const NodeCache = require('node-cache');
 
 const app = express();
 
@@ -28,19 +33,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
-// ================= CONEXIÓN A MYSQL - RAILWAY (compartida con APP) =================
 const db = mysql.createConnection({
-    host: process.env.MYSQLHOST || 'acela.proxy.rlwy.net',
-    user: process.env.MYSQLUSER || 'root',
-    password: process.env.MYSQLPASSWORD || 'MFaPbrOIWcBNrrvrxBNcfClvNNtFIoSt',
-    database: process.env.MYSQLDATABASE || 'railway',
-    port: process.env.MYSQLPORT || 49485
+    host: '127.0.0.1', 
+    user: 'root',
+    password: '',
+    database: 'chepita7',
+    port: 3306
 });
 
 db.connect(err => {
-    if (err) return console.error('❌ Error de conexion a Railway:', err.message);
-    console.log('✅ CAJA LOCAL - Conectada exitosamente a la base de datos RAILWAY');
-    console.log('✅ Datos sincronizados con la aplicación web');
+    if (err) return console.error('Error de conexion:', err.message);
+    console.log('✅ Conexion exitosa a la base de datos chepita7');
     
     crearTablaTokens();
     crearTablaRecuperacionTokens();
@@ -59,6 +62,7 @@ const transporter = nodemailer.createTransport({
 
 const resetTokens = {};
 const SECRET_KEY = 'chepita_secret_key_2025';
+const cache = new NodeCache({ stdTTL: 60, checkperiod: 120 });
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'PAG.html'));
@@ -771,23 +775,37 @@ app.delete('/api/categorias/:id', (req, res) => {
     });
 });
 
-// ================= PRODUCTOS =================
+// ================= PRODUCTOS OPTIMIZADO =================
 
+// Endpoint con caché para productos
 app.get('/api/productos', (req, res) => {
+    const cacheKey = 'productos_lista';
+    const cachedData = cache.get(cacheKey);
+    
+    if (cachedData) {
+        console.log('⚡ Productos respondidos desde caché');
+        return res.json(cachedData);
+    }
+    
+    console.log('📦 Cargando productos desde base de datos...');
+    
     const sql = `
         SELECT 
             p.Id_Producto, 
             p.Nombre, 
             p.Precio, 
             p.Marca,
-            COALESCE(c.Nombre, 'Sin Categoria') AS Nombre_Categoria, 
+            COALESCE(c.Nombre, 'Sin Categoria') AS Nombre_Categoria,
             COALESCE(e.Nombre_Estado, 'Disponible') AS Nombre_Estado,
-            COALESCE(SUM(s.Cantidad), 0) AS Stock
+            COALESCE(s.stock_total, 0) AS Stock
         FROM producto p
         LEFT JOIN categoria c ON p.Id_Categoria = c.Id_Categoria
         LEFT JOIN estado e ON p.Id_Estado = e.Id_Estado
-        LEFT JOIN stock s ON p.Id_Producto = s.Id_Producto
-        GROUP BY p.Id_Producto, p.Nombre, p.Precio, p.Marca, c.Nombre, e.Nombre_Estado
+        LEFT JOIN (
+            SELECT Id_Producto, SUM(Cantidad) as stock_total
+            FROM stock
+            GROUP BY Id_Producto
+        ) s ON p.Id_Producto = s.Id_Producto
         ORDER BY p.Id_Producto DESC
     `;
     
@@ -797,70 +815,119 @@ app.get('/api/productos', (req, res) => {
             return res.status(500).json({ error: err.message });
         }
         
-        const resultadosLimpios = results.map(producto => {
-            if (producto.Nombre_Estado && /[0-9]/.test(producto.Nombre_Estado)) {
-                producto.Nombre_Estado = 'Disponible';
-            }
-            return producto;
-        });
-        
-        console.log(`📦 Productos enviados: ${resultadosLimpios.length}`);
-        res.json(resultadosLimpios);
+        cache.set(cacheKey, results);
+        res.json(results);
     });
 });
 
-app.get('/api/producto-proveedor/:id', (req, res) => {
-    const { id } = req.params;
-    const sql = `
-        SELECT prov.Nombre AS Nombre_Proveedor
-        FROM abastecimiento a
-        LEFT JOIN proveedores prov ON a.Id_Proveedor = prov.Id_Proveedor
-        WHERE a.Id_Producto = ?
-        LIMIT 1
+// Endpoint con paginación para inventario
+app.get('/api/productos/paginados', (req, res) => {
+    const pagina = parseInt(req.query.pagina) || 1;
+    const limite = parseInt(req.query.limite) || 50;
+    const offset = (pagina - 1) * limite;
+    const busqueda = req.query.busqueda || '';
+    const categoria = req.query.categoria || '';
+    
+    let whereConditions = [];
+    let params = [];
+    
+    if (busqueda) {
+        whereConditions.push('p.Nombre LIKE ?');
+        params.push(`%${busqueda}%`);
+    }
+    
+    if (categoria && categoria !== '') {
+        whereConditions.push('c.Nombre = ?');
+        params.push(categoria);
+    }
+    
+    const whereClause = whereConditions.length > 0 
+        ? `WHERE ${whereConditions.join(' AND ')}` 
+        : '';
+    
+    const countSql = `
+        SELECT COUNT(*) as total
+        FROM producto p
+        LEFT JOIN categoria c ON p.Id_Categoria = c.Id_Categoria
+        ${whereClause}
     `;
     
-    db.query(sql, [id], (err, results) => {
-        if (err) return res.status(500).json({ error: err.sqlMessage });
-        res.json(results[0] || { Nombre_Proveedor: null });
+    db.query(countSql, params, (err, countResults) => {
+        if (err) {
+            console.error('Error en conteo:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        const total = countResults[0].total;
+        const totalPaginas = Math.ceil(total / limite);
+        
+        const sql = `
+            SELECT 
+                p.Id_Producto, 
+                p.Nombre, 
+                p.Precio, 
+                p.Marca,
+                COALESCE(c.Nombre, 'Sin Categoria') AS Nombre_Categoria,
+                COALESCE(e.Nombre_Estado, 'Disponible') AS Nombre_Estado,
+                COALESCE(s.stock_total, 0) AS Stock
+            FROM producto p
+            LEFT JOIN categoria c ON p.Id_Categoria = c.Id_Categoria
+            LEFT JOIN estado e ON p.Id_Estado = e.Id_Estado
+            LEFT JOIN (
+                SELECT Id_Producto, SUM(Cantidad) as stock_total
+                FROM stock
+                GROUP BY Id_Producto
+            ) s ON p.Id_Producto = s.Id_Producto
+            ${whereClause}
+            ORDER BY p.Id_Producto DESC
+            LIMIT ? OFFSET ?
+        `;
+        
+        db.query(sql, [...params, limite, offset], (err, results) => {
+            if (err) {
+                console.error('Error en productos paginados:', err);
+                return res.status(500).json({ error: err.message });
+            }
+            
+            res.json({
+                productos: results,
+                pagina_actual: pagina,
+                total_paginas: totalPaginas,
+                total_productos: total,
+                por_pagina: limite
+            });
+        });
     });
 });
 
+// POST con limpieza de caché
 app.post('/api/productos', (req, res) => {
     const { Nombre, Stock, Precio, Marca, Id_Proveedor, Id_Categoria } = req.body;
-
-    if (!Nombre || Nombre.trim() === '') {
-        return res.status(400).json({ error: 'El nombre del producto es requerido' });
-    }
-    if (Stock < 1 || Stock > 9999) {
-        return res.status(400).json({ error: 'Stock debe estar entre 1 y 9999' });
-    }
-    if (Precio < 1 || Precio > 10000) {
-        return res.status(400).json({ error: 'Precio debe estar entre C$1 y C$10000' });
-    }
-    if (!Id_Proveedor) {
-        return res.status(400).json({ error: 'Debe seleccionar un proveedor existente' });
+    
+    if (!Nombre || !Stock || !Precio || !Id_Proveedor) {
+        return res.status(400).json({ error: 'Todos los campos son requeridos' });
     }
     
     db.query(`SELECT Id_Proveedor FROM proveedores WHERE Id_Proveedor = ?`, [Id_Proveedor], (err, provResults) => {
-        if (err) return res.status(500).json({ error: err.sqlMessage });
-        if (provResults.length === 0) {
-            return res.status(400).json({ error: 'El proveedor seleccionado no existe en la base de datos' });
-        }
+        if (err) return res.status(500).json({ error: err.message });
+        if (provResults.length === 0) return res.status(400).json({ error: 'Proveedor no existe' });
         
-        const sqlProd = `INSERT INTO producto (Nombre, Precio, Marca, Id_Categoria, Id_Estado) VALUES (?, ?, ?, ?, 1)`;
-        
-        db.query(sqlProd, [Nombre, Precio, Marca || null, Id_Categoria || null], (err, result) => {
-            if (err) return res.status(500).json({ error: err.sqlMessage });
+        db.query(`INSERT INTO producto (Nombre, Precio, Marca, Id_Categoria, Id_Estado) VALUES (?, ?, ?, ?, 1)`, 
+            [Nombre, Precio, Marca || null, Id_Categoria || null], (err, result) => {
+            if (err) return res.status(500).json({ error: err.message });
             
             const idProducto = result.insertId;
-
-            const sqlStock = `INSERT INTO stock (Id_Inventario, Id_Producto, Cantidad, FechaEntrada) VALUES (1, ?, ?, CURDATE())`;
-            db.query(sqlStock, [idProducto, Stock], (err2) => {
-                if (err2) return res.status(500).json({ error: err2.sqlMessage });
+            db.query(`INSERT INTO stock (Id_Inventario, Id_Producto, Cantidad, FechaEntrada) VALUES (1, ?, ?, CURDATE())`, 
+                [idProducto, Stock], (err2) => {
+                if (err2) return res.status(500).json({ error: err2.message });
                 
-                const sqlAbast = `INSERT INTO abastecimiento (Id_Producto, Id_Proveedor, Precio_Compra, FechaEntrada, Cantidad_Entrada) VALUES (?, ?, ?, CURDATE(), ?)`;
-                db.query(sqlAbast, [idProducto, Id_Proveedor, Precio, Stock], (err3) => {
-                    if (err3) return res.status(500).json({ error: err3.sqlMessage });
+                db.query(`INSERT INTO abastecimiento (Id_Producto, Id_Proveedor, Precio_Compra, FechaEntrada, Cantidad_Entrada) VALUES (?, ?, ?, CURDATE(), ?)`, 
+                    [idProducto, Id_Proveedor, Precio, Stock], (err3) => {
+                    if (err3) return res.status(500).json({ error: err3.message });
+                    
+                    cache.del('productos_lista');
+                    console.log('🗑️ Caché de productos limpiado');
+                    
                     res.json({ message: "Producto agregado", Id_Producto: idProducto });
                 });
             });
@@ -868,6 +935,7 @@ app.post('/api/productos', (req, res) => {
     });
 });
 
+// PUT con limpieza de caché
 app.put('/api/productos/:id', (req, res) => {
     const { id } = req.params;
     const { Nombre, Precio, Marca, Id_Estado } = req.body;
@@ -881,56 +949,41 @@ app.put('/api/productos/:id', (req, res) => {
 
     const sql = `UPDATE producto SET Nombre = ?, Precio = ?, Marca = ?, Id_Estado = ? WHERE Id_Producto = ?`;
     db.query(sql, [Nombre, Precio, Marca || null, Id_Estado, id], (err, result) => {
-        if (err) return res.status(500).json({ error: err.sqlMessage });
+        if (err) return res.status(500).json({ error: err.message });
+        
+        cache.del('productos_lista');
+        console.log('🗑️ Caché de productos limpiado por actualización');
+        
         res.json({ message: "Producto actualizado correctamente" });
     });
 });
 
-app.patch('/api/productos/:id/stock', (req, res) => {
-    const { id } = req.params;
-    const { stock } = req.body;
-
-    if (stock < 1 || stock > 9999) {
-        return res.status(400).json({ error: "El stock debe estar entre 1 y 9999 unidades" });
-    }
-
-    db.query(`SELECT * FROM stock WHERE Id_Producto = ?`, [id], (err, results) => {
-        if (err) return res.status(500).json({ error: err.sqlMessage });
-        
-        if (results.length > 0) {
-            db.query(`UPDATE stock SET Cantidad = ?, FechaEntrada = CURDATE() WHERE Id_Producto = ?`, [stock, id], (err) => {
-                if (err) return res.status(500).json({ error: err.sqlMessage });
-                res.json({ message: "Stock actualizado", stock: stock });
-            });
-        } else {
-            db.query(`INSERT INTO stock (Id_Inventario, Id_Producto, Cantidad, FechaEntrada) VALUES (1, ?, ?, CURDATE())`, [id, stock], (err) => {
-                if (err) return res.status(500).json({ error: err.sqlMessage });
-                res.json({ message: "Registro de stock creado", stock: stock });
-            });
-        }
-    });
-});
-
+// DELETE con limpieza de caché
 app.delete('/api/productos/:id', (req, res) => {
     const { id } = req.params;
-    const tablasRelacionadas = ['orden', 'stock', 'abastecimiento', 'consumo_interno', 'merma', 'premio'];
     
-    async function eliminarDependencias() {
-        for (const tabla of tablasRelacionadas) {
-            await new Promise((resolve, reject) => {
+    const tablasRelacionadas = ['orden', 'stock', 'abastecimiento', 'consumo_interno', 'merma'];
+    
+    function eliminarDependencias() {
+        return Promise.all(tablasRelacionadas.map(tabla => {
+            return new Promise((resolve, reject) => {
                 db.query(`DELETE FROM ${tabla} WHERE Id_Producto = ?`, [id], (err) => {
                     if (err) reject(err);
                     else resolve();
                 });
             });
-        }
+        }));
     }
-
+    
     eliminarDependencias()
         .then(() => {
             db.query(`DELETE FROM producto WHERE Id_Producto = ?`, [id], (err, result) => {
-                if (err) return res.status(500).json({ error: "Error al borrar producto: " + err.sqlMessage });
+                if (err) return res.status(500).json({ error: "Error al borrar producto: " + err.message });
                 if (result.affectedRows === 0) return res.status(404).json({ error: "Producto no encontrado" });
+                
+                cache.del('productos_lista');
+                console.log('🗑️ Caché de productos limpiado por eliminación');
+                
                 res.json({ message: "Producto y registros relacionados eliminados correctamente" });
             });
         })
@@ -3949,21 +4002,13 @@ setTimeout(() => {
 }, 2000);
 
 const PORT = 3000;
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
     console.log(`
     ╔══════════════════════════════════════════════════════════╗
-    ║     🖥️  CAJA LOCAL - SISTEMA CHEPITA 🖥️                   ║
+    ║     🚀 SERVIDOR TIENDA CHEPITA - CORRIENDO 🚀            
     ╠══════════════════════════════════════════════════════════╣
-    ║  📡 Puerto: ${PORT}                                          ║
-    ║  🌐 URL: http://localhost:${PORT}                       ║
-    ║  🗄️  Base de datos: RAILWAY (compartida)                  ║
-    ║  ✅ Sincronización: ACTIVADA con la APP                   ║
-    ║                                                           ║
-    ║  📧 Sistema de emails activado                            ║
-    ║  🔐 Autenticación de trabajadores activada                ║
-    ║  🔐 Recuperación de contraseña por email activada         ║
-    ║  🔒 5 intentos de login - Bloqueo 15 minutos              ║
-    ║  📱 QR Vendedores: SISTEMA ACTIVADO ✅                     ║
-    ╚══════════════════════════════════════════════════════════╝
+    ║  📡 Puerto: ${PORT}                                         
+    ║  🌐 URL: http://localhost:${PORT}                  
+    
     `);
 });

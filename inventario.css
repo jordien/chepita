@@ -1482,3 +1482,63 @@ input:checked + .slider:before {
     transform: translateX(-50%);
   }
 }
+/* ============================================
+   ESTILOS PARA PAGINACIÓN - AGREGAR AL FINAL
+   ============================================ */
+.paginacion-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 25px;
+    padding: 15px;
+    flex-wrap: wrap;
+}
+
+.btn-paginacion {
+    background: linear-gradient(135deg, #f0f0f0, #e2e2e2);
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    color: #4a1d6d;
+    font-family: 'Poppins', sans-serif;
+}
+
+.btn-paginacion:hover:not(:disabled) {
+    background: linear-gradient(135deg, #A63C89, #4a1d6d);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-paginacion.active {
+    background: linear-gradient(135deg, #A63C89, #4a1d6d);
+    color: white;
+    box-shadow: 0 2px 8px rgba(166, 60, 137, 0.3);
+}
+
+.btn-paginacion:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.paginacion-puntos {
+    color: #666;
+    font-weight: 600;
+    padding: 0 5px;
+}
+
+@media (max-width: 768px) {
+    .paginacion-container {
+        gap: 5px;
+    }
+    
+    .btn-paginacion {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+}
