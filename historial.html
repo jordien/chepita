@@ -486,13 +486,13 @@
           }
 
           if (canalFiltro) {
-            const canalNombre = canales.find(
-              (c) => c.Id_Canal == canalFiltro,
-            )?.Nombre_Canal;
-            facturasArray = facturasArray.filter(
-              (f) => f.Canal === canalNombre,
-            );
-          }
+  const canalNombre = canales.find(
+    (c) => c.Id_Canal == canalFiltro,
+  )?.Nombre_Canal;
+  facturasArray = facturasArray.filter(
+    (f) => f.TipoVenta !== "express" && f.Canal === canalNombre,
+  );
+}
 
           if (metodoFiltro) {
             const metodoNombre = metodos.find(
