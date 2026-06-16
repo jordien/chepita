@@ -797,7 +797,8 @@ app.get('/api/productos', (req, res) => {
             p.Marca,
             COALESCE(c.Nombre, 'Sin Categoria') AS Nombre_Categoria,
             COALESCE(e.Nombre_Estado, 'Disponible') AS Nombre_Estado,
-            COALESCE(s.stock_total, 0) AS Stock
+            COALESCE(s.stock_total, 0) AS Stock,
+            prov.Nombre AS Proveedor
         FROM producto p
         LEFT JOIN categoria c ON p.Id_Categoria = c.Id_Categoria
         LEFT JOIN estado e ON p.Id_Estado = e.Id_Estado
@@ -806,6 +807,9 @@ app.get('/api/productos', (req, res) => {
             FROM stock
             GROUP BY Id_Producto
         ) s ON p.Id_Producto = s.Id_Producto
+        LEFT JOIN abastecimiento a ON p.Id_Producto = a.Id_Producto
+        LEFT JOIN proveedores prov ON a.Id_Proveedor = prov.Id_Proveedor
+        GROUP BY p.Id_Producto
         ORDER BY p.Id_Producto DESC
     `;
     
@@ -869,7 +873,8 @@ app.get('/api/productos/paginados', (req, res) => {
                 p.Marca,
                 COALESCE(c.Nombre, 'Sin Categoria') AS Nombre_Categoria,
                 COALESCE(e.Nombre_Estado, 'Disponible') AS Nombre_Estado,
-                COALESCE(s.stock_total, 0) AS Stock
+                COALESCE(s.stock_total, 0) AS Stock,
+                prov.Nombre AS Proveedor
             FROM producto p
             LEFT JOIN categoria c ON p.Id_Categoria = c.Id_Categoria
             LEFT JOIN estado e ON p.Id_Estado = e.Id_Estado
@@ -878,7 +883,10 @@ app.get('/api/productos/paginados', (req, res) => {
                 FROM stock
                 GROUP BY Id_Producto
             ) s ON p.Id_Producto = s.Id_Producto
+            LEFT JOIN abastecimiento a ON p.Id_Producto = a.Id_Producto
+            LEFT JOIN proveedores prov ON a.Id_Proveedor = prov.Id_Proveedor
             ${whereClause}
+            GROUP BY p.Id_Producto
             ORDER BY p.Id_Producto DESC
             LIMIT ? OFFSET ?
         `;
@@ -958,38 +966,63 @@ app.put('/api/productos/:id', (req, res) => {
     });
 });
 
-// DELETE con limpieza de caché
+// DELETE con limpieza de caché (CORREGIDO - INCLUYE TABLA premio)
 app.delete('/api/productos/:id', (req, res) => {
     const { id } = req.params;
     
-    const tablasRelacionadas = ['orden', 'stock', 'abastecimiento', 'consumo_interno', 'merma'];
-    
-    function eliminarDependencias() {
-        return Promise.all(tablasRelacionadas.map(tabla => {
-            return new Promise((resolve, reject) => {
-                db.query(`DELETE FROM ${tabla} WHERE Id_Producto = ?`, [id], (err) => {
-                    if (err) reject(err);
-                    else resolve();
+    // Desactivar chequeo de llaves foráneas temporalmente
+    db.query(`SET FOREIGN_KEY_CHECKS = 0`, (err) => {
+        if (err) {
+            console.error('Error desactivando FOREIGN_KEY_CHECKS:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        // Todas las tablas que tienen relación con producto
+        const tablasRelacionadas = ['premio', 'orden', 'stock', 'abastecimiento', 'consumo_interno', 'merma'];
+        
+        let tablasEliminadas = 0;
+        let huboError = false;
+        
+        function eliminarSiguiente() {
+            if (huboError) return;
+            
+            if (tablasEliminadas >= tablasRelacionadas.length) {
+                // Todas las dependencias eliminadas, ahora borrar el producto
+                db.query(`DELETE FROM producto WHERE Id_Producto = ?`, [id], (err, result) => {
+                    // Reactivar chequeo de llaves foráneas
+                    db.query(`SET FOREIGN_KEY_CHECKS = 1`);
+                    
+                    if (err) {
+                        console.error('Error al borrar producto:', err);
+                        return res.status(500).json({ error: "Error al borrar producto: " + err.message });
+                    }
+                    
+                    if (result.affectedRows === 0) {
+                        return res.status(404).json({ error: "Producto no encontrado" });
+                    }
+                    
+                    cache.del('productos_lista');
+                    console.log('🗑️ Caché de productos limpiado por eliminación');
+                    res.json({ message: "Producto y registros relacionados eliminados correctamente" });
                 });
+                return;
+            }
+            
+            const tabla = tablasRelacionadas[tablasEliminadas];
+            db.query(`DELETE FROM ${tabla} WHERE Id_Producto = ?`, [id], (err) => {
+                if (err) {
+                    console.error(`Error eliminando de ${tabla}:`, err);
+                    huboError = true;
+                    db.query(`SET FOREIGN_KEY_CHECKS = 1`);
+                    return res.status(500).json({ error: `Error limpiando tabla ${tabla}: ` + err.message });
+                }
+                tablasEliminadas++;
+                eliminarSiguiente();
             });
-        }));
-    }
-    
-    eliminarDependencias()
-        .then(() => {
-            db.query(`DELETE FROM producto WHERE Id_Producto = ?`, [id], (err, result) => {
-                if (err) return res.status(500).json({ error: "Error al borrar producto: " + err.message });
-                if (result.affectedRows === 0) return res.status(404).json({ error: "Producto no encontrado" });
-                
-                cache.del('productos_lista');
-                console.log('🗑️ Caché de productos limpiado por eliminación');
-                
-                res.json({ message: "Producto y registros relacionados eliminados correctamente" });
-            });
-        })
-        .catch(err => {
-            res.status(500).json({ error: "Error limpiando dependencias: " + err.message });
-        });
+        }
+        
+        eliminarSiguiente();
+    });
 });
 
 app.get('/api/productos/bajo-stock', (req, res) => {
@@ -1002,6 +1035,65 @@ app.get('/api/productos/bajo-stock', (req, res) => {
         const productos = results[0];
         console.log(`✅ [PROCEDIMIENTO] sp_productos_bajo_stock - ${productos.length} productos con bajo stock`);
         res.json(productos);
+    });
+});
+
+// ================= PRODUCTO-PROVEEDOR =================
+
+app.get('/api/producto-proveedor/:id', (req, res) => {
+    const { id } = req.params;
+    
+    const sql = `
+        SELECT a.Id_Proveedor, p.Nombre AS Nombre_Proveedor
+        FROM abastecimiento a
+        JOIN proveedores p ON a.Id_Proveedor = p.Id_Proveedor
+        WHERE a.Id_Producto = ?
+        ORDER BY a.FechaEntrada DESC
+        LIMIT 1
+    `;
+    
+    db.query(sql, [id], (err, results) => {
+        if (err) {
+            console.error('Error en /api/producto-proveedor:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        if (results.length === 0) {
+            return res.json({ Id_Proveedor: null, Nombre_Proveedor: 'Sin asignar' });
+        }
+        
+        res.json(results[0]);
+    });
+});
+
+// ================= ACTUALIZAR STOCK =================
+
+app.patch('/api/productos/:id/stock', (req, res) => {
+    const { id } = req.params;
+    const { stock } = req.body;
+    
+    if (!stock || stock < 0) {
+        return res.status(400).json({ error: 'Stock inválido' });
+    }
+    
+    db.query(`UPDATE stock SET Cantidad = ? WHERE Id_Producto = ?`, [stock, id], (err, result) => {
+        if (err) {
+            console.error('Error actualizando stock:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        if (result.affectedRows === 0) {
+            // Si no existe registro de stock, crearlo
+            db.query(`INSERT INTO stock (Id_Inventario, Id_Producto, Cantidad, FechaEntrada) VALUES (1, ?, ?, CURDATE())`, 
+                [id, stock], (err2) => {
+                if (err2) return res.status(500).json({ error: err2.message });
+                cache.del('productos_lista');
+                res.json({ message: "Stock actualizado correctamente" });
+            });
+        } else {
+            cache.del('productos_lista');
+            res.json({ message: "Stock actualizado correctamente" });
+        }
     });
 });
 
