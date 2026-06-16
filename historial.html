@@ -486,13 +486,13 @@
           }
 
           if (canalFiltro) {
-  const canalNombre = canales.find(
-    (c) => c.Id_Canal == canalFiltro,
-  )?.Nombre_Canal;
-  facturasArray = facturasArray.filter(
-    (f) => f.TipoVenta !== "express" && f.Canal === canalNombre,
-  );
-}
+            const canalNombre = canales.find(
+              (c) => c.Id_Canal == canalFiltro,
+            )?.Nombre_Canal;
+            facturasArray = facturasArray.filter(
+              (f) => f.TipoVenta !== "express" && f.Canal === canalNombre,
+            );
+          }
 
           if (metodoFiltro) {
             const metodoNombre = metodos.find(
@@ -532,8 +532,17 @@
             return;
           }
 
+          // ========== GENERAR TABLA CON NUMERACIÓN SECUENCIAL ==========
           let html = "";
+          let contadorFactura = 1; // 🔥 EMPIEZA EN 1
+          // Guardar el mapping para usar en detalles y PDF
+          window.mappingFacturas = {};
+          
           facturasArray.forEach((compra) => {
+            const numeroMostrar = contadorFactura++; // 🔥 NÚMERO SECUENCIAL
+            // Guardar relación entre número secuencial y factura real
+            window.mappingFacturas[numeroMostrar] = compra.NumFactura;
+
             const fecha = compra.Fecha
               ? new Date(compra.Fecha).toLocaleDateString("es-ES")
               : "Sin fecha";
@@ -543,14 +552,13 @@
                 : compra.Cliente || "Cliente no especificado";
             const vendedor = compra.Vendedor || "No asignado";
 
-            // MOSTRAR CANAL SOLO SI LA VENTA ES NORMAL
             const mostrarCanal = compra.TipoVenta === "normal";
             const canalHtml = mostrarCanal
               ? `<td><span class="hc-badge hc-badge-canal">${escapeHtml(compra.Canal || "N/A")}</span></td>`
               : `<td style="text-align: center; color: #999;">--</td>`;
 
             html += `<tr>
-                    <td>#${escapeHtml(compra.NumFactura)}</td>
+                    <td>#${numeroMostrar}</td>
                     <td>
                         <span class="${compra.TipoVenta === "express" ? "badge-express" : "badge-normal"}">
                             ${compra.TipoVenta === "express" ? "Express" : "Normal"}
@@ -563,7 +571,7 @@
                     <td>C$ ${compra.Monto.toFixed(2)}</td>
                     <td><span class="vendedor-badge">${escapeHtml(vendedor)}</span></td>
                     <td>
-                        <button class="btn-detalles" onclick="verDetalles(${compra.NumFactura})">
+                        <button class="btn-detalles" onclick="verDetalles(${numeroMostrar})">
                             Ver Detalles
                         </button>
                     </td>
@@ -640,7 +648,7 @@
         cargarCompras();
       }
 
-      async function verDetalles(numFactura) {
+      async function verDetalles(numeroSecuencial) {
         const modal = document.getElementById("modalDetalles");
         const content = document.getElementById("detallesContent");
 
@@ -648,9 +656,17 @@
         content.innerHTML = '<div class="loading">Cargando detalles...</div>';
 
         try {
+          // Obtener el número real de factura desde el mapping
+          const numFacturaReal = window.mappingFacturas[numeroSecuencial];
+          if (!numFacturaReal) {
+            content.innerHTML =
+              '<div class="hc-error">No se encontró la factura</div>';
+            return;
+          }
+
           const compras = window.compras || [];
           const compraFiltrada = compras.filter(
-            (c) => c.NumFactura == numFactura,
+            (c) => c.NumFactura == numFacturaReal,
           );
 
           if (compraFiltrada.length === 0) {
@@ -702,18 +718,21 @@
             });
           }
 
+          // ✅ FORMATEAR FACTURA CON NÚMERO SECUENCIAL
+          const facturaFormateada = numeroSecuencial;
+
           let html = `
                 <div class="modal-header">
                     <h3>Detalles de la Compra</h3>
                 </div>
                 <div class="modal-actions">
-                    <button class="btn-descargar-pdf" onclick="descargarFacturaPDF(${numFactura})">
+                    <button class="btn-descargar-pdf" onclick="descargarFacturaPDF(${numeroSecuencial})">
                         Descargar Factura PDF
                     </button>
                 </div>
                 <div class="modal-body">
                     <div class="hc-detalle-header">
-                        <p><strong>Factura:</strong> #${primera.NumFactura}</p>
+                        <p><strong>Factura:</strong> #${facturaFormateada}</p>
                         ${tipoVenta === "normal" ? `<p><strong>Cliente:</strong> ${escapeHtml(cliente)}</p>` : ""}
                         <p><strong>Fecha:</strong> ${escapeHtml(fecha)}</p>
                         ${tipoVenta === "normal" ? `<p><strong>Canal:</strong> <span class="hc-badge hc-badge-canal">${escapeHtml(canal)}</span></p>` : ""}
@@ -754,11 +773,18 @@
         }
       }
 
-      async function descargarFacturaPDF(numFactura) {
+      async function descargarFacturaPDF(numeroSecuencial) {
         try {
+          // Obtener el número real de factura desde el mapping
+          const numFacturaReal = window.mappingFacturas[numeroSecuencial];
+          if (!numFacturaReal) {
+            alert("No se encontró la factura");
+            return;
+          }
+
           const compras = window.compras || [];
           const compraFiltrada = compras.filter(
-            (c) => c.NumFactura == numFactura,
+            (c) => c.NumFactura == numFacturaReal,
           );
 
           if (compraFiltrada.length === 0) {
@@ -803,6 +829,9 @@
                 </tr>`;
           });
 
+          // ✅ FACTURA CON NÚMERO SECUENCIAL
+          const facturaFormateada = numeroSecuencial;
+
           const facturaHTML = `
                 <div class="factura-pdf" id="facturaParaPDF">
                     <div class="factura-header">
@@ -818,7 +847,7 @@
                     
                     <div class="factura-info">
                         <div>
-                            <p><strong>Factura N°:</strong> ${primera.NumFactura}</p>
+                            <p><strong>Factura N°:</strong> ${facturaFormateada}</p>
                             <p><strong>Fecha:</strong> ${fecha}</p>
                             <p><strong>Vendedor:</strong> ${escapeHtml(vendedor)}</p>
                             <p><strong>Hora:</strong> ${horaActual}</p>
@@ -861,7 +890,7 @@
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Factura #${numFactura} - Variedades Chepita</title>
+                    <title>Factura #${facturaFormateada} - Variedades Chepita</title>
                     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
                     <style>
                         * {
@@ -892,13 +921,13 @@
                             margin-bottom: 20px;
                         }
                         .factura-titulo {
-  margin: 0;
-  color: white;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  position: relative;
-  z-index: 2;
+                            margin: 0;
+                            color: white;
+                            font-size: 20px;
+                            font-weight: 700;
+                            letter-spacing: 0.5px;
+                            position: relative;
+                            z-index: 2;
                         }
                         .factura-subtitulo {
                             font-size: 11px;

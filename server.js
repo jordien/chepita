@@ -2,7 +2,7 @@
  * ============================================================================
  * @file server.js
  * @description Servidor de CAJA LOCAL del Sistema de Gestión Comercial "Chepita"
- * @version 3.0 - Conectado a BASE DE DATOS RAILWAY (compartida con APP)
+ * @version 3.1 - CONSULTA DE PRODUCTOS OPTIMIZADA
  * ============================================================================
  * 
  * 📌 Este servidor se ejecuta en la CAJA LOCAL y se conecta a la base de datos
@@ -771,8 +771,7 @@ app.delete('/api/categorias/:id', (req, res) => {
     });
 });
 
-// ================= PRODUCTOS =================
-
+// ================= PRODUCTOS (OPTIMIZADO) =================
 app.get('/api/productos', (req, res) => {
     const sql = `
         SELECT 
@@ -782,12 +781,15 @@ app.get('/api/productos', (req, res) => {
             p.Marca,
             COALESCE(c.Nombre, 'Sin Categoria') AS Nombre_Categoria, 
             COALESCE(e.Nombre_Estado, 'Disponible') AS Nombre_Estado,
-            COALESCE(SUM(s.Cantidad), 0) AS Stock
+            COALESCE(SUM(s.Cantidad), 0) AS Stock,
+            COALESCE(prov.Nombre, 'Sin asignar') AS Proveedor
         FROM producto p
         LEFT JOIN categoria c ON p.Id_Categoria = c.Id_Categoria
         LEFT JOIN estado e ON p.Id_Estado = e.Id_Estado
         LEFT JOIN stock s ON p.Id_Producto = s.Id_Producto
-        GROUP BY p.Id_Producto, p.Nombre, p.Precio, p.Marca, c.Nombre, e.Nombre_Estado
+        LEFT JOIN abastecimiento a ON p.Id_Producto = a.Id_Producto
+        LEFT JOIN proveedores prov ON a.Id_Proveedor = prov.Id_Proveedor
+        GROUP BY p.Id_Producto, p.Nombre, p.Precio, p.Marca, c.Nombre, e.Nombre_Estado, prov.Nombre
         ORDER BY p.Id_Producto DESC
     `;
     
@@ -3958,6 +3960,7 @@ app.listen(PORT, '0.0.0.0', () => {
     ║  🌐 URL: http://localhost:${PORT}                       ║
     ║  🗄️  Base de datos: RAILWAY (compartida)                  ║
     ║  ✅ Sincronización: ACTIVADA con la APP                   ║
+    ║  ⚡ CONSULTA PRODUCTOS: OPTIMIZADA                        ║
     ║                                                           ║
     ║  📧 Sistema de emails activado                            ║
     ║  🔐 Autenticación de trabajadores activada                ║

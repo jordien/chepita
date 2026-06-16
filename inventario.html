@@ -16,6 +16,46 @@
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap"
       rel="stylesheet"
     />
+    <style>
+      .paginacion-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 20px;
+        padding: 10px;
+        flex-wrap: wrap;
+      }
+      .btn-paginacion {
+        padding: 8px 14px;
+        border: none;
+        border-radius: 8px;
+        background: #f0f0f0;
+        color: #333;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+      }
+      .btn-paginacion:hover {
+        background: #e0e0e0;
+        transform: scale(1.02);
+      }
+      .btn-paginacion.active {
+        background: linear-gradient(135deg, #A63C89, #4a1d6d);
+        color: white;
+      }
+      .btn-paginacion:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .paginacion-puntos {
+        color: #999;
+        font-size: 16px;
+        padding: 0 4px;
+      }
+    </style>
   </head>
   <body>
     <div class="header-marcas">
@@ -124,7 +164,7 @@
           </thead>
           <tbody id="cuerpoTabla">
             <tr>
-              <td colspan="7" class="loading">Cargando inventario...<\/td>
+              <td colspan="7" class="loading">Cargando inventario...</td>
             </tr>
           </tbody>
         </table>
@@ -1236,7 +1276,7 @@
         );
       }
 
-      // ========== CARGA DE INVENTARIO CON PAGINACIÓN ==========
+      // ========== CARGA DE INVENTARIO (OPTIMIZADO) ==========
       async function cargarInventario() {
         try {
           const [resProd, resProv] = await Promise.all([
@@ -1247,19 +1287,10 @@
           const productos = await resProd.json();
           proveedoresLista = await resProv.json();
 
-          await cargarCategorias();
+          // ✅ El proveedor ya viene incluido en la consulta SQL
+          // Ya no necesitamos hacer consultas extra por cada producto
 
-          for (let p of productos) {
-            try {
-              const resAbast = await fetch(
-                "/api/producto-proveedor/" + p.Id_Producto,
-              );
-              const abast = await resAbast.json();
-              p.Proveedor = abast.Nombre_Proveedor || "Sin asignar";
-            } catch (e) {
-              p.Proveedor = "Sin asignar";
-            }
-          }
+          await cargarCategorias();
 
           inventarioData = productos;
           productosCompletos = [...productos];
@@ -1267,6 +1298,7 @@
           paginaActualInventario = 1;
           mostrarPaginaInventario();
         } catch (error) {
+          console.error("Error cargando inventario:", error);
           mostrarMensaje("Error", "No se pudieron cargar los datos", true);
         }
       }
@@ -1288,7 +1320,7 @@
 
         if (inventarioData.length === 0) {
           tbody.innerHTML =
-            '<tr><td colspan="7" class="loading">No hay resultados<\/td><\/tr>';
+            '<tr><td colspan="7" class="loading">No hay resultados</td></tr>';
           return;
         }
 
@@ -1297,12 +1329,12 @@
             (p) => `
             <tr onclick="manejarClickFila(${p.Id_Producto})" style="cursor: ${modoActual ? "pointer" : "default"}">
                 <td><strong>${escapeHtml(p.Nombre)}</strong></td>
-                <td>${escapeHtml(p.Marca || "N/A")}</span>
-                <td>${escapeHtml(p.Nombre_Categoria)}</span>
-                <td>C$ ${parseFloat(p.Precio).toFixed(2)}</span>
-                <td class="stock-valor">${p.Stock}</span>
-                <td>${escapeHtml(p.Proveedor)}</span>
-                <td><span class="status-badge status-${p.Nombre_Estado}">${p.Nombre_Estado}</span></span>
+                <td>${escapeHtml(p.Marca || "N/A")}</td>
+                <td>${escapeHtml(p.Nombre_Categoria)}</td>
+                <td>C$ ${parseFloat(p.Precio).toFixed(2)}</td>
+                <td class="stock-valor">${p.Stock}</td>
+                <td>${escapeHtml(p.Proveedor)}</td>
+                <td><span class="status-badge status-${p.Nombre_Estado}">${p.Nombre_Estado}</span></td>
              </tr>
         `,
           )
@@ -1316,12 +1348,6 @@
         inventarioData = productosCompletos.slice(inicio, fin);
         mostrarTabla();
         actualizarControlesPaginacion();
-        
-        // Scroll suave al inicio de la tabla
-        const tableContainer = document.querySelector('.table-container');
-        if (tableContainer) {
-          tableContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
       }
 
       function cambiarPaginaInventario(pagina) {
@@ -1331,55 +1357,57 @@
       }
 
       function actualizarControlesPaginacion() {
-        let paginacionDiv = document.getElementById('paginacionControles');
+        let paginacionDiv = document.getElementById("paginacionControles");
         if (!paginacionDiv) {
-          paginacionDiv = document.createElement('div');
-          paginacionDiv.id = 'paginacionControles';
-          paginacionDiv.className = 'paginacion-container';
-          const tableContainer = document.querySelector('.table-container');
+          paginacionDiv = document.createElement("div");
+          paginacionDiv.id = "paginacionControles";
+          paginacionDiv.className = "paginacion-container";
+          const tableContainer = document.querySelector(".table-container");
           if (tableContainer) {
             tableContainer.appendChild(paginacionDiv);
           }
         }
-        
+
         if (totalPaginasInventario <= 1) {
-          paginacionDiv.style.display = 'none';
+          paginacionDiv.style.display = "none";
           return;
         }
-        
-        paginacionDiv.style.display = 'flex';
-        paginacionDiv.style.justifyContent = 'center';
-        paginacionDiv.style.alignItems = 'center';
-        paginacionDiv.style.gap = '8px';
-        paginacionDiv.style.marginTop = '20px';
-        paginacionDiv.style.padding = '10px';
-        paginacionDiv.style.flexWrap = 'wrap';
-        
-        let html = '';
-        
+
+        paginacionDiv.style.display = "flex";
+        paginacionDiv.style.justifyContent = "center";
+        paginacionDiv.style.alignItems = "center";
+        paginacionDiv.style.gap = "8px";
+        paginacionDiv.style.marginTop = "20px";
+        paginacionDiv.style.padding = "10px";
+        paginacionDiv.style.flexWrap = "wrap";
+
+        let html = "";
+
         html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(${paginaActualInventario - 1})" ${paginaActualInventario === 1 ? 'disabled' : ''}>« Anterior</button>`;
-        
+
         let inicio = Math.max(1, paginaActualInventario - 2);
         let fin = Math.min(totalPaginasInventario, paginaActualInventario + 2);
-        
+
         if (inicio > 1) {
           html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(1)">1</button>`;
-          if (inicio > 2) html += `<span class="paginacion-puntos">...</span>`;
+          if (inicio > 2)
+            html += `<span class="paginacion-puntos">...</span>`;
         }
-        
+
         for (let i = inicio; i <= fin; i++) {
-          html += `<button class="btn-paginacion ${i === paginaActualInventario ? 'active' : ''}" onclick="cambiarPaginaInventario(${i})">${i}</button>`;
+          html += `<button class="btn-paginacion ${i === paginaActualInventario ? "active" : ""}" onclick="cambiarPaginaInventario(${i})">${i}</button>`;
         }
-        
+
         if (fin < totalPaginasInventario) {
-          if (fin < totalPaginasInventario - 1) html += `<span class="paginacion-puntos">...</span>`;
+          if (fin < totalPaginasInventario - 1)
+            html += `<span class="paginacion-puntos">...</span>`;
           html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(${totalPaginasInventario})">${totalPaginasInventario}</button>`;
         }
-        
+
         html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(${paginaActualInventario + 1})" ${paginaActualInventario === totalPaginasInventario ? 'disabled' : ''}>Siguiente »</button>`;
-        
+
         html += `<span style="margin-left: 15px; color: #666; font-size: 13px;">Página ${paginaActualInventario} de ${totalPaginasInventario}</span>`;
-        
+
         paginacionDiv.innerHTML = html;
       }
 
@@ -1682,17 +1710,21 @@
       }
 
       function filtrarTabla() {
-        const search = document.getElementById("searchInput").value.toLowerCase();
+        const search = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
         const catF = document.getElementById("categoriaFilter").value;
         const estF = document.getElementById("estadoFilter").value;
-        
+
         let filtrados = productosCompletos.filter((p) => {
-          const matchTxt = p.Nombre.toLowerCase().includes(search) || (p.Marca && p.Marca.toLowerCase().includes(search));
+          const matchTxt =
+            p.Nombre.toLowerCase().includes(search) ||
+            (p.Marca && p.Marca.toLowerCase().includes(search));
           const matchCat = !catF || p.Nombre_Categoria === catF;
           const matchEst = !estF || p.Nombre_Estado === estF;
           return matchTxt && matchCat && matchEst;
         });
-        
+
         inventarioData = filtrados;
         totalPaginasInventario = Math.ceil(filtrados.length / 50);
         paginaActualInventario = 1;
