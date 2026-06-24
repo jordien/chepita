@@ -565,6 +565,51 @@
         }
       }
 
+      // ========== NUEVA FUNCIÓN: ELIMINAR PROVEEDOR ==========
+      async function eliminarProveedor(idProveedor) {
+        mostrarConfirmacion(
+          "¿Esta seguro de que desea eliminar este proveedor? Esta accion no se puede deshacer.",
+          async () => {
+            try {
+              const respuesta = await fetch(`/api/proveedores/${idProveedor}`, {
+                method: "DELETE",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              });
+
+              const resultado = await respuesta.json();
+
+              if (!respuesta.ok) {
+                throw new Error(resultado.error || "Error al eliminar el proveedor");
+              }
+
+              // Eliminar de los datos locales
+              proveedoresData = proveedoresData.filter(
+                (p) => p.Id_Proveedor !== idProveedor
+              );
+              delete estadosData[idProveedor];
+              delete nombresCompletosData[idProveedor];
+
+              localStorage.setItem(
+                "estadosProveedores",
+                JSON.stringify(estadosData)
+              );
+              localStorage.setItem(
+                "nombresCompletosProveedores",
+                JSON.stringify(nombresCompletosData)
+              );
+
+              mostrarExito("Proveedor eliminado exitosamente", () => {
+                mostrarProveedores();
+              });
+            } catch (error) {
+              mostrarError(error.message || "Error al eliminar el proveedor");
+            }
+          }
+        );
+      }
+
       function mostrarProveedores() {
         const tabla = document.getElementById("tablaProveedores");
         const busqueda = document
@@ -629,6 +674,7 @@
                         <div class="prov-card-buttons">
                             <button class="prov-card-btn prov-card-btn-details" onclick="verDetallesProveedor(${prov.Id_Proveedor})">Ver Detalles</button>
                             <button class="prov-card-btn prov-card-btn-edit" onclick="editarProveedor(${prov.Id_Proveedor})">Editar</button>
+                            <button class="prov-card-btn prov-card-btn-delete" onclick="eliminarProveedor(${prov.Id_Proveedor})">Eliminar</button>
                         </div>
                     </div>`;
         });

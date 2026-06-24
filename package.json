@@ -12,6 +12,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
@@ -26,6 +27,7 @@
     "qrcode": "^1.5.4",
     "react-native-countdown-circle-timer": "^3.2.1",
     "react-native-qrcode-svg": "^6.3.21",
-    "react-native-svg": "^15.15.5"
+    "react-native-svg": "^15.15.5",
+    "resend": "^6.14.0"
   }
 }

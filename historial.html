@@ -11,180 +11,6 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     ></script>
-    <style>
-      /* Estilos adicionales para consistencia */
-      .badge-express {
-        background-color: #ff9800;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 500;
-      }
-      .badge-normal {
-        background-color: #4caf50;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 500;
-      }
-      .hc-badge {
-        display: inline-block;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 500;
-      }
-      .hc-badge-canal {
-        background-color: #2196f3;
-        color: white;
-      }
-      .hc-badge-metodo {
-        background-color: #9c27b0;
-        color: white;
-      }
-      .vendedor-badge {
-        background-color: #607d8b;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 500;
-      }
-      .btn-detalles {
-        background-color: #a63c89;
-        color: white;
-        border: none;
-        padding: 6px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 12px;
-        transition: background-color 0.3s;
-      }
-      .btn-detalles:hover {
-        background-color: #8b2e6e;
-      }
-      .btn-admin {
-        background-color: #a63c89;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-      }
-      .btn-admin:hover {
-        background-color: #8b2e6e;
-      }
-      .btn-delete-mode {
-        background-color: #dc3545;
-      }
-      .btn-delete-mode:hover {
-        background-color: #c82333;
-      }
-      .loading {
-        text-align: center;
-        padding: 20px;
-        color: #666;
-      }
-      .hc-error {
-        text-align: center;
-        padding: 20px;
-        color: #dc3545;
-      }
-      .hc-no-results {
-        text-align: center;
-        padding: 20px;
-        color: #666;
-      }
-      .custom-modal-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        justify-content: center;
-        align-items: center;
-      }
-      .custom-modal {
-        background-color: white;
-        border-radius: 12px;
-        max-width: 800px;
-        width: 90%;
-        max-height: 90%;
-        overflow-y: auto;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-      }
-      .modal-ancha {
-        max-width: 900px;
-      }
-      .modal-body {
-        padding: 20px;
-      }
-      .modal-actions {
-        padding: 0 20px;
-        margin-top: 10px;
-        text-align: right;
-      }
-      .btn-descargar-pdf {
-        background-color: #4caf50;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 6px;
-        cursor: pointer;
-      }
-      .custom-modal-buttons {
-        padding: 20px;
-        border-top: 1px solid #e2e8f0;
-        text-align: right;
-      }
-      .custom-modal-btn {
-        padding: 8px 16px;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-      }
-      .custom-modal-btn.cancel {
-        background-color: #6c757d;
-        color: white;
-      }
-      .hc-detalle-header {
-        background-color: #f8f9fa;
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-      }
-      .hc-detalle-header p {
-        margin: 5px 0;
-      }
-      .hc-subtitle {
-        margin: 20px 0 10px 0;
-        color: #333;
-      }
-      .hc-detalle-table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      .hc-detalle-table th,
-      .hc-detalle-table td {
-        border: 1px solid #e2e8f0;
-        padding: 8px;
-        text-align: left;
-      }
-      .hc-detalle-table th {
-        background-color: #f1f5f9;
-      }
-      .hc-total {
-        font-weight: bold;
-        color: #a63c89;
-        font-size: 16px;
-      }
-    </style>
   </head>
   <body>
     <div class="header-marcas">
@@ -211,7 +37,7 @@
         <h2>Historial de Compras</h2>
         <button
           class="btn-volver-top"
-          onclick="window.location.href = 'menu_admin.html'"
+          onclick="mostrarConfirmacionVolver()"
         >
           Volver al menu
         </button>
@@ -270,10 +96,27 @@
       </div>
     </div>
 
+    <!-- MODAL DE CONFIRMACION -->
+    <div class="custom-modal-overlay" id="confirmModal">
+      <div class="custom-modal">
+        <h3>Confirmar accion</h3>
+        <p id="confirmMessage">¿Esta seguro de que desea realizar esta accion?</p>
+        <div class="custom-modal-buttons">
+          <button class="custom-modal-btn confirm" id="confirmYes">
+            Si, continuar
+          </button>
+          <button class="custom-modal-btn cancel" id="confirmNo">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE DETALLES -->
     <div class="custom-modal-overlay" id="modalDetalles">
       <div class="custom-modal modal-ancha">
         <div id="detallesContent">
-          <div class="loading">Cargando detalles..........</div>
+          <div class="loading">Cargando detalles...</div>
         </div>
       </div>
     </div>
@@ -1025,6 +868,33 @@
         const modal = document.getElementById("modalDetalles");
         if (event.target === modal) cerrarModal();
       };
+
+      // ==================== FUNCIÓN VOLVER AL MENÚ CON CONFIRMACIÓN ====================
+      function volverMenuAdmin() {
+        window.location.href = "menu_admin.html";
+      }
+
+      function mostrarConfirmacionVolver() {
+        const modal = document.getElementById("confirmModal");
+        document.getElementById("confirmMessage").innerText = "¿Esta seguro de que desea volver al menu principal?";
+        modal.style.display = "flex";
+
+        const btnSi = document.getElementById("confirmYes");
+        const btnNo = document.getElementById("confirmNo");
+
+        const newBtnSi = btnSi.cloneNode(true);
+        const newBtnNo = btnNo.cloneNode(true);
+        btnSi.parentNode.replaceChild(newBtnSi, btnSi);
+        btnNo.parentNode.replaceChild(newBtnNo, btnNo);
+
+        newBtnSi.onclick = function() {
+          modal.style.display = "none";
+          volverMenuAdmin();
+        };
+        newBtnNo.onclick = function() {
+          modal.style.display = "none";
+        };
+      }
 
       document.addEventListener("DOMContentLoaded", cargarDatos);
     </script>

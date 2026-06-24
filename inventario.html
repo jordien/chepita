@@ -786,8 +786,11 @@
         });
       })();
 
+      // ========== VOLVER AL MENU CON CONFIRMACION ==========
       function volverMenuAdmin() {
-        window.location.replace("menu_admin.html");
+        mostrarConfirmacion("¿Está seguro de que desea volver al menú principal?", function() {
+          window.location.replace("menu_admin.html");
+        });
       }
 
       let inventarioData = [];
@@ -1743,7 +1746,6 @@
       }
 
       // ================= FUNCIONES DE CONSUMO INTERNO =================
-      // (Todas tus funciones originales de consumo interno se mantienen igual)
       async function cargarProductosParaConsumo() {
         try {
           const respuesta = await fetch("/api/productos");
@@ -2084,7 +2086,6 @@
       }
 
       // ================= FUNCIONES DE PERDIDAS =================
-      // (Todas tus funciones originales de pérdidas se mantienen igual)
       async function cargarProductosParaPerdida() {
         try {
           const respuesta = await fetch("/api/productos");

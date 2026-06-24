@@ -529,12 +529,37 @@ app.post('/api/trabajadores/verificar', (req, res) => {
     });
 });
 
+// ================= ELIMINAR TRABAJADOR FÍSICAMENTE =================
 app.delete('/api/trabajadores/:id', (req, res) => {
     const { id } = req.params;
-    db.query(`UPDATE trabajadores SET Activo = 0 WHERE Id_Trabajador = ?`, [id], (err, result) => {
-        if (err) return res.status(500).json({ error: err.sqlMessage });
-        if (result.affectedRows === 0) return res.status(404).json({ error: "Trabajador no encontrado" });
-        res.json({ message: "Trabajador desactivado" });
+    
+    // Primero eliminar tokens de registro
+    db.query(`DELETE FROM trabajador_registro_tokens WHERE id_trabajador = ?`, [id], (err) => {
+        if (err) {
+            console.error('Error eliminando tokens:', err);
+            // Continuamos aunque haya error en tokens
+        }
+        
+        // Eliminar tokens de recuperación
+        db.query(`DELETE FROM trabajador_recuperacion_tokens WHERE id_trabajador = ?`, [id], (err) => {
+            if (err) {
+                console.error('Error eliminando tokens de recuperación:', err);
+                // Continuamos aunque haya error
+            }
+            
+            // Finalmente eliminar el trabajador
+            db.query(`DELETE FROM trabajadores WHERE Id_Trabajador = ?`, [id], (err, result) => {
+                if (err) {
+                    console.error('Error eliminando trabajador:', err);
+                    return res.status(500).json({ error: err.sqlMessage });
+                }
+                if (result.affectedRows === 0) {
+                    return res.status(404).json({ error: "Trabajador no encontrado" });
+                }
+                console.log(`✅ Trabajador ${id} eliminado físicamente`);
+                res.json({ message: "Trabajador eliminado correctamente" });
+            });
+        });
     });
 });
 
@@ -1115,18 +1140,18 @@ app.put('/api/proveedores/:id', (req, res) => {
     });
 });
 
+// ================= ELIMINAR PROVEEDOR FORZOSAMENTE (CON DEPENDENCIAS) =================
 app.delete('/api/proveedores/:id', (req, res) => {
     const { id } = req.params;
     
-    db.query(`SELECT * FROM abastecimiento WHERE Id_Proveedor = ?`, [id], (err, results) => {
+    // Primero eliminar registros relacionados en abastecimiento
+    db.query(`DELETE FROM abastecimiento WHERE Id_Proveedor = ?`, [id], (err) => {
         if (err) {
-            console.error('Error verificando dependencias:', err);
+            console.error('Error eliminando dependencias de abastecimiento:', err);
             return res.status(500).json({ error: err.sqlMessage });
         }
-        if (results.length > 0) {
-            return res.status(400).json({ error: 'No se puede eliminar el proveedor porque tiene productos asociados' });
-        }
         
+        // Luego eliminar el proveedor
         db.query(`DELETE FROM proveedores WHERE Id_Proveedor = ?`, [id], (err, result) => {
             if (err) {
                 console.error('Error eliminando proveedor:', err);
@@ -1135,7 +1160,7 @@ app.delete('/api/proveedores/:id', (req, res) => {
             if (result.affectedRows === 0) {
                 return res.status(404).json({ error: "Proveedor no encontrado" });
             }
-            console.log(`DELETE /api/proveedores/${id} - Proveedor eliminado`);
+            console.log(`DELETE /api/proveedores/${id} - Proveedor eliminado con sus dependencias`);
             res.json({ message: "Proveedor eliminado correctamente" });
         });
     });
