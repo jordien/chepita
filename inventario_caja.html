@@ -15,6 +15,47 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="inventario_caja.css" />
+    <style>
+      /* Estilos de paginación */
+      .paginacion-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 20px;
+        padding: 10px;
+        flex-wrap: wrap;
+      }
+      .btn-paginacion {
+        padding: 8px 14px;
+        border: none;
+        border-radius: 8px;
+        background: #f0f0f0;
+        color: #333;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+      }
+      .btn-paginacion:hover {
+        background: #e0e0e0;
+        transform: scale(1.02);
+      }
+      .btn-paginacion.active {
+        background: linear-gradient(135deg, #A63C89, #4a1d6d);
+        color: white;
+      }
+      .btn-paginacion:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .paginacion-puntos {
+        color: #999;
+        font-size: 16px;
+        padding: 0 4px;
+      }
+    </style>
   </head>
   <body>
     <div class="header-marcas">
@@ -81,10 +122,11 @@
           </thead>
           <tbody id="cuerpoTabla">
             <tr>
-              <td colspan="7" class="loading">Cargando inventario...<\/td></td>
+              <td colspan="7" class="loading">Cargando inventario...</td>
             </tr>
           </tbody>
         </table>
+        <div id="paginacionControles" class="paginacion-container"></div>
       </div>
     </div>
 
@@ -151,85 +193,72 @@
       }
 
       let inventarioData = [];
+      let productosCompletos = [];
       let categoriasLista = [];
       let proveedoresLista = [];
 
+      // ========== VARIABLES DE PAGINACIÓN ==========
+      let paginaActualInventario = 1;
+      let totalPaginasInventario = 1;
+      const ITEMS_POR_PAGINA = 50;
+
+      // ========== CARGA DE INVENTARIO OPTIMIZADA ==========
       async function cargarInventario() {
         const tbody = document.getElementById("cuerpoTabla");
         tbody.innerHTML =
-          '<tr><td colspan="7" class="loading">Cargando inventario...<\/td><\/tr>';
+          '<tr><td colspan="7" class="loading">Cargando inventario...</td></tr>';
 
         try {
-          // Cargar productos
+          // Cargar productos (YA INCLUYE PROVEEDOR)
           const resProd = await fetch("/api/productos");
           if (!resProd.ok) throw new Error("Error al cargar productos");
           let productos = await resProd.json();
 
-          // Cargar categorías y proveedores
-          await Promise.all([cargarCategorias(), cargarProveedores()]);
+          // Cargar categorías y proveedores en paralelo
+          const [categoriasRes, proveedoresRes] = await Promise.all([
+            fetch("/api/categorias"),
+            fetch("/api/proveedores"),
+          ]);
 
-          // Para cada producto, obtener su proveedor
-          const productosConTodo = await Promise.all(
-            productos.map(async (p) => {
-              try {
-                const resAbast = await fetch(
-                  `/api/producto-proveedor/${p.Id_Producto}`,
-                );
-                const abast = await resAbast.json();
-                p.Proveedor = abast.Nombre_Proveedor || "Sin asignar";
-              } catch (e) {
-                p.Proveedor = "Sin asignar";
-              }
-              // Asegurar que el stock sea un número válido
-              p.Stock = p.Stock !== undefined && p.Stock !== null ? p.Stock : 0;
-              // Normalizar estado
-              if (
-                !p.Nombre_Estado ||
-                p.Nombre_Estado === "Disponible1" ||
-                p.Nombre_Estado === "Disponible2"
-              ) {
-                if (p.Stock === 0) {
-                  p.Nombre_Estado = "Agotado";
-                } else if (p.Stock > 0) {
-                  p.Nombre_Estado = "Disponible";
-                } else {
-                  p.Nombre_Estado = p.Nombre_Estado || "Disponible";
-                }
-              }
-              return p;
-            }),
-          );
+          if (categoriasRes.ok) {
+            categoriasLista = await categoriasRes.json();
+            actualizarSelectCategorias();
+          }
+          if (proveedoresRes.ok) {
+            proveedoresLista = await proveedoresRes.json();
+          }
 
-          inventarioData = productosConTodo;
+          // Normalizar estados y asegurar stock
+          productos = productos.map((p) => {
+            p.Stock = p.Stock !== undefined && p.Stock !== null ? p.Stock : 0;
+            // Normalizar estado
+            if (
+              !p.Nombre_Estado ||
+              p.Nombre_Estado === "Disponible1" ||
+              p.Nombre_Estado === "Disponible2"
+            ) {
+              if (p.Stock === 0) {
+                p.Nombre_Estado = "Agotado";
+              } else if (p.Stock > 0) {
+                p.Nombre_Estado = "Disponible";
+              } else {
+                p.Nombre_Estado = p.Nombre_Estado || "Disponible";
+              }
+            }
+            // Asegurar que proveedor tenga un valor
+            p.Proveedor = p.Proveedor || "Sin asignar";
+            return p;
+          });
+
+          productosCompletos = productos;
+          totalPaginasInventario = Math.ceil(productos.length / ITEMS_POR_PAGINA);
+          paginaActualInventario = 1;
           actualizarFiltroProveedores();
-          mostrarTabla();
+          mostrarPaginaInventario();
         } catch (error) {
           console.error("Error:", error);
           tbody.innerHTML =
-            '<tr><td colspan="7" class="loading">❌ Error al cargar los datos. Verifica que el servidor esté corriendo.<\/td><\/tr>';
-        }
-      }
-
-      async function cargarCategorias() {
-        try {
-          const res = await fetch("/api/categorias");
-          if (res.ok) {
-            categoriasLista = await res.json();
-            actualizarSelectCategorias();
-          }
-        } catch (error) {
-          console.error("Error cargando categorías:", error);
-        }
-      }
-
-      async function cargarProveedores() {
-        try {
-          const res = await fetch("/api/proveedores");
-          if (res.ok) {
-            proveedoresLista = await res.json();
-          }
-        } catch (error) {
-          console.error("Error cargando proveedores:", error);
+            '<tr><td colspan="7" class="loading">❌ Error al cargar los datos. Verifica que el servidor esté corriendo.</td></tr>';
         }
       }
 
@@ -259,7 +288,7 @@
         const filterSelect = document.getElementById("proveedorFilter");
         const proveedoresUnicos = [
           ...new Set(
-            inventarioData
+            productosCompletos
               .map((p) => p.Proveedor)
               .filter((p) => p && p !== "Sin asignar"),
           ),
@@ -284,39 +313,74 @@
         });
       }
 
-      function mostrarTabla() {
-        const tbody = document.getElementById("cuerpoTabla");
-        const search = document
-          .getElementById("searchInput")
-          .value.toLowerCase();
-        const catF = document.getElementById("categoriaFilter").value;
-        const estF = document.getElementById("estadoFilter").value;
-        const provF = document.getElementById("proveedorFilter").value;
+      // ========== FUNCIONES DE PAGINACIÓN ==========
+      function mostrarPaginaInventario() {
+        const inicio = (paginaActualInventario - 1) * ITEMS_POR_PAGINA;
+        const fin = inicio + ITEMS_POR_PAGINA;
+        inventarioData = productosCompletos.slice(inicio, fin);
+        mostrarTabla();
+        actualizarControlesPaginacion();
+      }
 
-        let filtrados = inventarioData.filter((p) => {
-          const matchTxt =
-            (p.Nombre && p.Nombre.toLowerCase().includes(search)) ||
-            (p.Marca && p.Marca.toLowerCase().includes(search));
-          const matchCat = !catF || p.Nombre_Categoria === catF;
-          const matchEst = !estF || p.Nombre_Estado === estF;
-          const matchProv = !provF || p.Proveedor === provF;
-          return matchTxt && matchCat && matchEst && matchProv;
-        });
+      function cambiarPaginaInventario(pagina) {
+        if (pagina < 1 || pagina > totalPaginasInventario) return;
+        paginaActualInventario = pagina;
+        mostrarPaginaInventario();
+        // Scroll al inicio de la tabla
+        document.querySelector(".table-container").scrollIntoView({ behavior: "smooth", block: "start" });
+      }
 
-        // Ordenar: primero los que tienen stock > 0, luego los agotados
-        filtrados.sort((a, b) => {
-          if (a.Stock > 0 && b.Stock === 0) return -1;
-          if (a.Stock === 0 && b.Stock > 0) return 1;
-          return 0;
-        });
+      function actualizarControlesPaginacion() {
+        const paginacionDiv = document.getElementById("paginacionControles");
+        if (!paginacionDiv) return;
 
-        if (filtrados.length === 0) {
-          tbody.innerHTML =
-            '<tr><td colspan="7" class="loading">📭 No hay productos que coincidan con los filtros<\/td><\/tr>';
+        if (totalPaginasInventario <= 1) {
+          paginacionDiv.style.display = "none";
           return;
         }
 
-        tbody.innerHTML = filtrados
+        paginacionDiv.style.display = "flex";
+
+        let html = "";
+
+        html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(${paginaActualInventario - 1})" ${paginaActualInventario === 1 ? 'disabled' : ''}>« Anterior</button>`;
+
+        let inicio = Math.max(1, paginaActualInventario - 2);
+        let fin = Math.min(totalPaginasInventario, paginaActualInventario + 2);
+
+        if (inicio > 1) {
+          html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(1)">1</button>`;
+          if (inicio > 2) html += `<span class="paginacion-puntos">...</span>`;
+        }
+
+        for (let i = inicio; i <= fin; i++) {
+          html += `<button class="btn-paginacion ${i === paginaActualInventario ? "active" : ""}" onclick="cambiarPaginaInventario(${i})">${i}</button>`;
+        }
+
+        if (fin < totalPaginasInventario) {
+          if (fin < totalPaginasInventario - 1)
+            html += `<span class="paginacion-puntos">...</span>`;
+          html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(${totalPaginasInventario})">${totalPaginasInventario}</button>`;
+        }
+
+        html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(${paginaActualInventario + 1})" ${paginaActualInventario === totalPaginasInventario ? 'disabled' : ''}>Siguiente »</button>`;
+
+        html += `<span style="margin-left: 15px; color: #666; font-size: 13px;">Página ${paginaActualInventario} de ${totalPaginasInventario}</span>`;
+
+        paginacionDiv.innerHTML = html;
+      }
+
+      // ========== MOSTRAR TABLA ==========
+      function mostrarTabla() {
+        const tbody = document.getElementById("cuerpoTabla");
+
+        if (inventarioData.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="7" class="loading">📭 No hay productos que coincidan con los filtros</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = inventarioData
           .map((p) => {
             let stockClass = "";
             let stockText = `${p.Stock} unidades`;
@@ -342,18 +406,47 @@
                 <td><strong>${escapeHtml(p.Nombre)}</strong></td>
                 <td>${escapeHtml(p.Marca || "N/A")}</td>
                 <td>${escapeHtml(p.Nombre_Categoria || "Sin categoría")}</td>
-                <td>C$ ${parseFloat(p.Precio).toFixed(2)}</span>
-                <td class="${stockClass}">${stockText}</span>
-                <td>${escapeHtml(p.Proveedor)}</span>
-                <td><span class="status-badge ${estadoClass}">${p.Nombre_Estado || "Disponible"}</span></span>
+                <td>C$ ${parseFloat(p.Precio).toFixed(2)}</td>
+                <td class="${stockClass}">${stockText}</td>
+                <td>${escapeHtml(p.Proveedor)}</td>
+                <td><span class="status-badge ${estadoClass}">${p.Nombre_Estado || "Disponible"}</span></td>
             </tr>
         `;
           })
           .join("");
       }
 
+      // ========== FILTRAR TABLA ==========
       function filtrarTabla() {
-        mostrarTabla();
+        const search = document
+          .getElementById("searchInput")
+          .value.toLowerCase()
+          .trim();
+        const catF = document.getElementById("categoriaFilter").value;
+        const estF = document.getElementById("estadoFilter").value;
+        const provF = document.getElementById("proveedorFilter").value;
+
+        let filtrados = productosCompletos.filter((p) => {
+          const matchTxt =
+            (p.Nombre && p.Nombre.toLowerCase().includes(search)) ||
+            (p.Marca && p.Marca.toLowerCase().includes(search));
+          const matchCat = !catF || p.Nombre_Categoria === catF;
+          const matchEst = !estF || p.Nombre_Estado === estF;
+          const matchProv = !provF || p.Proveedor === provF;
+          return matchTxt && matchCat && matchEst && matchProv;
+        });
+
+        // Ordenar: primero los que tienen stock > 0, luego los agotados
+        filtrados.sort((a, b) => {
+          if (a.Stock > 0 && b.Stock === 0) return -1;
+          if (a.Stock === 0 && b.Stock > 0) return 1;
+          return 0;
+        });
+
+        productosCompletos = filtrados;
+        totalPaginasInventario = Math.ceil(filtrados.length / ITEMS_POR_PAGINA);
+        paginaActualInventario = 1;
+        mostrarPaginaInventario();
       }
 
       window.onload = () => {

@@ -1017,3 +1017,136 @@ button {
     margin: 20px;
   }
 }
+
+/* ============================================================
+   ===== NUEVOS ESTILOS PARA EL SISTEMA DE CAJEROS =====
+   ============================================================ */
+
+/* Badge de Cajero en la tarjeta */
+.personal-card-badge-cajero {
+  display: inline-block;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #1e40af;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid #93c5fd;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.15);
+}
+
+.personal-card-badge-cajero i {
+  margin-right: 4px;
+}
+
+/* Badge pequeño de cajero en la fila de información */
+.cajero-badge-small {
+  display: inline-block;
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid #93c5fd;
+}
+
+.cajero-badge-small i {
+  margin-right: 3px;
+}
+
+/* Contenedor del toggle de cajero en el modal de edición */
+.cajero-toggle-container {
+  background: linear-gradient(135deg, #f8fafc, #eef2ff);
+  border-radius: 12px;
+  padding: 15px;
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.cajero-toggle-container.active {
+  border-color: #a63c89;
+  background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+  box-shadow: 0 0 0 3px rgba(166, 60, 137, 0.15);
+}
+
+/* Información del cajero actual */
+.cajero-toggle-container .info-cajero-actual {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cajero-toggle-container .info-cajero-actual i {
+  font-size: 16px;
+}
+
+.cajero-toggle-container .info-cajero-actual.success {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  color: #166534;
+}
+
+.cajero-toggle-container .info-cajero-actual.warning {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+}
+
+.cajero-toggle-container .info-cajero-actual.info {
+  background: #eff6ff;
+  border: 1px solid #93c5fd;
+  color: #1e40af;
+}
+
+/* Spinner de carga */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ffffff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Estilo para el checkbox de cajero */
+#editarEsCajero {
+  width: 20px;
+  height: 20px;
+  accent-color: #a63c89;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+#editarEsCajero:checked {
+  accent-color: #a63c89;
+}
+
+/* Responsive para los nuevos estilos */
+@media (max-width: 768px) {
+  .cajero-toggle-container {
+    padding: 12px;
+  }
+  
+  .cajero-toggle-container .info-cajero-actual {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+  
+  .personal-card-badge-cajero {
+    font-size: 10px;
+    padding: 3px 10px;
+  }
+}

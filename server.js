@@ -2,7 +2,7 @@
  * ============================================================================
  * @file server.js
  * @description Servidor de CAJA LOCAL del Sistema de Gestión Comercial "Chepita"
- * @version 3.2 - EVALUACIÓN CON ASISTENCIA
+ * @version 3.3 - CON SISTEMA DE TICKETS Y PUNTOS
  * ============================================================================
  * 
  * 📌 Este servidor se ejecuta en la CAJA LOCAL y se conecta a la base de datos
@@ -28,7 +28,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
-// ================= CONEXIÓN A MYSQL - RAILWAY (compartida con APP) =================
+// ================= CONEXIÓN A MYSQL - RAILWAY =================
 const db = mysql.createConnection({
     host: process.env.MYSQLHOST || 'acela.proxy.rlwy.net',
     user: process.env.MYSQLUSER || 'root',
@@ -46,6 +46,9 @@ db.connect(err => {
     crearTablaRecuperacionTokens();
     agregarColumnasIntentos();
     crearTablaQRVendedores();
+    agregarColumnaCajero();
+    crearTablaPedidosPendientes();
+    crearTablaPuntos();
 });
 
 // ================= CONFIGURACIÓN DE GMAIL =================
@@ -60,7 +63,6 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Verificación de conexión con Gmail
 transporter.verify((error, success) => {
     if (error) {
         console.error('❌ Error de conexión con Gmail:', error.message);
@@ -142,17 +144,104 @@ function agregarColumnasIntentos() {
     });
 }
 
+function agregarColumnaCajero() {
+    db.query(`SHOW COLUMNS FROM trabajadores LIKE 'es_cajero'`, (err, results) => {
+        if (err) {
+            console.error('Error verificando columna es_cajero:', err);
+            return;
+        }
+        if (results.length === 0) {
+            console.log('📌 Agregando columna es_cajero...');
+            db.query(`ALTER TABLE trabajadores ADD COLUMN es_cajero TINYINT DEFAULT 0`, (err) => {
+                if (err) console.error('Error agregando es_cajero:', err);
+                else console.log('✅ Columna es_cajero agregada');
+            });
+        } else {
+            console.log('✅ Columna es_cajero ya existe');
+        }
+    });
+}
+
+// ================= CREAR TABLA PEDIDOS PENDIENTES (TICKETS) =================
+function crearTablaPedidosPendientes() {
+    const sql = `
+        CREATE TABLE IF NOT EXISTS pedidos_pendientes (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            codigo VARCHAR(50) NOT NULL UNIQUE,
+            id_vendedor INT NOT NULL,
+            nombre_vendedor VARCHAR(100),
+            productos JSON NOT NULL,
+            total DECIMAL(10,2) NOT NULL,
+            estado ENUM('pendiente', 'en_proceso', 'completado', 'cancelado', 'expirado') DEFAULT 'pendiente',
+            fecha_creacion DATETIME DEFAULT NOW(),
+            fecha_procesado DATETIME,
+            fecha_expiracion DATETIME,
+            FOREIGN KEY (id_vendedor) REFERENCES trabajadores(Id_Trabajador)
+        )
+    `;
+    db.query(sql, (err) => {
+        if (err) console.error('Error creando tabla pedidos_pendientes:', err);
+        else console.log('✅ Tabla pedidos_pendientes (Tickets) creada/verificada');
+    });
+}
+
+// ================= CREAR TABLAS DE PUNTOS =================
+function crearTablaPuntos() {
+    db.query(`
+        CREATE TABLE IF NOT EXISTS puntos_vendedores (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            id_vendedor INT NOT NULL UNIQUE,
+            total_puntos INT DEFAULT 0,
+            fecha_actualizacion DATETIME DEFAULT NOW(),
+            FOREIGN KEY (id_vendedor) REFERENCES trabajadores(Id_Trabajador)
+        )
+    `, (err) => {
+        if (err) console.error('Error creando puntos_vendedores:', err);
+        else console.log('✅ Tabla puntos_vendedores creada/verificada');
+    });
+
+    db.query(`
+        CREATE TABLE IF NOT EXISTS puntos_detalle (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            id_vendedor INT NOT NULL,
+            puntos INT NOT NULL,
+            motivo VARCHAR(255),
+            fecha DATETIME DEFAULT NOW(),
+            num_factura VARCHAR(50),
+            ticket_codigo VARCHAR(50),
+            FOREIGN KEY (id_vendedor) REFERENCES trabajadores(Id_Trabajador)
+        )
+    `, (err) => {
+        if (err) console.error('Error creando puntos_detalle:', err);
+        else console.log('✅ Tabla puntos_detalle creada/verificada');
+    });
+}
+
 // ================= LOGIN DE TRABAJADORES =================
 
 app.post('/api/trabajadores/login', async (req, res) => {
     const { nombre_usuario, password } = req.body;
     
-    const sql = `SELECT * FROM trabajadores WHERE (nombre_usuario = ? OR email = ? OR NombreCompleto = ?) AND Activo = 1`;
+    const sql = `SELECT * FROM trabajadores WHERE (nombre_usuario = ? OR email = ? OR NombreCompleto = ?) AND Activo = 1 AND es_cajero = 1`;
     
     db.query(sql, [nombre_usuario, nombre_usuario, nombre_usuario], async (err, results) => {
         if (err) return res.status(500).json({ error: err.sqlMessage });
         if (results.length === 0) {
-            return res.status(401).json({ success: false, message: "Usuario o contraseña incorrectos" });
+            db.query(`SELECT es_cajero, Activo FROM trabajadores WHERE (nombre_usuario = ? OR email = ? OR NombreCompleto = ?)`, 
+                [nombre_usuario, nombre_usuario, nombre_usuario], (err2, checkResults) => {
+                if (err2) return res.status(500).json({ error: err2.sqlMessage });
+                if (checkResults.length > 0) {
+                    const user = checkResults[0];
+                    if (user.Activo === 0) {
+                        return res.status(401).json({ success: false, message: "❌ Usuario inactivo. Contacte al administrador." });
+                    }
+                    if (user.es_cajero === 0) {
+                        return res.status(401).json({ success: false, message: "❌ Este usuario no tiene permisos de cajero. Contacte al administrador." });
+                    }
+                }
+                return res.status(401).json({ success: false, message: "Usuario o contraseña incorrectos" });
+            });
+            return;
         }
         
         const trabajador = results[0];
@@ -192,7 +281,7 @@ app.post('/api/trabajadores/login', async (req, res) => {
                 [trabajador.Id_Trabajador]);
             
             const token = jwt.sign(
-                { id: trabajador.Id_Trabajador, nombre: trabajador.NombreCompleto, rol: 'trabajador' },
+                { id: trabajador.Id_Trabajador, nombre: trabajador.NombreCompleto, rol: 'trabajador', es_cajero: 1 },
                 SECRET_KEY,
                 { expiresIn: '8h' }
             );
@@ -205,7 +294,8 @@ app.post('/api/trabajadores/login', async (req, res) => {
                     nombre: trabajador.NombreCompleto,
                     debe_cambiar_password: (trabajador.debe_cambiar_password === 1),
                     email: trabajador.email,
-                    usuario: trabajador.nombre_usuario
+                    usuario: trabajador.nombre_usuario,
+                    es_cajero: 1
                 }
             });
         }
@@ -272,7 +362,7 @@ app.post('/api/trabajadores/cambiar-password', async (req, res) => {
     });
 });
 
-// ================= CREAR TRABAJADOR CON ENVÍO DE EMAIL =================
+// ================= CREAR TRABAJADOR =================
 app.post('/api/trabajadores', async (req, res) => {
     const { NombreCompleto, Celular, Salario, Activo, email } = req.body;
     
@@ -286,7 +376,6 @@ app.post('/api/trabajadores', async (req, res) => {
         return res.status(400).json({ error: 'El correo electrónico es requerido' });
     }
     
-    // Validación de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         return res.status(400).json({ error: 'Formato de correo electrónico inválido' });
@@ -316,8 +405,8 @@ app.post('/api/trabajadores', async (req, res) => {
             
             const md5pass = crypto.createHash('md5').update('1234').digest('hex');
             
-            const sql = `INSERT INTO trabajadores (NombreCompleto, Celular, Salario, Activo, email, nombre_usuario, password_hash, debe_cambiar_password) 
-                         VALUES (?, ?, ?, ?, ?, ?, ?, 1)`;
+            const sql = `INSERT INTO trabajadores (NombreCompleto, Celular, Salario, Activo, email, nombre_usuario, password_hash, debe_cambiar_password, es_cajero) 
+                         VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0)`;
             
             db.query(sql, [NombreCompleto, Celular, Salario || null, Activo !== undefined ? Activo : 1, email, usuarioFinal, md5pass], (err, result) => {
                 if (err) return res.status(500).json({ error: err.sqlMessage });
@@ -367,7 +456,6 @@ app.post('/api/trabajadores', async (req, res) => {
                         });
                     }
                     console.log(`✅ Email de bienvenida enviado exitosamente a: ${email}`);
-                    console.log(`📧 ID del mensaje: ${info.messageId}`);
                     res.json({ 
                         message: "Trabajador agregado exitosamente. Se ha enviado un email para configurar su contraseña.", 
                         Id_Trabajador: idTrabajador,
@@ -379,7 +467,6 @@ app.post('/api/trabajadores', async (req, res) => {
     });
 });
 
-// ================= ENDPOINT DE PRUEBA DE EMAIL =================
 app.post('/api/test-email', (req, res) => {
     const { email } = req.body;
     
@@ -492,10 +579,44 @@ app.post('/api/completar-registro-trabajador', async (req, res) => {
 
 app.put('/api/trabajadores/:id', (req, res) => {
     const { id } = req.params;
-    const { NombreCompleto, Celular, Salario, Activo, email } = req.body;
+    const { NombreCompleto, Celular, Salario, Activo, email, es_cajero } = req.body;
     
-    const sql = `UPDATE trabajadores SET NombreCompleto = ?, Celular = ?, Salario = ?, Activo = ?, email = ? WHERE Id_Trabajador = ?`;
-    db.query(sql, [NombreCompleto, Celular, Salario, Activo, email, id], (err, result) => {
+    let campos = [];
+    let valores = [];
+    
+    if (NombreCompleto !== undefined) {
+        campos.push('NombreCompleto = ?');
+        valores.push(NombreCompleto);
+    }
+    if (Celular !== undefined) {
+        campos.push('Celular = ?');
+        valores.push(Celular);
+    }
+    if (Salario !== undefined) {
+        campos.push('Salario = ?');
+        valores.push(Salario);
+    }
+    if (Activo !== undefined) {
+        campos.push('Activo = ?');
+        valores.push(Activo);
+    }
+    if (email !== undefined) {
+        campos.push('email = ?');
+        valores.push(email);
+    }
+    if (es_cajero !== undefined) {
+        campos.push('es_cajero = ?');
+        valores.push(es_cajero);
+    }
+    
+    if (campos.length === 0) {
+        return res.status(400).json({ error: "No hay campos para actualizar" });
+    }
+    
+    valores.push(id);
+    const sql = `UPDATE trabajadores SET ${campos.join(', ')} WHERE Id_Trabajador = ?`;
+    
+    db.query(sql, valores, (err, result) => {
         if (err) return res.status(500).json({ error: err.sqlMessage });
         if (result.affectedRows === 0) return res.status(404).json({ error: "Trabajador no encontrado" });
         res.json({ message: "Trabajador actualizado" });
@@ -503,14 +624,14 @@ app.put('/api/trabajadores/:id', (req, res) => {
 });
 
 app.get('/api/trabajadores', (req, res) => {
-    db.query(`SELECT Id_Trabajador, NombreCompleto, Celular, Salario, Activo, email, nombre_usuario, debe_cambiar_password FROM trabajadores ORDER BY NombreCompleto`, (err, results) => {
+    db.query(`SELECT Id_Trabajador, NombreCompleto, Celular, Salario, Activo, email, nombre_usuario, debe_cambiar_password, es_cajero FROM trabajadores ORDER BY NombreCompleto`, (err, results) => {
         if (err) return res.status(500).json({ error: err.sqlMessage });
         res.json(results);
     });
 });
 
 app.get('/api/trabajadores/activos', (req, res) => {
-    db.query(`SELECT Id_Trabajador, NombreCompleto, Celular, nombre_usuario FROM trabajadores WHERE Activo = 1 ORDER BY NombreCompleto`, (err, results) => {
+    db.query(`SELECT Id_Trabajador, NombreCompleto, Celular, nombre_usuario, es_cajero FROM trabajadores WHERE Activo = 1 ORDER BY NombreCompleto`, (err, results) => {
         if (err) return res.status(500).json({ error: err.sqlMessage });
         res.json(results);
     });
@@ -529,25 +650,15 @@ app.post('/api/trabajadores/verificar', (req, res) => {
     });
 });
 
-// ================= ELIMINAR TRABAJADOR FÍSICAMENTE =================
 app.delete('/api/trabajadores/:id', (req, res) => {
     const { id } = req.params;
     
-    // Primero eliminar tokens de registro
     db.query(`DELETE FROM trabajador_registro_tokens WHERE id_trabajador = ?`, [id], (err) => {
-        if (err) {
-            console.error('Error eliminando tokens:', err);
-            // Continuamos aunque haya error en tokens
-        }
+        if (err) console.error('Error eliminando tokens:', err);
         
-        // Eliminar tokens de recuperación
         db.query(`DELETE FROM trabajador_recuperacion_tokens WHERE id_trabajador = ?`, [id], (err) => {
-            if (err) {
-                console.error('Error eliminando tokens de recuperación:', err);
-                // Continuamos aunque haya error
-            }
+            if (err) console.error('Error eliminando tokens de recuperación:', err);
             
-            // Finalmente eliminar el trabajador
             db.query(`DELETE FROM trabajadores WHERE Id_Trabajador = ?`, [id], (err, result) => {
                 if (err) {
                     console.error('Error eliminando trabajador:', err);
@@ -559,6 +670,60 @@ app.delete('/api/trabajadores/:id', (req, res) => {
                 console.log(`✅ Trabajador ${id} eliminado físicamente`);
                 res.json({ message: "Trabajador eliminado correctamente" });
             });
+        });
+    });
+});
+
+app.post('/api/trabajadores/cambiar-cajero', (req, res) => {
+    const { id_trabajador } = req.body;
+    
+    if (!id_trabajador) {
+        return res.status(400).json({ error: "ID de trabajador requerido" });
+    }
+    
+    db.query(`SELECT Id_Trabajador, NombreCompleto, Activo FROM trabajadores WHERE Id_Trabajador = ?`, [id_trabajador], (err, results) => {
+        if (err) return res.status(500).json({ error: err.sqlMessage });
+        if (results.length === 0) {
+            return res.status(404).json({ error: "Trabajador no encontrado" });
+        }
+        if (results[0].Activo === 0) {
+            return res.status(400).json({ error: "El trabajador está inactivo. Actívelo primero." });
+        }
+        
+        db.query(`UPDATE trabajadores SET es_cajero = 0 WHERE es_cajero = 1`, (err2) => {
+            if (err2) return res.status(500).json({ error: err2.sqlMessage });
+            
+            db.query(`UPDATE trabajadores SET es_cajero = 1 WHERE Id_Trabajador = ?`, [id_trabajador], (err3, result) => {
+                if (err3) return res.status(500).json({ error: err3.sqlMessage });
+                if (result.affectedRows === 0) {
+                    return res.status(404).json({ error: "Trabajador no encontrado o inactivo" });
+                }
+                
+                db.query(`SELECT NombreCompleto FROM trabajadores WHERE Id_Trabajador = ?`, [id_trabajador], (err4, results2) => {
+                    if (err4) return res.status(500).json({ error: err4.sqlMessage });
+                    res.json({ 
+                        success: true, 
+                        message: `✅ Cajero actualizado correctamente`,
+                        cajero: results2[0]?.NombreCompleto || 'Desconocido'
+                    });
+                });
+            });
+        });
+    });
+});
+
+app.get('/api/trabajadores/cajero-actual', (req, res) => {
+    db.query(`SELECT Id_Trabajador, NombreCompleto, email, Celular FROM trabajadores WHERE es_cajero = 1 AND Activo = 1`, (err, results) => {
+        if (err) return res.status(500).json({ error: err.sqlMessage });
+        if (results.length === 0) {
+            return res.json({ existe: false, message: "⚠️ No hay ningún cajero asignado" });
+        }
+        res.json({ 
+            existe: true, 
+            id: results[0].Id_Trabajador, 
+            nombre: results[0].NombreCompleto,
+            email: results[0].email,
+            celular: results[0].Celular
         });
     });
 });
@@ -868,7 +1033,7 @@ app.delete('/api/categorias/:id', (req, res) => {
     });
 });
 
-// ================= PRODUCTOS (OPTIMIZADO) =================
+// ================= PRODUCTOS =================
 app.get('/api/productos', (req, res) => {
     const sql = `
         SELECT 
@@ -1140,18 +1305,15 @@ app.put('/api/proveedores/:id', (req, res) => {
     });
 });
 
-// ================= ELIMINAR PROVEEDOR FORZOSAMENTE (CON DEPENDENCIAS) =================
 app.delete('/api/proveedores/:id', (req, res) => {
     const { id } = req.params;
     
-    // Primero eliminar registros relacionados en abastecimiento
     db.query(`DELETE FROM abastecimiento WHERE Id_Proveedor = ?`, [id], (err) => {
         if (err) {
             console.error('Error eliminando dependencias de abastecimiento:', err);
             return res.status(500).json({ error: err.sqlMessage });
         }
         
-        // Luego eliminar el proveedor
         db.query(`DELETE FROM proveedores WHERE Id_Proveedor = ?`, [id], (err, result) => {
             if (err) {
                 console.error('Error eliminando proveedor:', err);
@@ -1776,11 +1938,11 @@ app.post('/api/ordenes', (req, res) => {
         });
     });
 });
+
 // ================= EVALUACIÓN COMPLETA (PUNTOS + ASISTENCIA) =================
 app.get('/api/evaluacion-completa', (req, res) => {
     const { year, month } = req.query;
     
-    // Obtener todos los trabajadores activos
     const sqlTrabajadores = `SELECT Id_Trabajador, NombreCompleto FROM trabajadores WHERE Activo = 1`;
     
     db.query(sqlTrabajadores, (err, trabajadores) => {
@@ -1800,7 +1962,6 @@ app.get('/api/evaluacion-completa', (req, res) => {
             const id = trabajador.Id_Trabajador;
             const nombre = trabajador.NombreCompleto;
             
-            // 1. Obtener ventas del trabajador (SIN filtro de año/mes)
             let sqlVentas = `
                 SELECT 
                     COUNT(DISTINCT c.Num_Factura) as total_ventas,
@@ -1825,7 +1986,6 @@ app.get('/api/evaluacion-completa', (req, res) => {
                     total_ventas_cordobas: 0
                 };
                 
-                // 2. Obtener asistencias REALES del trabajador (SIN filtro de año/mes)
                 let sqlAsistencia = `
                     SELECT 
                         COUNT(DISTINCT fecha) as dias_asistencia
@@ -1850,7 +2010,6 @@ app.get('/api/evaluacion-completa', (req, res) => {
                     
                     const promedioDiario = diasVentas > 0 ? parseFloat((totalVentas / diasVentas).toFixed(2)) : 0;
                     
-                    // Calcular puntaje: 30% ventas, 30% días con ventas, 40% días con asistencia
                     const puntajeTotal = parseFloat(
                         ((totalVentas * 0.3) + (diasVentas * 0.3) + (diasAsistencia * 0.4)).toFixed(2)
                     );
@@ -1877,6 +2036,7 @@ app.get('/api/evaluacion-completa', (req, res) => {
         });
     });
 });
+
 // ================= ESTADÍSTICAS =================
 
 app.get('/api/puntos-vendedores', (req, res) => {
@@ -2100,7 +2260,7 @@ app.get('/api/ventas-detalle', (req, res) => {
     });
 });
 
-// ================= ENDPOINT TOP-PRODUCTOS CORREGIDO (CON CATEGORÍA) =================
+// ================= ENDPOINT TOP-PRODUCTOS =================
 app.get('/api/top-productos', (req, res) => {
     const { periodo = 'mes', limite = 100, fecha, desde, hasta, anio, mes } = req.query;
     
@@ -2171,7 +2331,7 @@ app.get('/api/top-productos', (req, res) => {
     });
 });
 
-// ================= ESTADÍSTICAS POR AÑO CORREGIDO =================
+// ================= ESTADÍSTICAS POR AÑO =================
 app.get('/api/estadisticas-ventas-anio', (req, res) => {
     const { anio } = req.query;
     
@@ -2271,7 +2431,7 @@ app.get('/api/estadisticas-ventas-anio', (req, res) => {
     });
 });
 
-// ================= ESTADÍSTICAS POR FECHA CORREGIDO =================
+// ================= ESTADÍSTICAS POR FECHA =================
 app.get('/api/estadisticas-ventas-fecha', (req, res) => {
     const { fecha } = req.query;
     
@@ -2340,7 +2500,7 @@ app.get('/api/estadisticas-ventas-fecha', (req, res) => {
     });
 });
 
-// ================= ENDPOINT TOP-CLIENTES CORREGIDO =================
+// ================= ENDPOINT TOP-CLIENTES =================
 app.get('/api/top-clientes', (req, res) => {
     const { periodo = 'mes', limite = 100, fecha, desde, hasta, anio, mes } = req.query;
     
@@ -2887,6 +3047,278 @@ app.post('/api/registrar-uso-qr', (req, res) => {
     res.json({ success: true });
 });
 
+// ================= SISTEMA DE TICKETS =================
+
+// Generar un nuevo ticket (vendedor desde APP)
+app.post('/api/tickets/generar', verificarTokenTrabajador, (req, res) => {
+    const { productos, total } = req.body;
+    const id_vendedor = req.usuario.id;
+    
+    if (!productos || !Array.isArray(productos) || productos.length === 0) {
+        return res.status(400).json({ success: false, message: 'Debe incluir al menos un producto' });
+    }
+    if (!total || total <= 0) {
+        return res.status(400).json({ success: false, message: 'Total inválido' });
+    }
+    
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const hash = crypto.createHash('md5').update(`${id_vendedor}${timestamp}${random}`).digest('hex').substring(0, 6);
+    const codigo = `TKT-${id_vendedor}-${timestamp}-${hash}`;
+    
+    const fechaExpiracion = new Date();
+    fechaExpiracion.setMinutes(fechaExpiracion.getMinutes() + 15);
+    
+    db.query(`SELECT NombreCompleto FROM trabajadores WHERE Id_Trabajador = ?`, [id_vendedor], (err, results) => {
+        if (err) return res.status(500).json({ success: false, message: 'Error en servidor' });
+        if (results.length === 0) return res.status(404).json({ success: false, message: 'Vendedor no encontrado' });
+        
+        const nombreVendedor = results[0].NombreCompleto;
+        
+        db.query(`
+            INSERT INTO pedidos_pendientes (codigo, id_vendedor, nombre_vendedor, productos, total, estado, fecha_creacion, fecha_expiracion)
+            VALUES (?, ?, ?, ?, ?, 'pendiente', NOW(), ?)
+        `, [codigo, id_vendedor, nombreVendedor, JSON.stringify(productos), total, fechaExpiracion], (err, result) => {
+            if (err) {
+                console.error('Error guardando ticket:', err);
+                return res.status(500).json({ success: false, message: 'Error guardando ticket: ' + err.message });
+            }
+            
+            res.json({
+                success: true,
+                message: 'Ticket generado correctamente',
+                ticket: {
+                    codigo: codigo,
+                    id_vendedor: id_vendedor,
+                    nombre_vendedor: nombreVendedor,
+                    productos: productos,
+                    total: total,
+                    estado: 'pendiente',
+                    expira_en: fechaExpiracion
+                }
+            });
+        });
+    });
+});
+
+// ================= OBTENER TICKETS PENDIENTES =================
+app.get('/api/tickets/pendientes', (req, res) => {
+    db.query(`
+        UPDATE pedidos_pendientes 
+        SET estado = 'expirado' 
+        WHERE estado = 'pendiente' AND fecha_expiracion < NOW()
+    `, (err) => {
+        if (err) console.error('Error actualizando tickets expirados:', err);
+        
+        db.query(`
+            SELECT pp.*, t.NombreCompleto as vendedor_nombre
+            FROM pedidos_pendientes pp
+            JOIN trabajadores t ON pp.id_vendedor = t.Id_Trabajador
+            WHERE pp.estado = 'pendiente' AND pp.fecha_expiracion > NOW()
+            ORDER BY pp.fecha_creacion ASC
+        `, (err, results) => {
+            if (err) {
+                console.error('Error obteniendo tickets pendientes:', err);
+                return res.status(500).json({ success: false, message: 'Error en servidor' });
+            }
+            res.json({ success: true, tickets: results });
+        });
+    });
+});
+
+// Marcar ticket como "en_proceso"
+app.put('/api/tickets/:codigo/procesar', (req, res) => {
+    const { codigo } = req.params;
+    
+    db.query(`
+        UPDATE pedidos_pendientes 
+        SET estado = 'en_proceso', fecha_procesado = NOW()
+        WHERE codigo = ? AND estado = 'pendiente' AND fecha_expiracion > NOW()
+    `, [codigo], (err, result) => {
+        if (err) return res.status(500).json({ success: false, message: 'Error en servidor' });
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Ticket no encontrado o expirado' });
+        }
+        res.json({ success: true, message: 'Ticket marcado como en proceso' });
+    });
+});
+
+// Completar ticket y asignar puntos
+app.post('/api/tickets/:codigo/completar', (req, res) => {
+    const { codigo } = req.params;
+    const { num_factura } = req.body;
+    
+    db.beginTransaction((err) => {
+        if (err) {
+            console.error('Error iniciando transacción:', err);
+            return res.status(500).json({ success: false, message: 'Error en servidor' });
+        }
+        
+        db.query(`
+            SELECT * FROM pedidos_pendientes 
+            WHERE codigo = ? AND estado IN ('pendiente', 'en_proceso') AND fecha_expiracion > NOW()
+        `, [codigo], (err, results) => {
+            if (err) {
+                console.error('Error obteniendo ticket:', err);
+                return db.rollback(() => res.status(500).json({ success: false, message: 'Error en servidor' }));
+            }
+            
+            if (results.length === 0) {
+                return db.rollback(() => res.status(404).json({ success: false, message: 'Ticket no válido o expirado' }));
+            }
+            
+            const ticket = results[0];
+            const id_vendedor = ticket.id_vendedor;
+            const totalVenta = ticket.total;
+            
+            db.query(`
+                UPDATE pedidos_pendientes 
+                SET estado = 'completado', fecha_procesado = NOW()
+                WHERE codigo = ?
+            `, [codigo], (err) => {
+                if (err) {
+                    console.error('Error actualizando ticket:', err);
+                    return db.rollback(() => res.status(500).json({ success: false, message: 'Error actualizando ticket' }));
+                }
+                
+                const puntosGanados = Math.floor(totalVenta / 100);
+                
+                db.query(`
+                    INSERT INTO puntos_vendedores (id_vendedor, total_puntos, fecha_actualizacion)
+                    VALUES (?, ?, NOW())
+                    ON DUPLICATE KEY UPDATE 
+                        total_puntos = total_puntos + ?,
+                        fecha_actualizacion = NOW()
+                `, [id_vendedor, puntosGanados, puntosGanados], (err) => {
+                    if (err) {
+                        console.error('Error asignando puntos:', err);
+                        return db.rollback(() => res.status(500).json({ success: false, message: 'Error asignando puntos' }));
+                    }
+                    
+                    db.query(`
+                        INSERT INTO puntos_detalle (id_vendedor, puntos, motivo, fecha, num_factura, ticket_codigo)
+                        VALUES (?, ?, ?, NOW(), ?, ?)
+                    `, [id_vendedor, puntosGanados, `Venta #${num_factura || 'N/A'} - Ticket ${codigo}`, num_factura || null, codigo], (err) => {
+                        if (err) {
+                            console.error('Error registrando detalle de puntos:', err);
+                        }
+                        
+                        db.commit((err) => {
+                            if (err) {
+                                console.error('Error commit:', err);
+                                return res.status(500).json({ success: false, message: 'Error completando operación' });
+                            }
+                            
+                            console.log(`✅ Ticket ${codigo} completado - Vendedor: ${ticket.nombre_vendedor} - Puntos: ${puntosGanados}`);
+                            
+                            res.json({
+                                success: true,
+                                message: 'Venta completada y puntos asignados',
+                                puntos_asignados: puntosGanados,
+                                vendedor: {
+                                    id: id_vendedor,
+                                    nombre: ticket.nombre_vendedor
+                                }
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+});
+
+// Cancelar ticket
+app.put('/api/tickets/:codigo/cancelar', verificarTokenTrabajador, (req, res) => {
+    const { codigo } = req.params;
+    const id_vendedor = req.usuario.id;
+    
+    db.query(`
+        UPDATE pedidos_pendientes 
+        SET estado = 'cancelado'
+        WHERE codigo = ? AND id_vendedor = ? AND estado = 'pendiente'
+    `, [codigo, id_vendedor], (err, result) => {
+        if (err) return res.status(500).json({ success: false, message: 'Error en servidor' });
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Ticket no encontrado o no se puede cancelar' });
+        }
+        res.json({ success: true, message: 'Ticket cancelado' });
+    });
+});
+
+// Obtener un ticket específico
+app.get('/api/tickets/:codigo', (req, res) => {
+    const { codigo } = req.params;
+    
+    db.query(`
+        SELECT pp.*, t.NombreCompleto as vendedor_nombre
+        FROM pedidos_pendientes pp
+        JOIN trabajadores t ON pp.id_vendedor = t.Id_Trabajador
+        WHERE pp.codigo = ?
+    `, [codigo], (err, results) => {
+        if (err) return res.status(500).json({ success: false, message: 'Error en servidor' });
+        if (results.length === 0) {
+            return res.status(404).json({ success: false, message: 'Ticket no encontrado' });
+        }
+        
+        const ticket = results[0];
+        if (ticket.estado === 'pendiente' && new Date(ticket.fecha_expiracion) < new Date()) {
+            db.query(`UPDATE pedidos_pendientes SET estado = 'expirado' WHERE codigo = ?`, [codigo]);
+            return res.status(410).json({ success: false, message: 'El ticket ha expirado' });
+        }
+        
+        res.json({ success: true, ticket: results[0] });
+    });
+});
+
+// OBTENER PUNTOS DE UN VENDEDOR
+app.get('/api/vendedor/puntos/:id', (req, res) => {
+    const { id } = req.params;
+    
+    db.query(`
+        SELECT 
+            COALESCE(pv.total_puntos, 0) as total_puntos,
+            COUNT(pd.id) as total_transacciones
+        FROM trabajadores t
+        LEFT JOIN puntos_vendedores pv ON t.Id_Trabajador = pv.id_vendedor
+        LEFT JOIN puntos_detalle pd ON t.Id_Trabajador = pd.id_vendedor
+        WHERE t.Id_Trabajador = ?
+        GROUP BY t.Id_Trabajador
+    `, [id], (err, results) => {
+        if (err) return res.status(500).json({ success: false, message: 'Error en servidor' });
+        if (results.length === 0) {
+            return res.json({ success: true, total_puntos: 0, total_transacciones: 0 });
+        }
+        res.json({ success: true, ...results[0] });
+    });
+});
+
+// HISTORIAL DE PUNTOS DE UN VENDEDOR
+app.get('/api/vendedor/historial-puntos/:id', (req, res) => {
+    const { id } = req.params;
+    
+    db.query(`
+        SELECT * FROM puntos_detalle 
+        WHERE id_vendedor = ?
+        ORDER BY fecha DESC
+        LIMIT 50
+    `, [id], (err, results) => {
+        if (err) return res.status(500).json({ success: false, message: 'Error en servidor' });
+        res.json({ success: true, historial: results });
+    });
+});
+
+// ================= LIMPIEZA AUTOMÁTICA DE TICKETS EXPIRADOS =================
+setInterval(() => {
+    db.query(`
+        UPDATE pedidos_pendientes 
+        SET estado = 'expirado' 
+        WHERE estado = 'pendiente' AND fecha_expiracion < NOW()
+    `, (err) => {
+        if (err) console.error('Error limpiando tickets expirados:', err);
+    });
+}, 5 * 60 * 1000);
+
 // ================= ENDPOINTS CORREGIDOS PARA DASHBOARD =================
 
 app.get('/api/anios-disponibles', (req, res) => {
@@ -2894,82 +3326,6 @@ app.get('/api/anios-disponibles', (req, res) => {
     db.query(sql, (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(results.map(r => r.anio));
-    });
-});
-
-app.get('/api/estadisticas-ventas-fecha', (req, res) => {
-    const { fecha } = req.query;
-    
-    const sqlVentas = `
-        SELECT COALESCE(SUM(o.CantidadVendida), 0) as total_unidades, COUNT(DISTINCT c.Num_Factura) as cantidad_ventas
-        FROM compra c
-        JOIN orden o ON c.Num_Factura = o.NumFactura
-        WHERE DATE(c.Fecha) = ?
-    `;
-    
-    const sqlVentasPorDia = `
-        SELECT DATE(c.Fecha) as fecha, COALESCE(SUM(o.CantidadVendida), 0) as total
-        FROM compra c
-        JOIN orden o ON c.Num_Factura = o.NumFactura
-        WHERE DATE(c.Fecha) = ?
-        GROUP BY DATE(c.Fecha)
-    `;
-    
-    const sqlCategorias = `
-        SELECT cat.Nombre as categoria, COALESCE(SUM(o.CantidadVendida), 0) as total
-        FROM orden o
-        JOIN producto p ON o.Id_Producto = p.Id_Producto
-        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
-        JOIN compra c ON o.NumFactura = c.Num_Factura
-        WHERE DATE(c.Fecha) = ?
-        GROUP BY cat.Id_Categoria
-        ORDER BY total DESC
-    `;
-    
-    const sqlTopProductos = `
-        SELECT p.Nombre as nombre, COALESCE(cat.Nombre, 'Sin categoría') as categoria, SUM(o.CantidadVendida) as cantidad
-        FROM orden o
-        JOIN producto p ON o.Id_Producto = p.Id_Producto
-        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
-        JOIN compra c ON o.NumFactura = c.Num_Factura
-        WHERE DATE(c.Fecha) = ?
-        GROUP BY p.Id_Producto, p.Nombre, cat.Nombre
-        ORDER BY cantidad DESC
-        LIMIT 5
-    `;
-    
-    const sqlTopClientes = `
-        SELECT CONCAT(COALESCE(cl.Nombre, 'Cliente'), ' ', COALESCE(cl.Apellido, '')) as nombre, COUNT(o.Id_Producto) as unidades_compradas
-        FROM compra c
-        LEFT JOIN clientes cl ON c.Id_cliente = cl.Id_cliente
-        LEFT JOIN orden o ON c.Num_Factura = o.NumFactura
-        WHERE DATE(c.Fecha) = ? AND c.Id_cliente IS NOT NULL
-        GROUP BY c.Id_cliente, cl.Nombre, cl.Apellido
-        ORDER BY unidades_compradas DESC
-        LIMIT 5
-    `;
-    
-    Promise.all([
-        db.promise().query(sqlVentas, [fecha]),
-        db.promise().query(sqlVentasPorDia, [fecha]),
-        db.promise().query(sqlCategorias, [fecha]),
-        db.promise().query(sqlTopProductos, [fecha]),
-        db.promise().query(sqlTopClientes, [fecha])
-    ]).then(([ventas, ventasPorDia, categorias, topProductos, topClientes]) => {
-        res.json({
-            cantidad_ventas: parseInt(ventas[0][0]?.cantidad_ventas) || 0,
-            total_unidades: parseInt(ventas[0][0]?.total_unidades) || 0,
-            labels_dias: [fecha],
-            data_dias: [parseInt(ventas[0][0]?.total_unidades) || 0],
-            categorias: categorias[0].map(v => v.categoria),
-            totales_categorias: categorias[0].map(v => parseInt(v.total) || 0),
-            top_productos: topProductos[0],
-            top_clientes: topClientes[0],
-            ventas_diarias: ventasPorDia[0].map(v => ({ fecha: v.fecha, total: parseInt(v.total) || 0 }))
-        });
-    }).catch(err => {
-        console.error('Error en /api/estadisticas-ventas-fecha:', err);
-        res.status(500).json({ error: err.message });
     });
 });
 
@@ -3113,77 +3469,6 @@ app.get('/api/estadisticas-ventas-mes', (req, res) => {
     });
 });
 
-app.get('/api/estadisticas-ventas-anio', (req, res) => {
-    const { anio } = req.query;
-    
-    const sqlVentas = `
-        SELECT COALESCE(SUM(o.CantidadVendida), 0) as total_unidades, COUNT(DISTINCT c.Num_Factura) as cantidad_ventas
-        FROM compra c
-        JOIN orden o ON c.Num_Factura = o.NumFactura
-        WHERE YEAR(c.Fecha) = ?
-    `;
-    
-    const sqlVentasMensuales = `
-        SELECT MONTH(c.Fecha) as mes, COALESCE(SUM(o.CantidadVendida), 0) as total
-        FROM compra c
-        JOIN orden o ON c.Num_Factura = o.NumFactura
-        WHERE YEAR(c.Fecha) = ?
-        GROUP BY MONTH(c.Fecha)
-        ORDER BY mes
-    `;
-    
-    const sqlCategorias = `
-        SELECT cat.Nombre as categoria, COALESCE(SUM(o.CantidadVendida), 0) as total
-        FROM orden o
-        JOIN producto p ON o.Id_Producto = p.Id_Producto
-        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
-        JOIN compra c ON o.NumFactura = c.Num_Factura
-        WHERE YEAR(c.Fecha) = ?
-        GROUP BY cat.Id_Categoria
-        ORDER BY total DESC
-    `;
-    
-    const sqlTopProductos = `
-        SELECT p.Nombre as nombre, COALESCE(cat.Nombre, 'Sin categoría') as categoria, SUM(o.CantidadVendida) as cantidad
-        FROM orden o
-        JOIN producto p ON o.Id_Producto = p.Id_Producto
-        LEFT JOIN categoria cat ON p.Id_Categoria = cat.Id_Categoria
-        JOIN compra c ON o.NumFactura = c.Num_Factura
-        WHERE YEAR(c.Fecha) = ?
-        GROUP BY p.Id_Producto, p.Nombre, cat.Nombre
-        ORDER BY cantidad DESC
-        LIMIT 5
-    `;
-    
-    Promise.all([
-        db.promise().query(sqlVentas, [anio]),
-        db.promise().query(sqlVentasMensuales, [anio]),
-        db.promise().query(sqlCategorias, [anio]),
-        db.promise().query(sqlTopProductos, [anio])
-    ]).then(([ventas, ventasMensuales, categorias, topProductos]) => {
-        const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-        const dataMensual = Array(12).fill(0);
-        const ventasPorMes = ventasMensuales[0];
-        ventasPorMes.forEach(v => {
-            dataMensual[v.mes - 1] = parseInt(v.total) || 0;
-        });
-        
-        res.json({
-            cantidad_ventas: parseInt(ventas[0][0]?.cantidad_ventas) || 0,
-            total_unidades: parseInt(ventas[0][0]?.total_unidades) || 0,
-            ventas_diarias: meses.map((mes, idx) => ({ fecha: `${mes} ${anio}`, total: dataMensual[idx] })),
-            categorias: categorias[0].map(v => v.categoria),
-            totales_categorias: categorias[0].map(v => parseInt(v.total) || 0),
-            top_productos: topProductos[0],
-            labels_dias: meses,
-            data_dias: dataMensual
-        });
-    }).catch(err => {
-        console.error('Error en /api/estadisticas-ventas-anio:', err);
-        res.status(500).json({ error: err.message });
-    });
-});
-
 app.get('/api/ventas-recientes', (req, res) => {
     const sql = `
         SELECT c.Fecha, 
@@ -3320,7 +3605,7 @@ app.get('/api/verificar-sesion', (req, res) => {
     res.json({ autenticado: true });
 });
 
-// ================= RECUPERACIÓN UNIFICADA (TRABAJADORES Y ADMIN) =================
+// ================= RECUPERACIÓN UNIFICADA =================
 app.post('/api/recuperar-password-unificado', (req, res) => {
     const { email } = req.body;
     
@@ -3428,7 +3713,7 @@ app.post('/api/recuperar-password-unificado', (req, res) => {
     });
 });
 
-// ================= PANEL FINANCIERO - ENDPOINTS COMPLETOS =================
+// ================= PANEL FINANCIERO =================
 
 app.get('/api/financiero/ventas-detalle', (req, res) => {
     const { desde, hasta, anio, mes } = req.query;
@@ -4159,6 +4444,10 @@ app.listen(PORT, '0.0.0.0', () => {
     ║  ✅ Sincronización: ACTIVADA con la APP                   ║
     ║  ⚡ CONSULTA PRODUCTOS: OPTIMIZADA                        ║
     ║  📊 EVALUACIÓN CON ASISTENCIA: ACTIVADA                   ║
+    ║  🔐 SISTEMA DE CAJEROS: ACTIVADO ✅                       ║
+    ║  👤 Solo cajeros pueden iniciar sesión                    ║
+    ║  🎫 SISTEMA DE TICKETS: ACTIVADO ✅                       ║
+    ║  ⭐ SISTEMA DE PUNTOS: ACTIVADO ✅                        ║
     ║                                                           ║
     ║  📧 Sistema de emails activado                            ║
     ║  📧 Email: isabelchepita678@gmail.com                     ║

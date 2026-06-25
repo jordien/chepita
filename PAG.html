@@ -180,6 +180,7 @@
         }
       }
 
+      // ===== MODIFICADO: SOLO MUESTRA CAJEROS (es_cajero = 1) =====
       function mostrarSugerencias(texto) {
         const container = document.getElementById("sugerenciasContainer");
         const busqueda = texto.toLowerCase().trim();
@@ -192,18 +193,25 @@
 
         let coincidencias = [];
 
+        // Administrador siempre aparece
         if (busqueda === "admin" || busqueda === "administrador") {
           coincidencias.push(ADMIN_VIRTUAL);
         }
 
+        // MODIFICADO: Solo filtrar trabajadores que son CAJEROS (es_cajero = 1)
         const trabajadoresCoincidentes = trabajadoresData.filter((t) =>
-          t.NombreCompleto.toLowerCase().includes(busqueda),
+          t.es_cajero === 1 && t.NombreCompleto.toLowerCase().includes(busqueda)
         );
         coincidencias.push(...trabajadoresCoincidentes);
 
         if (coincidencias.length === 0) {
-          container.innerHTML =
-            '<div class="sugerencia-item" style="color:#999; justify-content:center;">Sin coincidencias</div>';
+          container.innerHTML = `
+            <div class="sugerencia-item" style="color:#999; justify-content:center; flex-direction: column; padding: 15px;">
+              <i class="fa-solid fa-user-slash" style="font-size: 20px; margin-bottom: 8px; color: #dc3545;"></i>
+              <span>No hay cajeros disponibles</span>
+              <small style="color: #999; font-size: 11px;">Contacte al administrador</small>
+            </div>
+          `;
           container.classList.add("mostrar");
           document.querySelector(".search-wrapper").classList.add("abierto");
           return;
@@ -214,17 +222,26 @@
           const esAdmin = user.tipo === "admin" || user.Id_Trabajador === 0;
           const icono = esAdmin
             ? '<i class="fa-solid fa-crown"></i>'
-            : '<i class="fa-solid fa-user"></i>';
-          const rol = esAdmin ? "Administrador" : "Vendedor";
+            : '<i class="fa-solid fa-cash-register"></i>';
+          const rol = esAdmin ? "Administrador" : "Cajero";
+          
+          // Badge de cajero para trabajadores
+          const badgeCajero = !esAdmin 
+            ? '<span style="background: #dbeafe; color: #1e40af; padding: 1px 8px; border-radius: 999px; font-size: 9px; margin-left: 5px; border: 1px solid #93c5fd;">Caja</span>' 
+            : '';
+          
           html += `
-                    <div class="sugerencia-item" data-id="${user.Id_Trabajador || 0}" data-nombre="${user.NombreCompleto}" data-tipo="${esAdmin ? "admin" : "trabajador"}">
-                        <div class="sugerencia-icono">${icono}</div>
-                        <div class="sugerencia-info">
-                            <div class="sugerencia-nombre">${user.NombreCompleto}</div>
-                            <div class="sugerencia-rol">${rol}</div>
-                        </div>
-                    </div>
-                `;
+            <div class="sugerencia-item" data-id="${user.Id_Trabajador || 0}" data-nombre="${user.NombreCompleto}" data-tipo="${esAdmin ? "admin" : "trabajador"}">
+              <div class="sugerencia-icono">${icono}</div>
+              <div class="sugerencia-info">
+                <div class="sugerencia-nombre">${user.NombreCompleto}</div>
+                <div class="sugerencia-rol">
+                  ${rol}
+                  ${badgeCajero}
+                </div>
+              </div>
+            </div>
+          `;
         });
 
         container.innerHTML = html;
@@ -286,7 +303,7 @@
 
         document.getElementById("selectedNombre").textContent = nombre;
         document.getElementById("selectedRol").textContent =
-          tipo === "admin" ? "Administrador" : "Vendedor";
+          tipo === "admin" ? "Administrador" : "Cajero";
         document.getElementById("selectedUser").style.display = "flex";
 
         document
@@ -313,13 +330,12 @@
         document.getElementById("usuarioNombre").value = "";
         document.getElementById("usuarioTipo").value = "";
 
-// Resetear campo contraseña
-    const pwd = document.getElementById("password");
-    pwd.type = "text";
-    pwd.value = "";
-    pwd.setAttribute("readonly", true);
+        // Resetear campo contraseña
+        const pwd = document.getElementById("password");
+        pwd.type = "text";
+        pwd.value = "";
+        pwd.setAttribute("readonly", true);
 
-        
         document.getElementById("busquedaUsuario").focus();
         document.getElementById("errorMessage").style.display = "none";
         document.getElementById("warningMessage").style.display = "none";

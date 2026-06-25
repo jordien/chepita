@@ -139,6 +139,44 @@
           </select>
         </div>
 
+        <!-- ===== SECCIÓN DE CAJERO (SOLO APARECE SI NO HAY CAJERO ACTIVO) ===== -->
+        <div id="cajeroSectionContainer" style="display: none;">
+          <div class="personal-group">
+            <label><i class="fas fa-cash-register"></i> Asignar como Cajero</label>
+            <div class="cajero-toggle-container" id="cajeroToggleContainer">
+              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <input type="checkbox" id="editarEsCajero">
+                  <label for="editarEsCajero" style="font-weight: 600; color: #334155; cursor: pointer; margin: 0; display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-cash-register" style="color: #a63c89;"></i>
+                    Asignar como Cajero
+                  </label>
+                </div>
+                <small style="color: #6c757d; font-size: 11px; flex: 1;">
+                  <i class="fas fa-info-circle"></i> Solo los cajeros pueden iniciar sesión en el módulo de caja
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== INFO DEL CAJERO ACTUAL (OCULTO - style="display: none;") ===== -->
+        <div class="personal-group" style="display: none;">
+          <div id="infoCajeroActual" class="info-cajero-actual info">
+            <i class="fas fa-spinner fa-spin"></i> Cargando información del cajero actual...
+          </div>
+        </div>
+
+        <!-- ===== BOTÓN PARA DESACTIVAR CAJERO (SOLO SI EL TRABAJADOR ES EL CAJERO ACTUAL) ===== -->
+        <div id="desactivarCajeroContainer" style="display: none;">
+          <button class="personal-modal-cancel" onclick="desactivarCajero()" style="background: #dc3545; width: 100%;">
+            <i class="fas fa-user-slash"></i> Desactivar como Cajero
+          </button>
+          <small style="color: #6c757d; font-size: 11px; text-align: center; display: block; margin-top: 5px;">
+            <i class="fas fa-info-circle"></i> Al desactivar el cajero, se habilitará la opción para asignar uno nuevo
+          </small>
+        </div>
+
         <button class="personal-modal-save" onclick="guardarPersonal()">
           <i class="fas fa-save"></i> Guardar Trabajador
         </button>
@@ -222,6 +260,10 @@
             <span class="personal-details-label">Contrasena</span>
             <span class="personal-details-value" id="detPassword">-</span>
           </div>
+          <div class="personal-details-item" id="detalleCajeroRow" style="border-left-color: #94a3b8;">
+            <span class="personal-details-label"><i class="fas fa-cash-register"></i> Cajero</span>
+            <span class="personal-details-value" id="detCajero">-</span>
+          </div>
         </div>
 
         <div class="personal-details-actions">
@@ -287,6 +329,7 @@
       let trabajadoresData = [];
       let estadosData = {};
       let companiasData = {};
+      let cajeroActual = null;
 
       // ========== FUNCIONES DEL MODAL ==========
       function abrirModalPersonal() {
@@ -314,11 +357,16 @@
         document.getElementById("estadoPersonal").value = "1";
         document.getElementById("estadoGroup").style.display = "none";
         document.getElementById("modalTitle").textContent = "Agregar Trabajador";
+        document.getElementById("editarEsCajero").checked = false;
+        document.getElementById("cajeroToggleContainer").classList.remove("active");
+        document.getElementById("cajeroSectionContainer").style.display = "none";
+        document.getElementById("desactivarCajeroContainer").style.display = "none";
       }
 
       function abrirModalPersonalParaAgregar() {
         limpiarModalPersonal();
         abrirModalPersonal();
+        mostrarInfoCajeroActual();
       }
 
       // ========== VALIDACIONES ==========
@@ -450,6 +498,153 @@
         );
       }
 
+      // ========== FUNCIONES DE CAJERO ==========
+
+      async function obtenerCajeroActual() {
+        try {
+          const response = await fetch('/api/trabajadores/cajero-actual');
+          const data = await response.json();
+          cajeroActual = data;
+          return data;
+        } catch (error) {
+          console.error('Error obteniendo cajero actual:', error);
+          cajeroActual = { existe: false };
+          return cajeroActual;
+        }
+      }
+
+      async function mostrarInfoCajeroActual() {
+        const infoDiv = document.getElementById('infoCajeroActual');
+        const cajeroSection = document.getElementById('cajeroSectionContainer');
+        const desactivarContainer = document.getElementById('desactivarCajeroContainer');
+        const editId = document.getElementById('editIdPersonal').value;
+        
+        await obtenerCajeroActual();
+        
+        // Si hay cajero activo
+        if (cajeroActual && cajeroActual.existe) {
+          // La info está oculta (style="display: none;"), solo actualizamos el texto por si acaso
+          infoDiv.className = 'info-cajero-actual success';
+          infoDiv.innerHTML = `
+            <i class="fas fa-check-circle" style="color: #22c55e;"></i>
+            <strong>Cajero actual:</strong> ${cajeroActual.nombre}
+          `;
+          
+          // Ocultar la sección de asignar cajero (checkbox)
+          cajeroSection.style.display = 'none';
+          
+          // Si el trabajador que estamos editando ES el cajero actual, mostrar botón de desactivar
+          if (editId && parseInt(editId) === cajeroActual.id) {
+            desactivarContainer.style.display = 'block';
+          } else {
+            desactivarContainer.style.display = 'none';
+          }
+          
+        } else {
+          // No hay cajero activo
+          infoDiv.className = 'info-cajero-actual warning';
+          infoDiv.innerHTML = `
+            <i class="fas fa-exclamation-circle" style="color: #ef4444;"></i>
+            <strong>⚠️ No hay ningún cajero asignado.</strong>
+            <span style="margin-left: auto; font-size: 12px; color: #64748b;">
+              <i class="fas fa-info-circle"></i> Puedes asignar uno nuevo
+            </span>
+          `;
+          
+          // Mostrar la sección de asignar cajero (checkbox)
+          cajeroSection.style.display = 'block';
+          desactivarContainer.style.display = 'none';
+        }
+      }
+
+      async function desactivarCajero() {
+        if (!cajeroActual || !cajeroActual.existe) {
+          mostrarError('No hay ningún cajero activo para desactivar');
+          return;
+        }
+        
+        const nombreCajero = cajeroActual.nombre;
+        const idCajero = cajeroActual.id;
+        
+        // Buscar el trabajador en los datos locales para obtener todos sus campos
+        const trabajador = trabajadoresData.find(t => t.Id_Trabajador === idCajero);
+        if (!trabajador) {
+          mostrarError('No se encontraron los datos completos del trabajador');
+          return;
+        }
+        
+        mostrarConfirmacion(
+          `¿Estás seguro de desactivar a "${nombreCajero}" como cajero?\n\nEsto permitirá asignar un nuevo cajero.`,
+          async () => {
+            try {
+              // Enviar TODOS los campos del trabajador
+              const response = await fetch(`/api/trabajadores/${idCajero}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  NombreCompleto: trabajador.NombreCompleto,
+                  Celular: trabajador.Celular,
+                  email: trabajador.email,
+                  Salario: trabajador.Salario,
+                  Activo: trabajador.Activo,
+                  es_cajero: 0
+                })
+              });
+              
+              if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Error al desactivar el cajero');
+              }
+              
+              // Limpiar cualquier otro cajero
+              await fetch('/api/trabajadores/cambiar-cajero', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_trabajador: null })
+              }).catch(() => {});
+              
+              mostrarExito(`✅ Cajero "${nombreCajero}" desactivado correctamente`);
+              
+              // Actualizar la información
+              await mostrarInfoCajeroActual();
+              cargarTrabajadores();
+              
+              // Cerrar el modal
+              cerrarModalPersonal();
+              
+            } catch (error) {
+              console.error('Error:', error);
+              mostrarError(error.message || 'Error al desactivar el cajero');
+            }
+          }
+        );
+      }
+
+      async function cambiarCajero(idTrabajador, nombreTrabajador) {
+        try {
+          const response = await fetch('/api/trabajadores/cambiar-cajero', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_trabajador: idTrabajador })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            await mostrarInfoCajeroActual();
+            cargarTrabajadores();
+            return true;
+          } else {
+            mostrarError(data.error || 'Error al cambiar el cajero');
+            return false;
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          mostrarError('Error de conexión al cambiar el cajero');
+          return false;
+        }
+      }
+
       // ========== MODALES DE CONFIRMACION, EXITO Y ERROR ==========
       function mostrarConfirmacion(mensaje, accionSi) {
         const modal = document.getElementById("confirmModal");
@@ -503,6 +698,18 @@
         document.getElementById("btnAgregarPersonal").onclick = abrirModalPersonalParaAgregar;
         document.getElementById("errorModalBtn").onclick = cerrarErrorModal;
         document.getElementById("successModalBtn").onclick = cerrarSuccessModal;
+        
+        const checkbox = document.getElementById('editarEsCajero');
+        if (checkbox) {
+          checkbox.addEventListener('change', function() {
+            const container = document.getElementById('cajeroToggleContainer');
+            if (this.checked) {
+              container.classList.add('active');
+            } else {
+              container.classList.remove('active');
+            }
+          });
+        }
       });
 
       // ========== MODAL DE DETALLES ==========
@@ -525,6 +732,8 @@
         const passwordStatus = trabajador.debe_cambiar_password === 1 || trabajador.debe_cambiar_password === true
           ? "Pendiente de configuracion"
           : "Configurada";
+        
+        const esCajero = trabajador.es_cajero === 1;
 
         document.getElementById("detNombre").textContent = trabajador.NombreCompleto || "Sin nombre";
         document.getElementById("detEmail").textContent = trabajador.email || "No registrado";
@@ -533,6 +742,16 @@
         document.getElementById("detSalario").textContent = trabajador.Salario ? `C$ ${parseFloat(trabajador.Salario).toFixed(2)}` : "N/A";
         document.getElementById("detEstado").textContent = estado;
         document.getElementById("detPassword").textContent = passwordStatus;
+        document.getElementById("detCajero").textContent = esCajero ? '✅ Sí (Cajero activo)' : 'No';
+
+        const cajeroRow = document.getElementById('detalleCajeroRow');
+        if (esCajero) {
+          cajeroRow.style.borderLeftColor = '#1e40af';
+          cajeroRow.querySelector('.personal-details-value').innerHTML = '<span style="color:#1e40af; font-weight:700;"><i class="fas fa-check-circle" style="color:#22c55e;"></i> Sí (Cajero activo)</span>';
+        } else {
+          cajeroRow.style.borderLeftColor = '#94a3b8';
+          cajeroRow.querySelector('.personal-details-value').innerHTML = '<span style="color:#64748b;">No</span>';
+        }
 
         document.getElementById("btnEditarDesdeDetalles").dataset.trabajadorId = idTrabajador;
         abrirModalDetalles();
@@ -627,6 +846,15 @@
             ? '<span style="color:#e67e22;"><i class="fas fa-clock"></i> Pendiente</span>'
             : '<span style="color:#27ae60;"><i class="fas fa-check-circle"></i> Configurada</span>';
 
+          const esCajero = trab.es_cajero === 1;
+          const badgeCajero = esCajero 
+            ? `<span class="personal-card-badge-cajero"><i class="fas fa-cash-register"></i> Cajero</span>` 
+            : '';
+          
+          const cajeroBadgeSmall = esCajero
+            ? `<span class="cajero-badge-small"><i class="fas fa-cash-register"></i> Cajero</span>`
+            : 'No';
+
           let companiaStyle =
             'style="background:#f3f4f6;color:#6b7280;border:1px solid #d1d5db;"';
           if (compania === "Claro")
@@ -641,6 +869,9 @@
                         <div class="personal-card-header">
                             <div class="personal-card-name">${escapeHtml(nombre)}</div>
                             <span class="personal-card-estado ${estadoClass}">${estado}</span>
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: -5px;">
+                            ${badgeCajero}
                         </div>
                         <div class="personal-card-email"><i class="fas fa-envelope"></i> ${escapeHtml(email)}</div>
                         <div class="personal-card-info">
@@ -659,6 +890,10 @@
                             <div class="personal-card-info-row">
                                 <span class="personal-card-info-label"><i class="fas fa-lock"></i> Contrasena:</span>
                                 <span class="personal-card-password">${passwordText}</span>
+                            </div>
+                            <div class="personal-card-info-row">
+                                <span class="personal-card-info-label"><i class="fas fa-cash-register"></i> Cajero:</span>
+                                <span class="personal-card-info-value">${cajeroBadgeSmall}</span>
                             </div>
                         </div>
                         <div class="personal-card-buttons">
@@ -688,7 +923,7 @@
       }
 
       // ========== EDITAR TRABAJADOR ==========
-      function editarPersonal(idTrabajador) {
+      async function editarPersonal(idTrabajador) {
         const trabajador = trabajadoresData.find((t) => t.Id_Trabajador === idTrabajador);
         if (!trabajador) return;
 
@@ -700,6 +935,14 @@
         document.getElementById("personalCompania").value = companiasData[trabajador.Id_Trabajador] || "Claro";
         document.getElementById("personalSalario").value = trabajador.Salario || "";
         document.getElementById("estadoPersonal").value = trabajador.Activo;
+        document.getElementById("editarEsCajero").checked = trabajador.es_cajero === 1;
+
+        const container = document.getElementById('cajeroToggleContainer');
+        if (trabajador.es_cajero === 1) {
+          container.classList.add('active');
+        } else {
+          container.classList.remove('active');
+        }
 
         validarNombreCompleto(document.getElementById("personalNombre"));
         validarEmail(document.getElementById("personalEmail"));
@@ -707,10 +950,14 @@
         validarSalario(document.getElementById("personalSalario"));
 
         document.getElementById("estadoGroup").style.display = "block";
+        
+        // Mostrar información del cajero actual y ajustar visibilidad
+        await mostrarInfoCajeroActual();
+        
         abrirModalPersonal();
       }
 
-      // ========== ELIMINAR TRABAJADOR (CON RECARGA AUTOMÁTICA) ==========
+      // ========== ELIMINAR TRABAJADOR ==========
       async function eliminarPersonal(idTrabajador) {
         mostrarConfirmacion(
           "¿Esta seguro de que desea eliminar este trabajador? Esta accion no se puede deshacer.",
@@ -729,7 +976,6 @@
                 throw new Error(resultado.error || "Error al eliminar el trabajador");
               }
 
-              // Eliminar de los datos locales
               trabajadoresData = trabajadoresData.filter(
                 (t) => t.Id_Trabajador !== idTrabajador
               );
@@ -739,7 +985,6 @@
               localStorage.setItem("estadosPersonal", JSON.stringify(estadosData));
               localStorage.setItem("companiasTrabajadores", JSON.stringify(companiasData));
 
-              // Recargar trabajadores desde el servidor para asegurar consistencia
               mostrarExito("Trabajador eliminado exitosamente", () => {
                 cargarTrabajadores();
               });
@@ -759,6 +1004,7 @@
         const salario = document.getElementById("personalSalario").value;
         const editId = document.getElementById("editIdPersonal").value;
         const estado = editId ? document.getElementById("estadoPersonal").value : "1";
+        const esCajero = document.getElementById("editarEsCajero").checked;
 
         // Validaciones
         if (!nombre) {
@@ -821,20 +1067,19 @@
           return;
         }
 
-        // Verificar duplicado en los datos locales ANTES de enviar al servidor
         if (await verificarCelularDuplicado(celular, editId)) {
           mostrarError("Este numero de celular ya esta registrado");
           return;
         }
 
         if (editId) {
-          await ejecutarActualizacionPersonal(nombre, email, celular, compania, salario, estado, editId);
+          await ejecutarActualizacionPersonal(nombre, email, celular, compania, salario, estado, esCajero, editId);
         } else {
-          await ejecutarCreacionPersonal(nombre, email, celular, compania, salario, estado);
+          await ejecutarCreacionPersonal(nombre, email, celular, compania, salario, estado, esCajero);
         }
       }
 
-      async function ejecutarCreacionPersonal(nombre, email, celular, compania, salario, estado) {
+      async function ejecutarCreacionPersonal(nombre, email, celular, compania, salario, estado, esCajero) {
         try {
           const respuesta = await fetch("/api/trabajadores", {
             method: "POST",
@@ -851,7 +1096,6 @@
           const resultado = await respuesta.json();
 
           if (!respuesta.ok) {
-            // Si el error es de email duplicado, mostrar mensaje específico
             if (resultado.error && resultado.error.includes('correo electrónico')) {
               mostrarError("Este correo electrónico ya está registrado en el sistema. Si el trabajador fue eliminado, espera unos momentos y vuelve a intentarlo.");
               return;
@@ -866,6 +1110,11 @@
           localStorage.setItem("estadosPersonal", JSON.stringify(estadosData));
           localStorage.setItem("companiasTrabajadores", JSON.stringify(companiasData));
 
+          // Si se marcó como cajero, actualizar el cajero global
+          if (esCajero) {
+            await cambiarCajero(idTrabajador, nombre);
+          }
+
           limpiarModalPersonal();
           mostrarExito("Trabajador agregado exitosamente. Se ha enviado un email para configurar su contrasena.", () => {
             cerrarModalPersonal();
@@ -876,7 +1125,7 @@
         }
       }
 
-      async function ejecutarActualizacionPersonal(nombre, email, celular, compania, salario, estado, editId) {
+      async function ejecutarActualizacionPersonal(nombre, email, celular, compania, salario, estado, esCajero, editId) {
         try {
           const respuesta = await fetch(`/api/trabajadores/${editId}`, {
             method: "PUT",
@@ -887,6 +1136,7 @@
               email: email,
               Salario: salario,
               Activo: estado,
+              es_cajero: esCajero ? 1 : 0
             }),
           });
 
@@ -898,6 +1148,11 @@
 
           localStorage.setItem("estadosPersonal", JSON.stringify(estadosData));
           localStorage.setItem("companiasTrabajadores", JSON.stringify(companiasData));
+
+          // Si se marcó como cajero, actualizar el cajero global
+          if (esCajero) {
+            await cambiarCajero(editId, nombre);
+          }
 
           mostrarExito("Trabajador actualizado exitosamente", () => {
             cerrarModalPersonal();

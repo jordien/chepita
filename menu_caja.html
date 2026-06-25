@@ -1,448 +1,1134 @@
 <!doctype html>
 <html lang="es">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Panel de Caja - Tienda Chepita</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Playfair+Display:wght@600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="menu_caja.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
-      .loading-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(255, 255, 255, 0.95);
-        justify-content: center;
-        align-items: center;
-        z-index: 2000;
-        flex-direction: column;
-      }
-      .loading-spinner {
-        width: 50px;
-        height: 50px;
-        border: 5px solid #f3e8ff;
-        border-top: 5px solid #caa0d8;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            flex-direction: column;
         }
-        100% {
-          transform: rotate(360deg);
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3e8ff;
+            border-top: 5px solid #caa0d8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
-      }
-    </style>
-  </head>
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
 
-  <body>
+        /* ⭐ ESTILOS PARA EL BADGE DE NOTIFICACIONES */
+        .welcome-card-header {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .welcome-card-header:hover {
+            transform: scale(1.02);
+        }
+
+        .welcome-icon-small {
+            position: relative;
+        }
+
+        .notif-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #c62828;
+            color: white;
+            border-radius: 50%;
+            min-width: 22px;
+            height: 22px;
+            font-size: 10px;
+            font-weight: 700;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            padding: 0 6px;
+            z-index: 15;
+            box-shadow: 0 2px 8px rgba(198, 40, 40, 0.4);
+        }
+
+        .notif-badge.visible {
+            display: flex;
+            animation: pulseBadge 0.5s ease 3;
+        }
+
+        @keyframes pulseBadge {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.3);
+            }
+        }
+
+        /* ⭐ MODAL DE TICKETS (ventana centrada) */
+        .modal-tickets-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-tickets-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-tickets-content {
+            background: white;
+            border-radius: 24px;
+            max-width: 550px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .modal-tickets-header {
+            background: linear-gradient(135deg, #4a1d6d, #A63C89);
+            color: white;
+            padding: 20px 24px;
+            border-radius: 24px 24px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .modal-tickets-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-tickets-header .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-tickets-header .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-tickets-body {
+            padding: 24px;
+        }
+
+        .modal-tickets-body .no-tickets {
+            text-align: center;
+            color: #999;
+            padding: 30px 0;
+            font-size: 16px;
+        }
+
+        .modal-tickets-body .no-tickets i {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 12px;
+            color: #ddd;
+        }
+
+        /* Ticket individual */
+        .ticket-item-modal {
+            background: #f8f6ff;
+            border-radius: 16px;
+            padding: 16px 18px;
+            margin-bottom: 14px;
+            border: 1px solid #eee;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .ticket-item-modal:hover {
+            border-color: #A63C89;
+            box-shadow: 0 4px 15px rgba(166, 60, 137, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .ticket-item-modal .ticket-vendedor {
+            font-weight: 700;
+            font-size: 16px;
+            color: #4a1d6d;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ticket-item-modal .ticket-vendedor i {
+            color: #A63C89;
+            font-size: 14px;
+        }
+
+        .ticket-item-modal .ticket-codigo {
+            font-family: monospace;
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .ticket-item-modal .ticket-productos {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #555;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 12px;
+        }
+
+        .ticket-item-modal .ticket-productos span {
+            background: #f0ebf5;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .ticket-item-modal .ticket-total {
+            font-weight: 800;
+            color: #A63C89;
+            font-size: 18px;
+            text-align: right;
+            margin-top: 6px;
+        }
+
+        .ticket-item-modal .ticket-tiempo {
+            font-size: 11px;
+            color: #999;
+            text-align: right;
+        }
+
+        .ticket-item-modal .ticket-tiempo.valido {
+            color: #2e7d32;
+        }
+
+        .ticket-item-modal .ticket-tiempo.expirado {
+            color: #c62828;
+        }
+
+        .modal-tickets-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            background: #faf8ff;
+            border-radius: 0 0 24px 24px;
+        }
+
+        .modal-tickets-footer .btn-actualizar {
+            background: #f0f0f0;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #4a1d6d;
+        }
+
+        .modal-tickets-footer .btn-actualizar:hover {
+            background: #e0e0e0;
+        }
+
+        .modal-tickets-footer .btn-actualizar:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ========== MODAL TIPO DE VENTA (para cuando se selecciona un ticket) ========== */
+        .modal-tipo-venta-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 3100;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-tipo-venta-overlay.active {
+            display: flex;
+        }
+
+        .modal-tipo-venta-content {
+            background: white;
+            border-radius: 24px;
+            max-width: 450px;
+            width: 95%;
+            padding: 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-tipo-venta-header {
+            background: linear-gradient(135deg, #4a1d6d, #A63C89);
+            color: white;
+            padding: 20px 24px;
+            border-radius: 24px 24px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-tipo-venta-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-tipo-venta-header .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-tipo-venta-header .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-tipo-venta-body {
+            padding: 24px;
+            text-align: center;
+        }
+
+        .modal-tipo-venta-body .ticket-info {
+            background: #f8f6ff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .modal-tipo-venta-body .ticket-info .label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-tipo-venta-body .ticket-info .vendedor {
+            font-size: 18px;
+            font-weight: 700;
+            color: #4a1d6d;
+            margin: 4px 0 8px;
+        }
+
+        .modal-tipo-venta-body .ticket-info .productos {
+            font-size: 14px;
+            color: #555;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 10px;
+            margin-top: 6px;
+        }
+
+        .modal-tipo-venta-body .ticket-info .productos span {
+            background: #f0ebf5;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .modal-tipo-venta-body .ticket-info .total {
+            font-size: 20px;
+            font-weight: 800;
+            color: #A63C89;
+            margin-top: 8px;
+            text-align: right;
+        }
+
+        .modal-tipo-venta-body .tipo-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .modal-tipo-venta-body .tipo-buttons button {
+            padding: 14px;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-tipo-venta-body .tipo-buttons .btn-express {
+            background: #fff3e0;
+            color: #e65100;
+            border: 2px solid #ff9800;
+        }
+
+        .modal-tipo-venta-body .tipo-buttons .btn-express:hover {
+            background: #ffe0b2;
+            transform: scale(1.02);
+        }
+
+        .modal-tipo-venta-body .tipo-buttons .btn-normal {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 2px solid #4CAF50;
+        }
+
+        .modal-tipo-venta-body .tipo-buttons .btn-normal:hover {
+            background: #c8e6c9;
+            transform: scale(1.02);
+        }
+
+        .modal-tipo-venta-body .tipo-buttons .btn-cancelar {
+            background: #f0f0f0;
+            color: #666;
+            border: none;
+            margin-top: 4px;
+        }
+
+        .modal-tipo-venta-body .tipo-buttons .btn-cancelar:hover {
+            background: #e0e0e0;
+        }
+
+        @media (max-width: 480px) {
+            .modal-tickets-content {
+                max-width: 100%;
+                width: 98%;
+                max-height: 95vh;
+            }
+            .modal-tickets-body {
+                padding: 16px;
+            }
+            .ticket-item-modal {
+                padding: 12px 14px;
+            }
+            .modal-tipo-venta-content {
+                max-width: 100%;
+                width: 98%;
+            }
+            .modal-tipo-venta-body {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
     <div class="loading-overlay" id="loadingOverlay">
-      <div class="loading-spinner"></div>
-      <p style="margin-top: 15px; color: #caa0d8">Cargando...</p>
+        <div class="loading-spinner"></div>
+        <p style="margin-top: 15px; color: #caa0d8">Cargando...</p>
     </div>
 
     <div class="admin-container">
-      <div class="admin-header">
-        <div class="admin-badge">
-          <i class="fas fa-cash-register"></i>
-          <span>Cajero</span>
-        </div>
-        <div class="main-title-inline">
-          <h1>TIENDA CHEPITA</h1>
-          <p class="subtitle">Panel de Caja</p>
-        </div>
-        <div class="welcome-card-header">
-          <div class="welcome-icon-small">
-            <i class="fas fa-user"></i>
-          </div>
-          <div class="welcome-text">
-            <h3 id="nombreCajero">Cargando...</h3>
-            <p id="infoUsuario">Bienvenida al sistema</p>
-            <div class="datetime-row">
-              <div class="clock-box" id="topBarDate"></div>
-              <div class="clock-box" id="topBarTime"></div>
+        <div class="admin-header">
+            <div class="admin-badge">
+                <i class="fas fa-cash-register"></i>
+                <span>Cajero</span>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="modules-grid">
-        <div class="module-card" onclick="iniciarVenta()">
-          <div class="module-icon">
-            <i class="fas fa-shopping-cart"></i>
-          </div>
-          <div class="module-info">
-            <h3>Nueva Venta</h3>
-            <p>Registrar una venta</p>
-          </div>
-          <div class="module-arrow">
-            <i class="fas fa-arrow-right"></i>
-          </div>
-        </div>
-
-        <div class="module-card" onclick="consultarInventario()">
-          <div class="module-icon">
-            <i class="fas fa-box"></i>
-          </div>
-          <div class="module-info">
-            <h3>Consultar Inventario</h3>
-            <p>Ver productos disponibles</p>
-          </div>
-          <div class="module-arrow">
-            <i class="fas fa-arrow-right"></i>
-          </div>
-        </div>
-      </div>
-
-      <!-- SECCIÓN TIPO DE VENTA (se despliega al hacer clic en Nueva Venta) -->
-      <div class="tipo-venta-section" id="tipoVentaSection">
-        <div class="tipo-venta-header">
-          <i class="fas fa-magic"></i>
-          <div>
-            <h2>Seleccione el tipo de venta</h2>
-            <p>Elija la modalidad que mejor se adapte a su operación</p>
-          </div>
+            <div class="main-title-inline">
+                <h1>TIENDA CHEPITA</h1>
+                <p class="subtitle">Panel de Caja</p>
+            </div>
+            <!-- ⭐ EL AVATAR DEL CAJERO AHORA ES CLICKEABLE Y MUESTRA TICKETS -->
+            <div class="welcome-card-header" onclick="abrirModalTickets()" title="Clic para ver tickets pendientes">
+                <div class="welcome-icon-small">
+                    <i class="fas fa-user"></i>
+                    <!-- ⭐ BADGE DE NOTIFICACIONES SOBRE EL ICONO -->
+                    <span class="notif-badge" id="notifBadge">0</span>
+                </div>
+                <div class="welcome-text">
+                    <h3 id="nombreCajero">Cargando...</h3>
+                    <p id="infoUsuario">Bienvenida al sistema</p>
+                    <div class="datetime-row">
+                        <div class="clock-box" id="topBarDate"></div>
+                        <div class="clock-box" id="topBarTime"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="tipo-venta-grid">
-          <!-- Venta Normal -->
-          <div class="tipo-venta-card" onclick="abrirVentaNormal()">
-            <div class="tipo-venta-left">
-              <div class="tipo-icon tipo-normal">
-                <i class="fas fa-user"></i>
-              </div>
-              <div class="tipo-info">
-                <h3>Venta Normal</h3>
-                <p>
-                  Registra completo del cliente, productos y datos de la venta.
+        <div class="modules-grid">
+            <div class="module-card" onclick="iniciarVenta()">
+                <div class="module-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="module-info">
+                    <h3>Nueva Venta</h3>
+                    <p>Registrar una venta</p>
+                </div>
+                <div class="module-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </div>
+
+            <div class="module-card" onclick="consultarInventario()">
+                <div class="module-icon">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="module-info">
+                    <h3>Consultar Inventario</h3>
+                    <p>Ver productos disponibles</p>
+                </div>
+                <div class="module-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN TIPO DE VENTA (se despliega al hacer clic en Nueva Venta) -->
+        <div class="tipo-venta-section" id="tipoVentaSection">
+            <div class="tipo-venta-header">
+                <i class="fas fa-magic"></i>
+                <div>
+                    <h2>Seleccione el tipo de venta</h2>
+                    <p>Elija la modalidad que mejor se adapte a su operación</p>
+                </div>
+            </div>
+
+            <div class="tipo-venta-grid">
+                <!-- Venta Normal -->
+                <div class="tipo-venta-card" onclick="abrirVentaNormal()">
+                    <div class="tipo-venta-left">
+                        <div class="tipo-icon tipo-normal">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="tipo-info">
+                            <h3>Venta Normal</h3>
+                            <p>
+                                Registra completo del cliente, productos y datos de la venta.
+                            </p>
+                            <span class="tipo-badge">Ideal para clientes frecuentes.</span>
+                        </div>
+                    </div>
+                    <div class="tipo-venta-right">
+                        <ul class="tipo-features">
+                            <li><i class="fas fa-check-circle"></i> Registro de cliente</li>
+                            <li><i class="fas fa-check-circle"></i> Datos completos</li>
+                        </ul>
+                        <div class="tipo-arrow tipo-arrow-normal">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Venta Express -->
+                <div class="tipo-venta-card tipo-express" onclick="abrirVentaExpress()">
+                    <div class="tipo-venta-left">
+                        <div class="tipo-icon tipo-express-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div class="tipo-info">
+                            <h3 class="express-title">Venta Express</h3>
+                            <p>Venta rápida sin registrar información del cliente.</p>
+                            <span class="tipo-badge tipo-badge-express">Ideal para clientes con prisa.</span>
+                        </div>
+                    </div>
+                    <div class="tipo-venta-right">
+                        <ul class="tipo-features tipo-features-express">
+                            <li><i class="fas fa-check-circle"></i> Sin registro de cliente</li>
+                            <li><i class="fas fa-check-circle"></i> Menos pasos</li>
+                            <li><i class="fas fa-check-circle"></i> Más rápida</li>
+                            <li><i class="fas fa-check-circle"></i> Atención inmediata</li>
+                        </ul>
+                        <div class="tipo-arrow tipo-arrow-express">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="logout-section">
+            <button class="btn-logout" onclick="mostrarModalCerrarJornada()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Cerrar Jornada / Salir</span>
+            </button>
+        </div>
+
+        <div class="admin-footer">
+            <p><i class="fas fa-copyright"></i> 2026 Tienda Chepita</p>
+        </div>
+    </div>
+
+    <!-- ========== MODAL DE TICKETS (ventana centrada) ========== -->
+    <div class="modal-tickets-overlay" id="modalTickets">
+        <div class="modal-tickets-content">
+            <div class="modal-tickets-header">
+                <h2><i class="fas fa-ticket-alt"></i> Tickets Pendientes</h2>
+                <button class="close-btn" onclick="cerrarModalTickets()">&times;</button>
+            </div>
+            <div class="modal-tickets-body" id="ticketsListContainer">
+                <div class="no-tickets">
+                    <i class="fas fa-inbox"></i>
+                    Cargando tickets...
+                </div>
+            </div>
+            <div class="modal-tickets-footer">
+                <button class="btn-actualizar" onclick="cargarTicketsEnModal()">
+                    <i class="fas fa-sync"></i> Actualizar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MODAL TIPO DE VENTA (al seleccionar un ticket) ========== -->
+    <div class="modal-tipo-venta-overlay" id="modalTipoVenta">
+        <div class="modal-tipo-venta-content">
+            <div class="modal-tipo-venta-header">
+                <h2><i class="fas fa-shopping-bag"></i> Seleccionar Tipo</h2>
+                <button class="close-btn" onclick="cerrarModalTipoVenta()">&times;</button>
+            </div>
+            <div class="modal-tipo-venta-body">
+                <div class="ticket-info" id="ticketInfoModal">
+                    <div class="label">Vendedor</div>
+                    <div class="vendedor" id="modalVendedor">Cargando...</div>
+                    <div class="productos" id="modalProductos"></div>
+                    <div class="total" id="modalTotal">C$ 0.00</div>
+                </div>
+                <p style="color: #666; font-size: 14px; margin-bottom: 12px;">
+                    ¿Cómo deseas procesar esta venta?
                 </p>
-                <span class="tipo-badge">Ideal para clientes frecuentes.</span>
-              </div>
+                <div class="tipo-buttons">
+                    <button class="btn-express" onclick="confirmarTipoVenta('express')">
+                        ⚡ Express <br><small style="font-weight: 400; font-size: 12px;">Sin cliente ni canal</small>
+                    </button>
+                    <button class="btn-normal" onclick="confirmarTipoVenta('normal')">
+                        📋 Normal <br><small style="font-weight: 400; font-size: 12px;">Con cliente y canal</small>
+                    </button>
+                    <button class="btn-cancelar" onclick="cerrarModalTipoVenta()">
+                        Cancelar
+                    </button>
+                </div>
             </div>
-            <div class="tipo-venta-right">
-              <ul class="tipo-features">
-                <li><i class="fas fa-check-circle"></i> Registro de cliente</li>
-                <li><i class="fas fa-check-circle"></i> Datos completos</li>
-              </ul>
-              <div class="tipo-arrow tipo-arrow-normal">
-                <i class="fas fa-arrow-right"></i>
-              </div>
-            </div>
-          </div>
-
-          <!-- Venta Express -->
-          <div
-            class="tipo-venta-card tipo-express"
-            onclick="abrirVentaExpress()"
-          >
-            <div class="tipo-venta-left">
-              <div class="tipo-icon tipo-express-icon">
-                <i class="fas fa-bolt"></i>
-              </div>
-              <div class="tipo-info">
-                <h3 class="express-title">Venta Express</h3>
-                <p>Venta rápida sin registrar información del cliente.</p>
-                <span class="tipo-badge tipo-badge-express"
-                  >Ideal para clientes con prisa.</span
-                >
-              </div>
-            </div>
-            <div class="tipo-venta-right">
-              <ul class="tipo-features tipo-features-express">
-                <li>
-                  <i class="fas fa-check-circle"></i> Sin registro de cliente
-                </li>
-                <li><i class="fas fa-check-circle"></i> Menos pasos</li>
-                <li><i class="fas fa-check-circle"></i> Más rápida</li>
-                <li><i class="fas fa-check-circle"></i> Atención inmediata</li>
-              </ul>
-              <div class="tipo-arrow tipo-arrow-express">
-                <i class="fas fa-arrow-right"></i>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
-
-      <div class="logout-section">
-        <button class="btn-logout" onclick="mostrarModalCerrarJornada()">
-          <i class="fas fa-sign-out-alt"></i>
-          <span>Cerrar Jornada / Salir</span>
-        </button>
-      </div>
-
-      <div class="admin-footer">
-        <p><i class="fas fa-copyright"></i> 2026 Tienda Chepita</p>
-      </div>
     </div>
 
     <!-- Modal genérico -->
     <div id="modalMensaje" class="modal-mensaje">
-      <div class="modal-contenido">
-        <div class="modal-icon">
-          <i class="fas fa-exclamation-triangle"></i>
+        <div class="modal-contenido">
+            <div class="modal-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 id="modalTitulo"></h3>
+            <p id="modalTexto"></p>
+            <div class="modal-buttons" id="modalBotones">
+                <button class="modal-btn" onclick="cerrarModal()">Aceptar</button>
+            </div>
         </div>
-        <h3 id="modalTitulo"></h3>
-        <p id="modalTexto"></p>
-        <div class="modal-buttons" id="modalBotones">
-          <button class="modal-btn" onclick="cerrarModal()">Aceptar</button>
-        </div>
-      </div>
     </div>
 
     <script>
-      function mostrarLoading() {
-        const overlay = document.getElementById("loadingOverlay");
-        if (overlay) overlay.style.display = "flex";
-      }
+        // ====================== FUNCIONES EXISTENTES ======================
 
-      function ocultarLoading() {
-        const overlay = document.getElementById("loadingOverlay");
-        if (overlay) overlay.style.display = "none";
-      }
-
-      // ========== VERIFICACIÓN DE SESIÓN ==========
-      (function verificarSesionAlInicio() {
-        const token = localStorage.getItem("token");
-        const trabajadorStr = localStorage.getItem("trabajador");
-
-        if (
-          !token ||
-          !trabajadorStr ||
-          trabajadorStr === "null" ||
-          trabajadorStr === "undefined"
-        ) {
-          localStorage.clear();
-          sessionStorage.clear();
-          window.location.replace("PAG.html");
-          return;
+        function mostrarLoading() {
+            const overlay = document.getElementById("loadingOverlay");
+            if (overlay) overlay.style.display = "flex";
         }
 
-        fetch("/api/verificar-sesion-trabajador", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (!data.autenticado) {
-              localStorage.clear();
-              sessionStorage.clear();
-              window.location.replace("PAG.html");
-            } else {
-              ocultarLoading();
+        function ocultarLoading() {
+            const overlay = document.getElementById("loadingOverlay");
+            if (overlay) overlay.style.display = "none";
+        }
+
+        // ========== VERIFICACIÓN DE SESIÓN ==========
+        (function verificarSesionAlInicio() {
+            const token = localStorage.getItem("token");
+            const trabajadorStr = localStorage.getItem("trabajador");
+
+            if (!token || !trabajadorStr || trabajadorStr === "null" || trabajadorStr === "undefined") {
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.replace("PAG.html");
+                return;
             }
-          })
-          .catch((error) => {
-            console.error("Error verificando sesión:", error);
-            localStorage.clear();
-            sessionStorage.clear();
-            window.location.replace("PAG.html");
-          });
-      })();
 
-      // ========== BLOQUEAR BOTÓN ATRÁS ==========
-      (function bloquearBotonAtras() {
-        for (let i = 0; i < 100; i++) {
-          history.pushState(null, null, location.href);
-        }
-        window.addEventListener("popstate", function () {
-          if (
-            !localStorage.getItem("token") ||
-            !localStorage.getItem("trabajador")
-          ) {
-            window.location.replace("PAG.html");
-            return;
-          }
-          history.go(1);
-          setTimeout(() => {
-            history.pushState(null, null, location.href);
-          }, 10);
-        });
-      })();
+            fetch("/api/verificar-sesion-trabajador", {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (!data.autenticado) {
+                        localStorage.clear();
+                        sessionStorage.clear();
+                        window.location.replace("PAG.html");
+                    } else {
+                        ocultarLoading();
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error verificando sesión:", error);
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.replace("PAG.html");
+                });
+        })();
 
-      // ========== MODALES ==========
-      function mostrarModal(titulo, texto) {
-        document.getElementById("modalTitulo").textContent = titulo;
-        document.getElementById("modalTexto").textContent = texto;
-        document.getElementById("modalBotones").innerHTML =
-          '<button class="modal-btn" onclick="cerrarModal()">Aceptar</button>';
-        document.getElementById("modalMensaje").style.display = "flex";
-      }
-
-      function mostrarModalConfirmacion(titulo, texto, accionSi) {
-        document.getElementById("modalTitulo").textContent = titulo;
-        document.getElementById("modalTexto").textContent = texto;
-
-        document.getElementById("modalBotones").innerHTML = `
-      <button class="modal-btn confirmar" id="btnConfirmarSi">
-          <i class="fas fa-door-open"></i> Cerrar Jornada
-      </button>
-
-      <button class="modal-btn cancelar" id="btnConfirmarNo">
-          Cancelar
-      </button>
-  `;
-
-        document.getElementById("btnConfirmarSi").onclick = function () {
-          cerrarModal();
-          if (accionSi) accionSi();
-        };
-
-        document.getElementById("btnConfirmarNo").onclick = cerrarModal;
-
-        document.getElementById("modalMensaje").style.display = "flex";
-      }
-
-      function cerrarModal() {
-        document.getElementById("modalMensaje").style.display = "none";
-      }
-
-      // ========== INFO CAJERO ==========
-      function cargarInfoCajero() {
-        const trabajadorStr = localStorage.getItem("trabajador");
-        if (
-          trabajadorStr &&
-          trabajadorStr !== "null" &&
-          trabajadorStr !== "undefined"
-        ) {
-          try {
-            const trabajador = JSON.parse(trabajadorStr);
-            document.getElementById("nombreCajero").textContent =
-              trabajador.nombre || "Trabajador";
-            document.getElementById("infoUsuario").textContent =
-              "Bienvenida al sistema";
-          } catch (e) {
-            console.error("Error parseando trabajador:", e);
-            document.getElementById("nombreCajero").textContent =
-              "Error al cargar datos";
-            setTimeout(() => window.location.replace("PAG.html"), 2000);
-          }
-        } else {
-          document.getElementById("nombreCajero").textContent =
-            "Sesión no iniciada";
-          mostrarModal(
-            "Sesión no iniciada",
-            "Por favor, inicie sesión nuevamente.",
-          );
-          setTimeout(() => window.location.replace("PAG.html"), 2000);
-        }
-      }
-
-      // ========== TIPO DE VENTA (inline, sin modal overlay) ==========
-      function iniciarVenta() {
-        const section = document.getElementById("tipoVentaSection");
-
-        if (section.classList.contains("visible")) {
-          window.scrollTo({
-            top: 0,
-            behavior: "smooth",
-          });
-
-          setTimeout(() => {
-            section.classList.remove("visible");
-            document.body.classList.remove("scroll-activo");
-          }, 10);
-        } else {
-          section.classList.add("visible");
-          document.body.classList.add("scroll-activo");
-
-          setTimeout(() => {
-            section.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
+        // ========== BLOQUEAR BOTÓN ATRÁS ==========
+        (function bloquearBotonAtras() {
+            for (let i = 0; i < 100; i++) {
+                history.pushState(null, null, location.href);
+            }
+            window.addEventListener("popstate", function() {
+                if (!localStorage.getItem("token") || !localStorage.getItem("trabajador")) {
+                    window.location.replace("PAG.html");
+                    return;
+                }
+                history.go(1);
+                setTimeout(() => {
+                    history.pushState(null, null, location.href);
+                }, 10);
             });
-          }, 100);
+        })();
+
+        // ========== MODALES GENÉRICOS ==========
+        function mostrarModal(titulo, texto) {
+            document.getElementById("modalTitulo").textContent = titulo;
+            document.getElementById("modalTexto").textContent = texto;
+            document.getElementById("modalBotones").innerHTML =
+                '<button class="modal-btn" onclick="cerrarModal()">Aceptar</button>';
+            document.getElementById("modalMensaje").style.display = "flex";
         }
-      }
-      function abrirVentaNormal() {
-        console.log("Click normal");
-        localStorage.setItem("tipoVenta", "normal");
-        window.location.href = "nueva_compra.html";
-      }
 
-      function abrirVentaExpress() {
-        console.log("Click express");
-        localStorage.setItem("tipoVenta", "express");
-        window.location.href = "nueva_compra.html";
-      }
+        function mostrarModalConfirmacion(titulo, texto, accionSi) {
+            document.getElementById("modalTitulo").textContent = titulo;
+            document.getElementById("modalTexto").textContent = texto;
 
-      // ========== INVENTARIO ==========
-      function consultarInventario() {
-        mostrarLoading();
-        window.location.replace("inventario_caja.html");
-      }
+            document.getElementById("modalBotones").innerHTML = `
+                      <button class="modal-btn confirmar" id="btnConfirmarSi">
+                          <i class="fas fa-door-open"></i> Cerrar Jornada
+                      </button>
+                      <button class="modal-btn cancelar" id="btnConfirmarNo">
+                          Cancelar
+                      </button>
+                  `;
 
-      // ========== CERRAR JORNADA ==========
-      function mostrarModalCerrarJornada() {
-        mostrarModalConfirmacion(
-          "Cerrar Jornada",
-          "¿Está seguro que desea cerrar la jornada? Se cerrará su sesión.",
-          function () {
-            localStorage.clear();
-            sessionStorage.clear();
-            window.location.replace("PAG.html");
-          },
-        );
-      }
+            document.getElementById("btnConfirmarSi").onclick = function() {
+                cerrarModal();
+                if (accionSi) accionSi();
+            };
 
-      // ========== RELOJ Y FECHA ==========
-      function actualizarReloj() {
-        const ahora = new Date();
-        const opcFecha = {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
+            document.getElementById("btnConfirmarNo").onclick = cerrarModal;
+
+            document.getElementById("modalMensaje").style.display = "flex";
+        }
+
+        function cerrarModal() {
+            document.getElementById("modalMensaje").style.display = "none";
+        }
+
+        // ========== INFO CAJERO ==========
+        function cargarInfoCajero() {
+            const trabajadorStr = localStorage.getItem("trabajador");
+            if (trabajadorStr && trabajadorStr !== "null" && trabajadorStr !== "undefined") {
+                try {
+                    const trabajador = JSON.parse(trabajadorStr);
+                    document.getElementById("nombreCajero").textContent =
+                        trabajador.nombre || "Trabajador";
+                    document.getElementById("infoUsuario").textContent =
+                        "Bienvenida al sistema";
+                } catch (e) {
+                    console.error("Error parseando trabajador:", e);
+                    document.getElementById("nombreCajero").textContent =
+                        "Error al cargar datos";
+                    setTimeout(() => window.location.replace("PAG.html"), 2000);
+                }
+            } else {
+                document.getElementById("nombreCajero").textContent =
+                    "Sesión no iniciada";
+                mostrarModal(
+                    "Sesión no iniciada",
+                    "Por favor, inicie sesión nuevamente.",
+                );
+                setTimeout(() => window.location.replace("PAG.html"), 2000);
+            }
+        }
+
+        // ========== TIPO DE VENTA ==========
+        function iniciarVenta() {
+            const section = document.getElementById("tipoVentaSection");
+
+            if (section.classList.contains("visible")) {
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth",
+                });
+
+                setTimeout(() => {
+                    section.classList.remove("visible");
+                    document.body.classList.remove("scroll-activo");
+                }, 10);
+            } else {
+                section.classList.add("visible");
+                document.body.classList.add("scroll-activo");
+
+                setTimeout(() => {
+                    section.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                    });
+                }, 100);
+            }
+        }
+
+        function abrirVentaNormal() {
+            console.log("Click normal");
+            localStorage.setItem("tipoVenta", "normal");
+            window.location.href = "nueva_compra.html";
+        }
+
+        function abrirVentaExpress() {
+            console.log("Click express");
+            localStorage.setItem("tipoVenta", "express");
+            window.location.href = "nueva_compra.html";
+        }
+
+        // ========== INVENTARIO ==========
+        function consultarInventario() {
+            mostrarLoading();
+            window.location.replace("inventario_caja.html");
+        }
+
+        // ========== CERRAR JORNADA ==========
+        function mostrarModalCerrarJornada() {
+            mostrarModalConfirmacion(
+                "Cerrar Jornada",
+                "¿Está seguro que desea cerrar la jornada? Se cerrará su sesión.",
+                function() {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.replace("PAG.html");
+                }
+            );
+        }
+
+        // ========== RELOJ Y FECHA ==========
+        function actualizarReloj() {
+            const ahora = new Date();
+            const opcFecha = {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            };
+            const fecha = ahora.toLocaleDateString("es-ES", opcFecha);
+            const hora = ahora.toLocaleTimeString("es-ES", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: true,
+            });
+
+            const dateEl = document.getElementById("topBarDate");
+            const timeEl = document.getElementById("topBarTime");
+            if (dateEl) dateEl.innerHTML = `<i class="fas fa-calendar-alt"></i> ${fecha}`;
+            if (timeEl) timeEl.innerHTML = `<i class="fas fa-clock"></i> ${hora}`;
+        }
+
+        // ====================== SISTEMA DE TICKETS ======================
+
+        let ticketsPendientes = [];
+        let ticketSeleccionado = null;
+        let notifPoller = null;
+
+        function iniciarPollerNotificaciones() {
+            if (notifPoller) clearInterval(notifPoller);
+            notifPoller = setInterval(verificarTicketsNotificacion, 5000);
+            verificarTicketsNotificacion();
+        }
+
+        async function verificarTicketsNotificacion() {
+            try {
+                const response = await fetch('/api/tickets/pendientes');
+                const data = await response.json();
+
+                if (data.success) {
+                    const tickets = data.tickets || [];
+                    const pendientes = tickets.filter(t => t.estado === 'pendiente');
+                    const count = pendientes.length;
+
+                    const badge = document.getElementById('notifBadge');
+                    if (badge) {
+                        badge.textContent = count;
+                        if (count > 0) {
+                            badge.classList.add('visible');
+                        } else {
+                            badge.classList.remove('visible');
+                        }
+                    }
+
+                    ticketsPendientes = pendientes;
+                }
+            } catch (error) {
+                console.error('Error verificando tickets:', error);
+            }
+        }
+
+        // ========== ABRIR MODAL DE TICKETS ==========
+        function abrirModalTickets() {
+            const modal = document.getElementById('modalTickets');
+            modal.classList.add('active');
+            cargarTicketsEnModal();
+        }
+
+        function cerrarModalTickets() {
+            document.getElementById('modalTickets').classList.remove('active');
+        }
+
+        // ========== CARGAR TICKETS EN EL MODAL ==========
+        async function cargarTicketsEnModal() {
+            const container = document.getElementById('ticketsListContainer');
+            container.innerHTML = '<div class="no-tickets"><i class="fas fa-spinner fa-spin"></i> Cargando tickets...</div>';
+
+            try {
+                const response = await fetch('/api/tickets/pendientes');
+                const data = await response.json();
+
+                if (data.success) {
+                    const tickets = data.tickets || [];
+                    const pendientes = tickets.filter(t => t.estado === 'pendiente');
+
+                    if (pendientes.length === 0) {
+                        container.innerHTML = `
+                                <div class="no-tickets">
+                                    <i class="fas fa-inbox"></i>
+                                    No hay tickets pendientes
+                                </div>
+                                `;
+                        return;
+                    }
+
+                    container.innerHTML = pendientes.map(t => {
+                        let productos = [];
+                        try {
+                            productos = JSON.parse(t.productos || '[]');
+                        } catch (e) {
+                            productos = [];
+                        }
+                        const expira = new Date(t.fecha_expiracion);
+                        const ahora = new Date();
+                        const diff = expira - ahora;
+                        const minutos = Math.floor(diff / 60000);
+                        const segundos = Math.floor((diff % 60000) / 1000);
+                        const tiempoTexto = diff > 0 ? `⏳ ${minutos}m ${segundos}s` : '⏰ Expirado';
+                        const tiempoClase = diff > 0 ? 'valido' : 'expirado';
+
+                        return `
+                                <div class="ticket-item-modal" onclick="seleccionarTicketModal('${t.codigo}')">
+                                    <div class="ticket-vendedor">
+                                        <i class="fas fa-user-circle"></i> ${t.nombre_vendedor || 'Vendedor'}
+                                    </div>
+                                    <div class="ticket-codigo">${t.codigo}</div>
+                                    <div class="ticket-productos">
+                                        ${productos.map(p => `<span>${p.Nombre || p.nombre} x${p.cantidad}</span>`).join('')}
+                                    </div>
+                                    <div class="ticket-total">C$${parseFloat(t.total).toFixed(2)}</div>
+                                    <div class="ticket-tiempo ${tiempoClase}">${tiempoTexto}</div>
+                                </div>
+                                `;
+                    }).join('');
+
+                    ticketsPendientes = pendientes;
+                } else {
+                    container.innerHTML = '<div class="no-tickets"><i class="fas fa-exclamation-circle"></i> Error al cargar tickets</div>';
+                }
+            } catch (error) {
+                console.error('Error cargando tickets:', error);
+                container.innerHTML = '<div class="no-tickets"><i class="fas fa-exclamation-circle"></i> Error al cargar tickets</div>';
+            }
+        }
+
+        // ========== SELECCIONAR TICKET ==========
+        function seleccionarTicketModal(codigo) {
+            // Mostrar loading
+            mostrarLoading();
+
+            fetch(`/api/tickets/${codigo}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        ocultarLoading();
+                        mostrarModal('Error', data.message || 'Error al obtener ticket');
+                        return;
+                    }
+
+                    const ticket = data.ticket;
+
+                    // Verificar que el ticket no haya expirado
+                    const expira = new Date(ticket.fecha_expiracion);
+                    if (expira < new Date()) {
+                        ocultarLoading();
+                        mostrarModal('Ticket Expirado', 'Este ticket ha expirado. Genera uno nuevo.');
+                        cargarTicketsEnModal();
+                        return;
+                    }
+
+                    // Cerrar modal de tickets
+                    cerrarModalTickets();
+
+                    // Guardar ticket en localStorage
+                    localStorage.setItem('ticketSeleccionado', JSON.stringify(ticket));
+
+                    // Mostrar modal de tipo de venta con la información del ticket
+                    let productos = [];
+                    try {
+                        productos = JSON.parse(ticket.productos || '[]');
+                    } catch (e) {
+                        productos = [];
+                    }
+                    document.getElementById('modalVendedor').textContent = ticket.nombre_vendedor || 'Vendedor';
+                    document.getElementById('modalProductos').innerHTML = productos.map(p =>
+                        `<span>${p.Nombre || p.nombre} x${p.cantidad}</span>`
+                    ).join('');
+                    document.getElementById('modalTotal').textContent = `C$${parseFloat(ticket.total).toFixed(2)}`;
+
+                    ocultarLoading();
+                    document.getElementById('modalTipoVenta').classList.add('active');
+                })
+                .catch(error => {
+                    ocultarLoading();
+                    console.error('Error seleccionando ticket:', error);
+                    mostrarModal('Error', 'Error al seleccionar el ticket');
+                });
+        }
+
+        // ========== CONFIRMAR TIPO DE VENTA ==========
+        function confirmarTipoVenta(tipo) {
+            cerrarModalTipoVenta();
+
+            const ticketStr = localStorage.getItem('ticketSeleccionado');
+            if (!ticketStr) {
+                mostrarModal('Error', 'No hay ticket seleccionado');
+                return;
+            }
+
+            // Guardar tipo de venta
+            localStorage.setItem('tipoVenta', tipo);
+
+            // ⭐ ABRIR nueva_compra.html CON EL TICKET EN LA URL
+            const ticket = JSON.parse(ticketStr);
+            window.location.href = `nueva_compra.html?modo=tickets&ticket=${encodeURIComponent(ticketStr)}`;
+        }
+
+        function cerrarModalTipoVenta() {
+            document.getElementById('modalTipoVenta').classList.remove('active');
+        }
+
+        // Cerrar modales con click fuera
+        window.addEventListener('click', function(e) {
+            const modalTickets = document.getElementById('modalTickets');
+            const modalTipo = document.getElementById('modalTipoVenta');
+
+            if (e.target === modalTickets) {
+                cerrarModalTickets();
+            }
+            if (e.target === modalTipo) {
+                cerrarModalTipoVenta();
+            }
+        });
+
+        history.scrollRestoration = "manual";
+
+        // ========== INIT ==========
+        window.onload = function() {
+            window.scrollTo({
+                top: 0,
+                left: 0,
+                behavior: "instant",
+            });
+
+            cargarInfoCajero();
+            actualizarReloj();
+            setInterval(actualizarReloj, 1000);
+            iniciarPollerNotificaciones();
+            ocultarLoading();
+
+            console.log('🎫 Sistema de tickets: Clic en el avatar 👤 para ver tickets');
         };
-        const fecha = ahora.toLocaleDateString("es-ES", opcFecha);
-        const hora = ahora.toLocaleTimeString("es-ES", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: true,
-        });
 
-        const dateEl = document.getElementById("topBarDate");
-        const timeEl = document.getElementById("topBarTime");
-        if (dateEl)
-          dateEl.innerHTML = `<i class="fas fa-calendar-alt"></i> ${fecha}`;
-        if (timeEl) timeEl.innerHTML = `<i class="fas fa-clock"></i> ${hora}`;
-      }
-
-      history.scrollRestoration = "manual";
-
-      // ========== INIT ==========
-      window.onload = function () {
-        window.scrollTo({
-          top: 0,
-          left: 0,
-          behavior: "instant",
-        });
-
-        cargarInfoCajero();
-        actualizarReloj();
-        setInterval(actualizarReloj, 1000);
-        ocultarLoading();
-      };
-
-      window.onclick = function (event) {
-        const modal = document.getElementById("modalMensaje");
-        if (event.target === modal) cerrarModal();
-      };
+        window.onclick = function(event) {
+            const modal = document.getElementById("modalMensaje");
+            if (event.target === modal) cerrarModal();
+        };
     </script>
-  </body>
+</body>
 </html>
