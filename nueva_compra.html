@@ -9,7 +9,6 @@
     <style>
         /* ===== ESTILOS ADICIONALES ===== */
         
-        /* Ocultar QR instantáneamente al cargar ticket */
         .qr-scanner.hidden {
             display: none !important;
             opacity: 0;
@@ -20,7 +19,6 @@
             display: none !important;
         }
         
-        /* Transiciones más rápidas */
         .modal,
         .modal-tickets-overlay,
         .modal-tipo-venta-overlay {
@@ -32,7 +30,6 @@
             transition: none !important;
         }
         
-        /* ===== MODAL RESUMEN - CON SCROLL SOLO VERTICAL ===== */
         .modal#modalResumenCompra .modal-content {
             max-height: 92vh;
             display: flex;
@@ -70,7 +67,6 @@
             overflow: visible;
         }
         
-        /* MODALES DE PAGO CON SCROLL */
         .modal#modalPagoEfectivo .modal-content,
         .modal#modalPagoTransferencia .modal-content,
         .modal#modalPagoTarjeta .modal-content {
@@ -108,7 +104,6 @@
             border-radius: 10px;
         }
 
-        /* ===== OCULTAR VISUALMENTE EL POPUP DE TICKETS ===== */
         #ticketPopup {
             display: none !important;
             visibility: hidden !important;
@@ -130,9 +125,39 @@
             pointer-events: none !important;
         }
         
-        /* Ocultar badge de tickets */
         #ticketBadge {
             display: none !important;
+        }
+
+        /* Toast de notificaciones mejorado */
+        .toast-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            z-index: 2000;
+            max-width: 350px;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideInRight 0.3s ease, fadeOut 4s forwards;
+        }
+
+        .toast-message.success { background: #2e7d32; }
+        .toast-message.error { background: #c62828; }
+        .toast-message.warning { background: #e65100; }
+        .toast-message.info { background: #1565c0; }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
         }
     </style>
 </head>
@@ -569,7 +594,7 @@
         let vendedorValidado = null;
         let tipoVenta = localStorage.getItem('tipoVenta') || 'normal';
 
-        // Variables para TICKETS (funcionalidad activa pero oculta visualmente)
+        // Variables para TICKETS
         let ticketsPendientes = [];
         let ticketSeleccionado = null;
         let pollerTickets = null;
@@ -583,7 +608,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         const modoEntrada = urlParams.get('modo') || 'normal';
 
-        // ⭐ FUNCIÓN RÁPIDA PARA OCULTAR QR
         function ocultarQRInstantaneo() {
             const qrGroup = document.getElementById('qrScannerGroup');
             if (qrGroup) {
@@ -600,7 +624,6 @@
             if (videoWrapper) videoWrapper.style.display = 'none';
         }
 
-        // ⭐ FUNCIÓN PARA CARGAR TICKET DESDE LOCALSTORAGE O URL
         function cargarTicketDesdeStorage() {
             let ticket = null;
 
@@ -631,7 +654,6 @@
             return null;
         }
 
-        // ⭐ FUNCIÓN RÁPIDA PARA CARGAR TICKET EN VENTA
         function cargarTicketEnVentaRapido(ticket, tipo) {
             console.log('🎫 Cargando ticket rápidamente:', ticket.codigo);
             
@@ -681,9 +703,7 @@
                 resultadoDiv.innerHTML = `<strong>✅ Vendedor asignado por ticket</strong><br>${vendedorValidado.nombre}`;
             }
 
-            // ⭐ CONFIGURAR TIPO DE VENTA
             if (tipo === 'express') {
-                // Venta Express: ocultar cliente y canal
                 document.getElementById('bloqueCliente').style.display = 'none';
                 document.getElementById('bloqueCanal').style.display = 'none';
                 document.getElementById('cliente').removeAttribute('required');
@@ -693,7 +713,6 @@
                 document.getElementById('canal').value = '';
                 mostrarMensajeSistema('⚡ Modo Express activado', 'info');
             } else {
-                // Venta Normal: mostrar cliente y canal
                 document.getElementById('bloqueCliente').style.display = 'block';
                 document.getElementById('bloqueCanal').style.display = 'block';
                 document.getElementById('cliente').setAttribute('required', '');
@@ -701,7 +720,6 @@
                 mostrarMensajeSistema('📋 Modo Normal activado', 'info');
             }
 
-            // Cargar productos
             let productos = [];
             try {
                 productos = typeof ticket.productos === 'string' ? JSON.parse(ticket.productos) : ticket.productos;
@@ -727,7 +745,6 @@
             ticketSeleccionado = ticket;
         }
 
-        // ⭐ SI VIENE POR TICKET
         if (modoEntrada === 'tickets') {
             console.log('📨 Modo tickets activado');
             
@@ -756,15 +773,12 @@
                         }
                     }
                 });
-            } else {
-                // setTimeout(() => toggleTicketPopup(), 500); // COMENTADO PARA NO MOSTRAR EL POPUP
             }
         }
 
-        // ====================== FUNCIONES DE TICKETS (MANTENIDAS PARA FUNCIONALIDAD) ======================
+        // ====================== FUNCIONES DE TICKETS ======================
 
         function toggleTicketPopup() {
-            // La funcionalidad se mantiene pero el popup está oculto visualmente
             const popup = document.getElementById('ticketPopup');
             if (popup.style.display === 'flex') {
                 popup.style.display = 'none';
@@ -792,11 +806,9 @@
                     const pendientes = tickets.filter(t => t.estado === 'pendiente');
                     const count = pendientes.length;
 
-                    // El badge está oculto visualmente por CSS
                     const badge = document.getElementById('ticketBadge');
                     if (badge) {
                         badge.textContent = count;
-                        // badge.style.display = count > 0 ? 'flex' : 'none'; // Comentado para no mostrar
                     }
 
                     const container = document.getElementById('ticketListContainer');
@@ -828,11 +840,6 @@
                     }
 
                     ticketsPendientes = pendientes;
-
-                    if (!silencioso && pendientes.length > 0) {
-                        // Mostrar notificación silenciosa (solo consola)
-                        console.log(`📨 ${pendientes.length} tickets pendientes`);
-                    }
                 }
             } catch (error) {
                 console.error('Error cargando tickets:', error);
@@ -860,10 +867,8 @@
 
                 ticketSeleccionado = ticket;
 
-                // Ocultar popup
                 document.getElementById('ticketPopup').style.display = 'none';
 
-                // Mostrar el modal de tipo de venta (también oculto visualmente)
                 document.getElementById('tipoVentaInfo').textContent =
                     `📨 ${ticket.nombre_vendedor || 'Vendedor'} - Total: C$${parseFloat(ticket.total).toFixed(2)}`;
                 document.getElementById('modalTipoVenta').style.display = 'flex';
@@ -1173,7 +1178,7 @@
             } catch (error) { console.error('Error cargando trabajadores:', error); return []; }
         }
 
-        // ====================== CANALES Y METODOS (CARGA RÁPIDA EN PARALELO) ======================
+        // ====================== CANALES Y METODOS ======================
 
         async function cargarCanalesYMetodos() {
             try {
@@ -1660,7 +1665,7 @@
 
         function cerrarModalPagoTarjeta() { document.getElementById('modalPagoTarjeta').style.display = 'none'; }
 
-        // ====================== CONFIRMAR Y GUARDAR COMPRA ======================
+        // ====================== CONFIRMAR Y GUARDAR COMPRA (CORREGIDO) ======================
 
         function confirmarYGuardarCompra() {
             const btn = document.getElementById('btnConfirmarResumen');
@@ -1670,12 +1675,15 @@
             }
             
             cerrarModalResumen();
+            
+            // Ejecutar guardado con timeout de seguridad
             guardarCompraDB();
         }
 
-        // ====================== GUARDAR COMPRA ======================
+        // ====================== GUARDAR COMPRA (CORREGIDO) ======================
 
         async function guardarCompraDB() {
+            const btn = document.getElementById('btnConfirmarResumen');
             const numFactura = document.getElementById('numeroFactura').textContent;
             const idCliente = document.getElementById('cliente').value;
             const idCanal = document.getElementById('canal').value;
@@ -1684,40 +1692,58 @@
             const total = parseFloat(document.getElementById('totalInput').value);
             const idVendedor = document.getElementById('idVendedor').value;
 
-            if (productosSeleccionados.length === 0) {
-                mostrarMensajeSistema('ERROR: Debe agregar al menos un producto antes de guardar', 'error');
-                return;
-            }
-
-            if (modoTicketActivo) {
-                if (!vendedorValidado) {
-                    mostrarMensajeSistema('Error: No hay vendedor asignado desde el ticket', 'error');
-                    return;
-                }
-            } else {
-                if (!qrValidado || !vendedorValidado) {
-                    mostrarMensajeSistema('Debe escanear el QR de un vendedor valido', 'error');
-                    return;
-                }
-            }
-
-            if (tipoVenta !== 'express' && !idCliente) {
-                mostrarMensajeSistema('Seleccione un cliente', 'error');
-                return;
-            }
-
-            if (tipoVenta !== 'express') {
-                if (!idCanal) {
-                    mostrarMensajeSistema('Seleccione un canal de venta', 'error');
-                    return;
-                }
-            }
-
-            if (!idMetodo) { mostrarMensajeSistema('Seleccione un metodo de pago', 'error'); return; }
-            if (!fecha) { mostrarMensajeSistema('Seleccione una fecha', 'error'); return; }
-            if (!idVendedor) { mostrarMensajeSistema('No hay vendedor asignado', 'error'); return; }
-
             try {
+                if (productosSeleccionados.length === 0) {
+                    mostrarMensajeSistema('ERROR: Debe agregar al menos un producto antes de guardar', 'error');
+                    if (btn) { btn.disabled = false; btn.textContent = 'Confirmar'; }
+                    return;
+                }
+
+                if (modoTicketActivo) {
+                    if (!vendedorValidado) {
+                        mostrarMensajeSistema('Error: No hay vendedor asignado desde el ticket', 'error');
+                        if (btn) { btn.disabled = false; btn.textContent = 'Confirmar'; }
+                        return;
+                    }
+                } else {
+                    if (!qrValidado || !vendedorValidado) {
+                        mostrarMensajeSistema('Debe escanear el QR de un vendedor valido', 'error');
+                        if (btn) { btn.disabled = false; btn.textContent = 'Confirmar'; }
+                        return;
+                    }
+                }
+
+                if (tipoVenta !== 'express' && !idCliente) {
+                    mostrarMensajeSistema('Seleccione un cliente', 'error');
+                    if (btn) { btn.disabled = false; btn.textContent = 'Confirmar'; }
+                    return;
+                }
+
+                if (tipoVenta !== 'express') {
+                    if (!idCanal) {
+                        mostrarMensajeSistema('Seleccione un canal de venta', 'error');
+                        if (btn) { btn.disabled = false; btn.textContent = 'Confirmar'; }
+                        return;
+                    }
+                }
+
+                if (!idMetodo) { 
+                    mostrarMensajeSistema('Seleccione un metodo de pago', 'error'); 
+                    if (btn) { btn.disabled = false; btn.textContent = 'Confirmar'; }
+                    return; 
+                }
+                if (!fecha) { 
+                    mostrarMensajeSistema('Seleccione una fecha', 'error'); 
+                    if (btn) { btn.disabled = false; btn.textContent = 'Confirmar'; }
+                    return; 
+                }
+                if (!idVendedor) { 
+                    mostrarMensajeSistema('No hay vendedor asignado', 'error'); 
+                    if (btn) { btn.disabled = false; btn.textContent = 'Confirmar'; }
+                    return; 
+                }
+
+                // Guardar compra
                 const compraData = {
                     Num_Factura: parseInt(numFactura),
                     Id_cliente: tipoVenta === 'express' ? null : parseInt(idCliente),
@@ -1739,6 +1765,7 @@
                     throw new Error('Error al guardar compra #' + numFactura + ': ' + (errorData.error || resCompra.statusText));
                 }
 
+                // Guardar órdenes
                 let ordenesGuardadas = 0;
                 const ordenesConError = [];
 
@@ -1776,25 +1803,24 @@
 
                 if (ordenesConError.length > 0) {
                     mostrarMensajeSistema(`⚠️ ${ordenesConError.length} errores en productos. ${ordenesGuardadas} guardados.`, 'error');
+                    if (btn) { btn.disabled = false; btn.textContent = 'Confirmar'; }
                     return;
                 }
 
                 if (ordenesGuardadas !== productosSeleccionados.length) {
                     mostrarMensajeSistema(`⚠️ Se guardaron ${ordenesGuardadas}/${productosSeleccionados.length} productos`, 'error');
+                    if (btn) { btn.disabled = false; btn.textContent = 'Confirmar'; }
                     return;
                 }
 
+                // Completar ticket si existe
                 if (ticketSeleccionado) {
                     try {
-                        const resTicket = await fetch(`/api/tickets/${ticketSeleccionado.codigo}/completar`, {
+                        await fetch(`/api/tickets/${ticketSeleccionado.codigo}/completar`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ num_factura: numFactura })
                         });
-                        const dataTicket = await resTicket.json();
-                        if (dataTicket.success) {
-                            console.log(`✅ Ticket ${ticketSeleccionado.codigo} completado - +${dataTicket.puntos_asignados} puntos`);
-                        }
                     } catch (error) {
                         console.error('Error completando ticket:', error);
                     }
@@ -1803,13 +1829,20 @@
                 mostrarMensajeSistema(`✅ Venta #${numFactura} guardada exitosamente`, 'success');
 
                 restaurarModoNormal();
-                window.location.replace('menu_caja.html');
+                
+                // Reactivar botón antes de redirigir
+                if (btn) { btn.disabled = false; btn.textContent = 'Confirmar'; }
+                
+                // Redirigir después de un breve delay
+                setTimeout(() => {
+                    window.location.replace('menu_caja.html');
+                }, 1000);
 
             } catch (error) {
                 console.error('❌ ERROR CRÍTICO:', error);
                 mostrarMensajeSistema('❌ Error: ' + (error.message || 'No se pudo guardar la compra'), 'error');
                 
-                const btn = document.getElementById('btnConfirmarResumen');
+                // ⭐ REACTIVAR EL BOTÓN EN CASO DE ERROR
                 if (btn) {
                     btn.disabled = false;
                     btn.textContent = 'Confirmar';
@@ -1885,7 +1918,7 @@
             actualizarEstadoCamara(false, 'Inactivo');
             iniciarPollerTickets();
 
-            console.log('🎫 Sistema de Tickets activado (funcionalidad oculta visualmente)');
+            console.log('🎫 Sistema de Tickets activado');
             console.log('⚡ Modo Ticket: QR ocultado instantáneamente');
         }
 

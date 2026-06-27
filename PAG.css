@@ -770,3 +770,514 @@ body::before {
     opacity: 0;
   }
 }
+/* ======================================== */
+/* ========== MEDIA QUERIES =============== */
+/* ======================================== */
+
+/* Tablets y dispositivos medianos */
+@media (max-width: 1024px) {
+  .container {
+    max-width: 450px;
+    padding: 35px;
+  }
+
+  .login-header h2 {
+    font-size: 36px;
+  }
+
+  .c1 {
+    width: 250px;
+    height: 250px;
+    right: -50px;
+  }
+
+  .c2 {
+    width: 200px;
+    height: 200px;
+    bottom: -50px;
+    left: -50px;
+  }
+}
+
+/* Tablets pequeñas y móviles grandes */
+@media (max-width: 768px) {
+  .left-side {
+    display: none;
+  }
+
+  .right-side {
+    width: 100%;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .container {
+    width: 90%;
+    max-width: 400px;
+    padding: 30px 25px;
+  }
+
+  .main-layout {
+    padding: 10px;
+    min-height: 100vh;
+  }
+
+  .login-header h2 {
+    font-size: 34px;
+  }
+
+  .login-header p {
+    font-size: 14px;
+  }
+
+  .login-header img {
+    width: 110px;
+  }
+
+  .search-wrapper input,
+  .input-icon input {
+    font-size: 16px;
+    padding: 12px 14px 12px 42px;
+  }
+
+  .btn-submit {
+    font-size: 17px;
+    padding: 13px;
+  }
+
+  .sugerencias-container {
+    max-height: 200px;
+  }
+
+  .sugerencia-item {
+    padding: 8px 14px;
+  }
+
+  .selected-user {
+    padding: 10px 12px;
+  }
+
+  .selected-user i:first-child {
+    font-size: 24px;
+  }
+
+  .bg-circle {
+    filter: blur(60px);
+  }
+
+  .c1 {
+    width: 200px;
+    height: 200px;
+    top: 50px;
+    right: -80px;
+  }
+
+  .c2 {
+    width: 180px;
+    height: 180px;
+    bottom: -60px;
+    left: -60px;
+  }
+
+  .c3 {
+    width: 150px;
+    height: 150px;
+    top: 15%;
+    left: -60px;
+  }
+
+  .c4 {
+    width: 120px;
+    height: 120px;
+    bottom: 10%;
+    right: 5%;
+  }
+
+  .sparkle {
+    font-size: 30px;
+  }
+
+  .sparkle1 {
+    top: 10%;
+    left: 5%;
+  }
+  .sparkle2 {
+    top: 30%;
+    right: 10%;
+  }
+  .sparkle3 {
+    bottom: 15%;
+    left: 10%;
+  }
+  .sparkle4 {
+    bottom: 5%;
+    right: 8%;
+  }
+
+  .fecha-login {
+    font-size: 14px;
+    gap: 5px;
+  }
+
+  .modal-content {
+    padding: 24px 20px;
+    max-width: 340px;
+  }
+
+  .modal-content h3 {
+    font-size: 18px;
+  }
+
+  .modal-btn {
+    font-size: 12px;
+    padding: 8px 16px;
+  }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+  .container {
+    padding: 25px 20px;
+    border-radius: 24px;
+  }
+
+  .login-header h2 {
+    font-size: 28px;
+  }
+
+  .login-header p {
+    font-size: 12px;
+  }
+
+  .login-header img {
+    width: 90px;
+  }
+
+  .search-wrapper input,
+  .input-icon input {
+    font-size: 15px;
+    padding: 10px 12px 10px 38px;
+    border-radius: 12px;
+  }
+
+  .input-icon-left {
+    left: 12px;
+    font-size: 14px;
+  }
+
+  .btn-submit {
+    font-size: 16px;
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .sugerencias-container {
+    max-height: 180px;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .sugerencia-item {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .sugerencia-icono {
+    font-size: 14px;
+    width: 24px;
+  }
+
+  .sugerencia-nombre {
+    font-size: 13px;
+  }
+
+  .sugerencia-rol {
+    font-size: 10px;
+  }
+
+  .selected-user {
+    padding: 8px 10px;
+    gap: 8px;
+    border-radius: 12px;
+  }
+
+  .selected-user i:first-child {
+    font-size: 20px;
+  }
+
+  .selected-user-nombre {
+    font-size: 13px;
+  }
+
+  .selected-user-rol {
+    font-size: 10px;
+  }
+
+  .selected-user-clear {
+    font-size: 14px;
+  }
+
+  .error-message,
+  .warning-message {
+    padding: 10px;
+    font-size: 12px;
+    border-radius: 10px;
+  }
+
+  .forgot-link a {
+    font-size: 12px;
+  }
+
+  .bg-circle {
+    filter: blur(40px);
+  }
+
+  .c1 {
+    width: 150px;
+    height: 150px;
+    top: 30px;
+    right: -50px;
+  }
+
+  .c2 {
+    width: 130px;
+    height: 130px;
+    bottom: -40px;
+    left: -40px;
+  }
+
+  .c3 {
+    width: 120px;
+    height: 120px;
+    top: 20%;
+    left: -40px;
+  }
+
+  .c4 {
+    width: 100px;
+    height: 100px;
+    bottom: 15%;
+    right: 0%;
+  }
+
+  .sparkle {
+    font-size: 20px;
+  }
+
+  .sparkle1 {
+    top: 8%;
+    left: 3%;
+  }
+  .sparkle2 {
+    top: 25%;
+    right: 5%;
+  }
+  .sparkle3 {
+    bottom: 20%;
+    left: 5%;
+  }
+  .sparkle4 {
+    bottom: 8%;
+    right: 5%;
+  }
+
+  .fecha-login {
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  .modal-content {
+    padding: 20px 16px;
+    max-width: 300px;
+    border-radius: 20px;
+  }
+
+  .modal-content h3 {
+    font-size: 16px;
+  }
+
+  .modal-content p {
+    font-size: 12px;
+  }
+
+  .modal-content input {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .modal-btn {
+    font-size: 11px;
+    padding: 8px 14px;
+  }
+
+  .input-group {
+    margin-bottom: 15px;
+  }
+
+  .input-group label {
+    font-size: 11px;
+    letter-spacing: 0.8px;
+  }
+
+  .particle {
+    width: 4px;
+    height: 4px;
+  }
+}
+
+/* Móviles muy pequeños (menos de 360px) */
+@media (max-width: 360px) {
+  .container {
+    padding: 20px 15px;
+    border-radius: 20px;
+  }
+
+  .login-header h2 {
+    font-size: 24px;
+  }
+
+  .login-header img {
+    width: 80px;
+  }
+
+  .search-wrapper input,
+  .input-icon input {
+    font-size: 14px;
+    padding: 8px 10px 8px 34px;
+  }
+
+  .input-icon-left {
+    left: 10px;
+    font-size: 12px;
+  }
+
+  .btn-submit {
+    font-size: 15px;
+    padding: 10px;
+  }
+
+  .modal-content {
+    padding: 16px 12px;
+  }
+
+  .modal-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .modal-btn {
+    width: 100%;
+  }
+}
+
+/* Landscape (horizontal) en móviles */
+@media (max-height: 600px) and (orientation: landscape) {
+  .main-layout {
+    padding: 10px;
+    min-height: 100vh;
+  }
+
+  .container {
+    padding: 20px 25px;
+    max-width: 450px;
+  }
+
+  .login-header {
+    margin-bottom: 15px;
+  }
+
+  .login-header img {
+    width: 70px;
+    margin-bottom: 5px;
+  }
+
+  .login-header h2 {
+    font-size: 26px;
+  }
+
+  .login-header p {
+    font-size: 12px;
+  }
+
+  .input-group {
+    margin-bottom: 12px;
+  }
+
+  .input-group label {
+    font-size: 10px;
+    margin-bottom: 4px;
+  }
+
+  .search-wrapper input,
+  .input-icon input {
+    padding: 8px 12px 8px 38px;
+    font-size: 14px;
+  }
+
+  .btn-submit {
+    padding: 10px;
+    font-size: 15px;
+    margin-top: 4px;
+  }
+
+  .selected-user {
+    padding: 8px 10px;
+    margin-bottom: 12px;
+  }
+
+  .sugerencias-container {
+    max-height: 140px;
+  }
+
+  .fecha-login {
+    font-size: 11px;
+    margin-top: 8px;
+  }
+
+  .bg-circle {
+    filter: blur(30px);
+  }
+
+  .c1,
+  .c2,
+  .c3,
+  .c4 {
+    display: none;
+  }
+}
+
+/* Pantallas grandes (escritorio) */
+@media (min-width: 1440px) {
+  .container {
+    max-width: 550px;
+    padding: 50px;
+  }
+
+  .login-header h2 {
+    font-size: 48px;
+  }
+
+  .login-header img {
+    width: 140px;
+  }
+
+  .search-wrapper input,
+  .input-icon input {
+    font-size: 18px;
+    padding: 16px 20px 16px 50px;
+  }
+
+  .btn-submit {
+    font-size: 20px;
+    padding: 16px;
+  }
+
+  .c1 {
+    width: 450px;
+    height: 450px;
+  }
+
+  .c2 {
+    width: 350px;
+    height: 350px;
+  }
+}
