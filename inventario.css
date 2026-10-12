@@ -1556,3 +1556,18 @@ input:checked + .slider:before {
   z-index: 3000;
   overflow-y: auto;
 }
+/* ============================================
+   ESTILOS EXTRA PARA COLUMNA ID
+   ============================================ */
+td:first-child {
+  font-family: "Courier New", monospace;
+  font-weight: 700;
+  color: #7a5b8f;
+  text-align: center;
+  white-space: nowrap;
+}
+
+th:first-child {
+  text-align: center;
+  width: 70px;
+}

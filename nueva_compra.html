@@ -7,8 +7,6 @@
     <link rel="stylesheet" href="nueva_compra.css">
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <style>
-        /* ===== ESTILOS ADICIONALES ===== */
-        
         .qr-scanner.hidden {
             display: none !important;
             opacity: 0;
@@ -69,7 +67,7 @@
         
         .modal#modalPagoEfectivo .modal-content,
         .modal#modalPagoTransferencia .modal-content,
-        .modal#modalPagoTarjeta .modal-content {
+        .modal#modalPagoMixto .modal-content {
             max-height: 95vh;
             display: flex;
             flex-direction: column;
@@ -77,7 +75,7 @@
         
         .modal#modalPagoEfectivo .modal-body,
         .modal#modalPagoTransferencia .modal-body,
-        .modal#modalPagoTarjeta .modal-body {
+        .modal#modalPagoMixto .modal-body {
             flex: 1;
             overflow-y: auto;
             max-height: 55vh;
@@ -86,20 +84,20 @@
         
         .modal#modalPagoEfectivo .modal-body::-webkit-scrollbar,
         .modal#modalPagoTransferencia .modal-body::-webkit-scrollbar,
-        .modal#modalPagoTarjeta .modal-body::-webkit-scrollbar {
+        .modal#modalPagoMixto .modal-body::-webkit-scrollbar {
             width: 6px;
         }
         
         .modal#modalPagoEfectivo .modal-body::-webkit-scrollbar-track,
         .modal#modalPagoTransferencia .modal-body::-webkit-scrollbar-track,
-        .modal#modalPagoTarjeta .modal-body::-webkit-scrollbar-track {
+        .modal#modalPagoMixto .modal-body::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 10px;
         }
         
         .modal#modalPagoEfectivo .modal-body::-webkit-scrollbar-thumb,
         .modal#modalPagoTransferencia .modal-body::-webkit-scrollbar-thumb,
-        .modal#modalPagoTarjeta .modal-body::-webkit-scrollbar-thumb {
+        .modal#modalPagoMixto .modal-body::-webkit-scrollbar-thumb {
             background: #caa0d8;
             border-radius: 10px;
         }
@@ -129,7 +127,6 @@
             display: none !important;
         }
 
-        /* Toast de notificaciones mejorado */
         .toast-message {
             position: fixed;
             bottom: 20px;
@@ -163,7 +160,6 @@
 </head>
 <body>
 
-    <!-- HEADER MARCAS -->
     <header class="header-marcas">
         <div class="header-marcas-scroll">
             <div class="header-track">
@@ -186,12 +182,11 @@
         </div>
     </header>
 
-    <!-- CONTENEDOR PRINCIPAL -->
     <div class="nc-container">
         <div class="nc-factura-header">
             <div class="nc-factura-title">FACTURA DE COMPRA</div>
             <div class="nc-factura-number">#<span id="numeroFactura">1</span></div>
-            <div class="nc-factura-subtitle">Tienda Chepita • <span id="fechaActual"></span></div>
+            <div class="nc-factura-subtitle">Tienda Chepita - <span id="fechaActual"></span></div>
         </div>
 
         <div id="ncMensajesSistema"></div>
@@ -203,7 +198,6 @@
 
             <div class="nc-form">
                 <div class="nc-form-grid">
-                    <!-- Cliente -->
                     <div class="nc-group" id="bloqueCliente">
                         <label class="nc-required">Cliente</label>
                         <div class="nc-client-row">
@@ -216,7 +210,6 @@
                         </div>
                     </div>
 
-                    <!-- Canal de Venta -->
                     <div class="nc-group" id="bloqueCanal">
                         <label class="nc-required">Canal de Venta</label>
                         <div class="nc-input-group">
@@ -226,7 +219,6 @@
                         </div>
                     </div>
 
-                    <!-- Metodo de Pago -->
                     <div class="nc-group">
                         <label class="nc-required">Metodo de Pago</label>
                         <div class="nc-input-group">
@@ -236,7 +228,6 @@
                         </div>
                     </div>
 
-                    <!-- Fecha -->
                     <div class="nc-group">
                         <label class="nc-required">Fecha</label>
                         <div class="nc-input-group">
@@ -244,7 +235,6 @@
                         </div>
                     </div>
 
-                    <!-- QR Scanner -->
                     <div class="nc-group" id="qrScannerGroup" style="grid-column: span 2;">
                         <label class="nc-required">Escanear QR del Vendedor</label>
                         <div class="qr-scanner" id="qrScannerContainer">
@@ -276,7 +266,6 @@
                     </div>
                 </div>
 
-                <!-- Productos -->
                 <div class="nc-form-full">
                     <div class="section-header">
                         <h2>Productos</h2>
@@ -303,7 +292,6 @@
                     </div>
                 </div>
 
-                <!-- Totales -->
                 <div class="nc-form-full">
                     <div class="total-card">
                         <div class="total-row">
@@ -329,8 +317,6 @@
         </form>
     </div>
 
-    <!-- ========== MODALES ========== -->
-    <!-- Modal Cliente -->
     <div class="modal" id="modalCliente">
         <div class="modal-content">
             <div class="modal-header">
@@ -358,7 +344,6 @@
         </div>
     </div>
 
-    <!-- Modal Productos -->
     <div class="modal" id="modalProducto">
         <div class="modal-content modal-large">
             <div class="modal-header">
@@ -377,7 +362,6 @@
         </div>
     </div>
 
-    <!-- Modal Pago Efectivo -->
     <div class="modal" id="modalPagoEfectivo">
         <div class="modal-content">
             <div class="modal-header">
@@ -409,7 +393,6 @@
         </div>
     </div>
 
-    <!-- Modal Pago Transferencia -->
     <div class="modal" id="modalPagoTransferencia">
         <div class="modal-content">
             <div class="modal-header">
@@ -434,36 +417,50 @@
         </div>
     </div>
 
-    <!-- Modal Pago Tarjeta -->
-    <div class="modal" id="modalPagoTarjeta">
+    <div class="modal" id="modalPagoMixto">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Pago con Tarjeta</h2>
-                <button class="modal-close" onclick="cerrarModalPagoTarjeta()">&times;</button>
+                <h2>Pago Mixto</h2>
+                <button class="modal-close" onclick="cerrarModalPagoMixto()">&times;</button>
             </div>
             <div class="modal-body" style="overflow-y: auto; max-height: 55vh;">
-                <div class="bank-logos" id="tarjetaBancos">
-                    <div class="bank-logo" data-banco="lafise">LAFISE</div>
-                    <div class="bank-logo" data-banco="banpro">BANPRO</div>
-                    <div class="bank-logo" data-banco="bac">BAC</div>
-                    <div class="bank-logo" data-banco="ficohsa">FICOHSA</div>
-                    <div class="bank-logo" data-banco="bancoDemocratico">B.DEMOCRATICO</div>
+                <div class="mixed-info" style="background: #f8f4ff; padding: 12px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid #A63C89;">
+                    <p style="margin: 0; font-size: 13px; color: #4a1d6d;">
+                        <strong>Pago Mixto:</strong> Combine efectivo y transferencia bancaria.
+                    </p>
                 </div>
+
                 <div class="form-group">
-                    <label>Numero de Tarjeta</label>
-                    <input type="text" id="numeroTarjeta" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19" oninput="validarTarjeta(this)">
+                    <label>Monto en Efectivo (C$)</label>
+                    <input type="number" id="mixtoEfectivo" class="amount-input" placeholder="0.00" min="0" step="0.01" oninput="calcularMixto()">
+                    <small style="display: block; font-size: 11px; color: #999; margin-top: 4px;">Puede dejar 0 si no usa efectivo</small>
                 </div>
-                <div class="card-validation" id="tarjetaValidacion"></div>
+
+                <div class="form-group">
+                    <label>Monto por Transferencia (C$)</label>
+                    <input type="number" id="mixtoTransferencia" class="amount-input" placeholder="0.00" min="0" step="0.01" oninput="calcularMixto()">
+                    <small style="display: block; font-size: 11px; color: #999; margin-top: 4px;">Puede dejar 0 si no usa transferencia</small>
+                </div>
+
+                <div class="change-result" id="mixtoResultado" style="display: none;">
+                    <div class="change-label">Total cubierto</div>
+                    <div class="change-amount" id="mixtoTotalCubierto">C$ 0.00</div>
+                    <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                        Total de la venta: <strong id="mixtoTotalVenta">C$ 0.00</strong>
+                    </div>
+                </div>
+
+                <div class="error-message" id="mixtoError" style="display: none;">
+                    Los montos no cubren el total. Faltan <span id="mixtoFaltante">C$ 0.00</span>
+                </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-modal-save" onclick="confirmarPagoTarjeta()">Pagar</button>
-                <button class="btn-modal-cancel" onclick="cerrarModalPagoTarjeta()">Cancelar</button>
+                <button class="btn-modal-save" onclick="confirmarPagoMixto()">Confirmar Pago</button>
+                <button class="btn-modal-cancel" onclick="cerrarModalPagoMixto()">Cancelar</button>
             </div>
         </div>
     </div>
-
-    <!-- Modal Resumen Compra -->
-    <div class="modal" id="modalResumenCompra">
+        <div class="modal" id="modalResumenCompra">
         <div class="modal-content modal-large">
             <div class="modal-header">
                 <h2>Resumen de Compra</h2>
@@ -529,22 +526,21 @@
         </div>
     </div>
 
-    <!-- ========== MODAL TIPO VENTA (OCULTO VISUALMENTE) ========== -->
     <div class="modal" id="modalTipoVenta">
         <div class="modal-content" style="max-width: 450px;">
             <div class="modal-header">
-                <h2>🎫 Ticket Recibido</h2>
+                <h2>Ticket Recibido</h2>
                 <button class="modal-close" onclick="cerrarModalTipoVenta()">&times;</button>
             </div>
             <div class="modal-body" style="text-align: center;">
-                <div style="font-size: 48px; margin-bottom: 10px;">📨</div>
+                <div style="font-size: 48px; margin-bottom: 10px;">&#128232;</div>
                 <p style="font-size: 14px; color: #666; margin-bottom: 5px;" id="tipoVentaInfo">Selecciona el tipo de venta</p>
                 <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
                     <button onclick="confirmarTipoVenta('express')" style="padding: 14px; border: 2px solid #ff9800; border-radius: 12px; background: #fff3e0; color: #e65100; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s;">
-                        ⚡ Express <br><small style="font-weight: 400; font-size: 12px;">Sin cliente ni canal</small>
+                        Express <br><small style="font-weight: 400; font-size: 12px;">Sin cliente ni canal</small>
                     </button>
                     <button onclick="confirmarTipoVenta('normal')" style="padding: 14px; border: 2px solid #4CAF50; border-radius: 12px; background: #e8f5e9; color: #2e7d32; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s;">
-                        📋 Normal <br><small style="font-weight: 400; font-size: 12px;">Con cliente y canal</small>
+                        Normal <br><small style="font-weight: 400; font-size: 12px;">Con cliente y canal</small>
                     </button>
                     <button onclick="cerrarModalTipoVenta()" style="padding: 12px; border: none; border-radius: 12px; background: #f0f0f0; color: #666; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 5px;">
                         Cancelar
@@ -554,30 +550,27 @@
         </div>
     </div>
 
-    <!-- ========== BOTÓN FLOTANTE DE TICKETS (OCULTO VISUALMENTE) ========== -->
     <div class="ticket-fab" id="ticketFab" onclick="toggleTicketPopup()">
         <div class="fab-icon">
-            🎫
+            &#127915;
             <span class="badge" id="ticketBadge">0</span>
         </div>
     </div>
 
-    <!-- ========== VENTANA POPUP DE TICKETS (OCULTO VISUALMENTE) ========== -->
     <div id="ticketPopup">
         <div class="popup-header">
-            <h3>🎫 Tickets Pendientes</h3>
-            <button class="close-btn" onclick="toggleTicketPopup()">✕</button>
+            <h3>Tickets Pendientes</h3>
+            <button class="close-btn" onclick="toggleTicketPopup()">&#10005;</button>
         </div>
         <div class="popup-body" id="ticketListContainer">
             <div class="empty">Cargando tickets...</div>
         </div>
         <div class="popup-footer">
-            <button class="btn-actualizar" onclick="cargarTicketsPendientes()">🔄 Actualizar</button>
+            <button class="btn-actualizar" onclick="cargarTicketsPendientes()">Actualizar</button>
         </div>
     </div>
 
     <script>
-        // ====================== VARIABLES GLOBALES ======================
         let productosSeleccionados = [];
         let productosDisponibles = [];
         let trabajadoresLista = [];
@@ -587,24 +580,20 @@
         let tasaCambio = 36.50;
         let datosPagoConfirmados = {};
 
-        // Variables para QR
         let videoStream = null;
         let scanning = true;
         let qrValidado = false;
         let vendedorValidado = null;
         let tipoVenta = localStorage.getItem('tipoVenta') || 'normal';
 
-        // Variables para TICKETS
         let ticketsPendientes = [];
         let ticketSeleccionado = null;
         let pollerTickets = null;
 
-        // Control de modo
         let modoTicketActivo = false;
 
         const IVA_PORCENTAJE = 0.15;
 
-        // ====================== DETECTAR MODO DE ENTRADA ======================
         const urlParams = new URLSearchParams(window.location.search);
         const modoEntrada = urlParams.get('modo') || 'normal';
 
@@ -632,7 +621,7 @@
                 try {
                     const decoded = decodeURIComponent(ticketUrl);
                     ticket = JSON.parse(decoded);
-                    console.log('✅ Ticket cargado desde URL');
+                    console.log('Ticket cargado desde URL');
                     return ticket;
                 } catch (e) {
                     console.error('Error parseando ticket desde URL:', e);
@@ -643,7 +632,7 @@
             if (stored && stored !== 'null' && stored !== 'undefined') {
                 try {
                     ticket = JSON.parse(stored);
-                    console.log('✅ Ticket cargado desde localStorage');
+                    console.log('Ticket cargado desde localStorage');
                     localStorage.removeItem('ticketSeleccionado');
                     return ticket;
                 } catch (e) {
@@ -655,11 +644,11 @@
         }
 
         function cargarTicketEnVentaRapido(ticket, tipo) {
-            console.log('🎫 Cargando ticket rápidamente:', ticket.codigo);
+            console.log('Cargando ticket rapidamente:', ticket.codigo);
             
             const expira = new Date(ticket.fecha_expiracion);
             if (expira < new Date()) {
-                mostrarMensajeSistema('⏰ El ticket ha expirado', 'error');
+                mostrarMensajeSistema('El ticket ha expirado', 'error');
                 setTimeout(() => window.location.href = 'menu_caja.html', 1500);
                 return;
             }
@@ -692,7 +681,7 @@
                     <div class="vendor-avatar">V</div>
                     <div class="vendor-details">
                         <div class="vendor-name">${vendedorValidado.nombre}</div>
-                        <div class="vendor-id">ID: ${vendedorId} 🔒 Ticket</div>
+                        <div class="vendor-id">ID: ${vendedorId} - Ticket</div>
                     </div>
                     <div class="vendor-badge">Verificado</div>
                 `;
@@ -700,7 +689,7 @@
                 const resultadoDiv = document.getElementById('qrResultado');
                 resultadoDiv.style.display = 'block';
                 resultadoDiv.className = 'qr-result success';
-                resultadoDiv.innerHTML = `<strong>✅ Vendedor asignado por ticket</strong><br>${vendedorValidado.nombre}`;
+                resultadoDiv.innerHTML = `<strong>Vendedor asignado por ticket</strong><br>${vendedorValidado.nombre}`;
             }
 
             if (tipo === 'express') {
@@ -711,13 +700,13 @@
                 document.getElementById('clienteBusqueda').value = '';
                 document.getElementById('cliente').value = '';
                 document.getElementById('canal').value = '';
-                mostrarMensajeSistema('⚡ Modo Express activado', 'info');
+                mostrarMensajeSistema('Modo Express activado', 'info');
             } else {
                 document.getElementById('bloqueCliente').style.display = 'block';
                 document.getElementById('bloqueCanal').style.display = 'block';
                 document.getElementById('cliente').setAttribute('required', '');
                 document.getElementById('canal').setAttribute('required', '');
-                mostrarMensajeSistema('📋 Modo Normal activado', 'info');
+                mostrarMensajeSistema('Modo Normal activado', 'info');
             }
 
             let productos = [];
@@ -741,12 +730,12 @@
 
             fetch(`/api/tickets/${ticket.codigo}/procesar`, { method: 'PUT' }).catch(() => {});
 
-            mostrarMensajeSistema(`✅ Ticket #${ticket.codigo} cargado - ${productos.length} productos`, 'success');
+            mostrarMensajeSistema(`Ticket #${ticket.codigo} cargado - ${productos.length} productos`, 'success');
             ticketSeleccionado = ticket;
         }
 
         if (modoEntrada === 'tickets') {
-            console.log('📨 Modo tickets activado');
+            console.log('Modo tickets activado');
             
             const ticket = cargarTicketDesdeStorage();
             
@@ -765,7 +754,7 @@
                                     <div class="vendor-avatar">V</div>
                                     <div class="vendor-details">
                                         <div class="vendor-name">${vendedorValidado.nombre}</div>
-                                        <div class="vendor-id">ID: ${vendedorValidado.id} 🔒 Ticket</div>
+                                        <div class="vendor-id">ID: ${vendedorValidado.id} - Ticket</div>
                                     </div>
                                     <div class="vendor-badge">Verificado</div>
                                 `;
@@ -775,8 +764,6 @@
                 });
             }
         }
-
-        // ====================== FUNCIONES DE TICKETS ======================
 
         function toggleTicketPopup() {
             const popup = document.getElementById('ticketPopup');
@@ -814,7 +801,7 @@
                     const container = document.getElementById('ticketListContainer');
                     if (container) {
                         if (pendientes.length === 0) {
-                            container.innerHTML = '<div class="empty">🎫 No hay tickets pendientes</div>';
+                            container.innerHTML = '<div class="empty">No hay tickets pendientes</div>';
                         } else {
                             container.innerHTML = pendientes.map(t => {
                                 const expira = new Date(t.fecha_expiracion);
@@ -822,7 +809,7 @@
                                 const diff = expira - ahora;
                                 const minutos = Math.floor(diff / 60000);
                                 const segundos = Math.floor((diff % 60000) / 1000);
-                                const tiempoTexto = diff > 0 ? `⏳ ${minutos}m ${segundos}s` : '⏰ Expirado';
+                                const tiempoTexto = diff > 0 ? `${minutos}m ${segundos}s` : 'Expirado';
                                 const tiempoClase = diff > 0 ? 'valido' : 'expirado';
 
                                 return `
@@ -860,7 +847,7 @@
 
                 const expira = new Date(ticket.fecha_expiracion);
                 if (expira < new Date()) {
-                    mostrarMensajeSistema('⏰ El ticket ha expirado', 'error');
+                    mostrarMensajeSistema('El ticket ha expirado', 'error');
                     cargarTicketsPendientes();
                     return;
                 }
@@ -870,7 +857,7 @@
                 document.getElementById('ticketPopup').style.display = 'none';
 
                 document.getElementById('tipoVentaInfo').textContent =
-                    `📨 ${ticket.nombre_vendedor || 'Vendedor'} - Total: C$${parseFloat(ticket.total).toFixed(2)}`;
+                    `${ticket.nombre_vendedor || 'Vendedor'} - Total: C$${parseFloat(ticket.total).toFixed(2)}`;
                 document.getElementById('modalTipoVenta').style.display = 'flex';
 
             } catch (error) {
@@ -898,8 +885,6 @@
             cargarTicketEnVentaRapido(ticketSeleccionado, tipo);
         }
 
-        // ====================== FUNCIONES DE PAGO ======================
-
         function calcularTotalConIVA() {
             let subtotal = 0;
             productosSeleccionados.forEach(producto => {
@@ -917,8 +902,6 @@
 
             return { subtotal, iva, total };
         }
-
-        // ====================== FUNCIONES DE QR ======================
 
         function actualizarEstadoCamara(activo, mensaje) {
             const statusDot = document.getElementById('statusDot');
@@ -1062,11 +1045,7 @@
                 resultadoDiv.className = 'qr-result error';
                 resultadoDiv.innerHTML = '<strong>Error de conexion</strong><br>No se pudo verificar el codigo';
             }
-        }
-
-        // ====================== FUNCIONES PRINCIPALES ======================
-
-        function actualizarFechaHora() {
+        }        function actualizarFechaHora() {
             const ahora = new Date();
             document.getElementById('fechaActual').textContent = ahora.toLocaleDateString('es-ES');
             const fechaInput = document.getElementById('fecha');
@@ -1086,8 +1065,6 @@
             contenedor.appendChild(mensajeDiv);
             setTimeout(() => mensajeDiv.remove(), 4000);
         }
-
-        // ====================== CLIENTES ======================
 
         async function cargarClientes() {
             try {
@@ -1168,8 +1145,6 @@
                 sugerencias.style.display = 'none';
         });
 
-        // ====================== TRABAJADORES ======================
-
         async function cargarTrabajadores() {
             try {
                 const respuesta = await fetch('/api/trabajadores/activos');
@@ -1177,8 +1152,6 @@
                 return trabajadoresLista;
             } catch (error) { console.error('Error cargando trabajadores:', error); return []; }
         }
-
-        // ====================== CANALES Y METODOS ======================
 
         async function cargarCanalesYMetodos() {
             try {
@@ -1202,10 +1175,10 @@
                     selectMetodo.innerHTML += `<option value="${metodo.Id_Metodo}">${metodo.Nombre_Metodo}</option>`;
                 });
 
-                console.log('✅ Canales y métodos de pago cargados rápidamente');
+                console.log('Canales y metodos de pago cargados rapidamente');
 
             } catch (error) {
-                console.error('Error cargando canales y métodos:', error);
+                console.error('Error cargando canales y metodos:', error);
                 try {
                     await cargarCanales();
                     await cargarMetodosPago();
@@ -1238,8 +1211,6 @@
                 });
             } catch (error) { console.error('Error cargando metodos:', error); }
         }
-
-        // ====================== PRODUCTOS ======================
 
         async function cargarProductos() {
             try {
@@ -1364,8 +1335,6 @@
             });
         };
 
-        // ====================== FACTURA ======================
-
         async function generarNumFactura() {
             try {
                 const respuesta = await fetch('/api/ventas');
@@ -1379,7 +1348,7 @@
         }
 
         function cancelarCompra() {
-            if (productosSeleccionados.length > 0 && confirm('¿Está seguro que desea cancelar la compra?')) {
+            if (productosSeleccionados.length > 0 && confirm('Esta seguro que desea cancelar la compra?')) {
                 restaurarModoNormal();
                 window.location.replace('menu_caja.html');
             } else if (productosSeleccionados.length === 0) {
@@ -1387,8 +1356,6 @@
                 window.location.replace('menu_caja.html');
             }
         }
-
-        // ====================== PAGOS ======================
 
         function seleccionarMoneda(elemento) {
             document.querySelectorAll('.currency-btn').forEach(btn => btn.classList.remove('active'));
@@ -1436,45 +1403,6 @@
                 <div class="bank-row"><strong>Monto a Transferir:</strong> <span>C$${total.toFixed(2)}</span></div>
                 <div class="bank-row"><strong>Referencia:</strong> <span>FACTURA #${numFactura}</span></div>
             `;
-        }
-
-        function validarTarjeta(input) {
-            let valor = input.value.replace(/\s/g, '');
-            valor = valor.replace(/[^0-9]/g, '');
-            let formateado = '';
-            for (let i = 0; i < valor.length; i++) {
-                if (i > 0 && i % 4 === 0) formateado += '-';
-                formateado += valor[i];
-            }
-            input.value = formateado;
-
-            const digitos = valor;
-            const validacionDiv = document.getElementById('tarjetaValidacion');
-            let bancoDetectado = '';
-
-            if (digitos.length >= 6) {
-                const primerosDigitos = digitos.substring(0, 6);
-                if (primerosDigitos.startsWith('1234')) bancoDetectado = 'lafise';
-                else if (primerosDigitos.startsWith('5678')) bancoDetectado = 'banpro';
-                else if (primerosDigitos.startsWith('9012')) bancoDetectado = 'bac';
-                else if (primerosDigitos.startsWith('3456')) bancoDetectado = 'ficohsa';
-                else if (primerosDigitos.startsWith('7890')) bancoDetectado = 'bancoDemocratico';
-            }
-
-            document.querySelectorAll('.bank-logo').forEach(b => b.classList.remove('active'));
-            if (bancoDetectado) {
-                document.querySelector(`.bank-logo[data-banco="${bancoDetectado}"]`).classList.add('active');
-                validacionDiv.innerHTML = `Banco detectado: ${document.querySelector(`.bank-logo[data-banco="${bancoDetectado}"]`).textContent}`;
-                validacionDiv.className = 'card-validation success';
-            } else if (digitos.length > 0 && digitos.length < 16) {
-                validacionDiv.innerHTML = 'Numero de tarjeta incompleto';
-                validacionDiv.className = 'card-validation error';
-            } else if (digitos.length >= 16) {
-                validacionDiv.innerHTML = 'Numero de tarjeta valido';
-                validacionDiv.className = 'card-validation success';
-            } else {
-                validacionDiv.className = 'card-validation';
-            }
         }
 
         function mostrarResumenCompra() {
@@ -1544,11 +1472,13 @@
                     <div class="detail-row"><strong>Monto transferido:</strong> C$${datosPagoConfirmados.monto.toFixed(2)}</div>
                     <div class="detail-row"><strong>Referencia:</strong> ${datosPagoConfirmados.referencia}</div>
                 `;
-            } else if (datosPagoConfirmados.tipo === 'tarjeta') {
+            } else if (datosPagoConfirmados.tipo === 'mixto') {
                 detalleDiv.innerHTML = `
-                    <div class="detail-row"><strong>Banco:</strong> ${datosPagoConfirmados.banco}</div>
-                    <div class="detail-row"><strong>Numero de tarjeta:</strong> ${datosPagoConfirmados.numeroTarjeta.substring(0, 4)}****${datosPagoConfirmados.numeroTarjeta.substring(12)}</div>
-                    <div class="detail-row"><strong>Monto pagado:</strong> C$${datosPagoConfirmados.monto.toFixed(2)}</div>
+                    <div class="detail-row"><strong>Tipo:</strong> Pago Mixto</div>
+                    <div class="detail-row"><strong>Efectivo:</strong> C$ ${datosPagoConfirmados.efectivo.toFixed(2)}</div>
+                    <div class="detail-row"><strong>Transferencia:</strong> C$ ${datosPagoConfirmados.transferencia.toFixed(2)}</div>
+                    <div class="detail-row"><strong>Total cubierto:</strong> C$ ${datosPagoConfirmados.totalCubierto.toFixed(2)}</div>
+                    <div class="detail-row"><strong>Total de la venta:</strong> C$ ${datosPagoConfirmados.monto.toFixed(2)}</div>
                 `;
             }
 
@@ -1593,12 +1523,13 @@
             } else if (metodoTexto === 'Transferencia') {
                 generarDatosTransferencia();
                 document.getElementById('modalPagoTransferencia').style.display = 'flex';
-            } else if (metodoTexto === 'Tarjeta') {
-                document.getElementById('numeroTarjeta').value = '';
-                document.getElementById('tarjetaValidacion').className = 'card-validation';
-                document.getElementById('tarjetaValidacion').innerHTML = '';
-                document.querySelectorAll('.bank-logo').forEach(b => b.classList.remove('active'));
-                document.getElementById('modalPagoTarjeta').style.display = 'flex';
+            } else if (metodoTexto === 'Pago Mixto') {
+                document.getElementById('mixtoEfectivo').value = '';
+                document.getElementById('mixtoTransferencia').value = '';
+                document.getElementById('mixtoResultado').style.display = 'none';
+                document.getElementById('mixtoError').style.display = 'none';
+                document.getElementById('mixtoTotalVenta').textContent = `C$ ${total.toFixed(2)}`;
+                document.getElementById('modalPagoMixto').style.display = 'flex';
             }
         }
 
@@ -1636,26 +1567,59 @@
             mostrarResumenCompra();
         }
 
-        function confirmarPagoTarjeta() {
-            const numeroTarjeta = document.getElementById('numeroTarjeta').value.replace(/\s/g, '');
-            if (numeroTarjeta.length < 16) { mostrarMensajeSistema('Numero de tarjeta invalido', 'error'); return; }
-
-            let banco = 'No identificado';
-            const primerosDigitos = numeroTarjeta.substring(0, 6);
-            if (primerosDigitos.startsWith('1234')) banco = 'LAFISE';
-            else if (primerosDigitos.startsWith('5678')) banco = 'BANPRO';
-            else if (primerosDigitos.startsWith('9012')) banco = 'BAC';
-            else if (primerosDigitos.startsWith('3456')) banco = 'FICOHSA';
-            else if (primerosDigitos.startsWith('7890')) banco = 'BANCO DEMOCRATICO';
-
+        function calcularMixto() {
             const total = parseFloat(document.getElementById('totalInput').value);
+            const efectivo = parseFloat(document.getElementById('mixtoEfectivo').value) || 0;
+            const transferencia = parseFloat(document.getElementById('mixtoTransferencia').value) || 0;
+            const cubierto = efectivo + transferencia;
+
+            const resultadoDiv = document.getElementById('mixtoResultado');
+            const errorDiv = document.getElementById('mixtoError');
+
+            if (efectivo > 0 || transferencia > 0) {
+                document.getElementById('mixtoTotalCubierto').textContent = `C$ ${cubierto.toFixed(2)}`;
+
+                if (cubierto >= total) {
+                    resultadoDiv.style.display = 'block';
+                    errorDiv.style.display = 'none';
+                } else {
+                    const faltante = total - cubierto;
+                    document.getElementById('mixtoFaltante').textContent = `C$ ${faltante.toFixed(2)}`;
+                    resultadoDiv.style.display = 'none';
+                    errorDiv.style.display = 'block';
+                }
+            } else {
+                resultadoDiv.style.display = 'none';
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        function confirmarPagoMixto() {
+            const total = parseFloat(document.getElementById('totalInput').value);
+            const efectivo = parseFloat(document.getElementById('mixtoEfectivo').value) || 0;
+            const transferencia = parseFloat(document.getElementById('mixtoTransferencia').value) || 0;
+            const cubierto = efectivo + transferencia;
+
+            if (efectivo <= 0 && transferencia <= 0) {
+                mostrarMensajeSistema('Debe ingresar al menos un monto (efectivo o transferencia)', 'error');
+                return;
+            }
+
+            if (cubierto < total) {
+                const faltante = total - cubierto;
+                mostrarMensajeSistema(`Los montos no cubren el total. Faltan C$ ${faltante.toFixed(2)}`, 'error');
+                return;
+            }
+
             datosPagoConfirmados = {
-                tipo: 'tarjeta',
-                banco: banco,
-                numeroTarjeta: numeroTarjeta,
+                tipo: 'mixto',
+                efectivo: efectivo,
+                transferencia: transferencia,
+                totalCubierto: cubierto,
                 monto: total
             };
-            cerrarModalPagoTarjeta();
+
+            cerrarModalPagoMixto();
             mostrarResumenCompra();
         }
 
@@ -1663,24 +1627,19 @@
 
         function cerrarModalPagoTransferencia() { document.getElementById('modalPagoTransferencia').style.display = 'none'; }
 
-        function cerrarModalPagoTarjeta() { document.getElementById('modalPagoTarjeta').style.display = 'none'; }
-
-        // ====================== CONFIRMAR Y GUARDAR COMPRA (CORREGIDO) ======================
+        function cerrarModalPagoMixto() { document.getElementById('modalPagoMixto').style.display = 'none'; }
 
         function confirmarYGuardarCompra() {
             const btn = document.getElementById('btnConfirmarResumen');
             if (btn) {
                 btn.disabled = true;
-                btn.textContent = '⏳ Procesando...';
+                btn.textContent = 'Procesando...';
             }
             
             cerrarModalResumen();
             
-            // Ejecutar guardado con timeout de seguridad
             guardarCompraDB();
         }
-
-        // ====================== GUARDAR COMPRA (CORREGIDO) ======================
 
         async function guardarCompraDB() {
             const btn = document.getElementById('btnConfirmarResumen');
@@ -1743,7 +1702,6 @@
                     return; 
                 }
 
-                // Guardar compra
                 const compraData = {
                     Num_Factura: parseInt(numFactura),
                     Id_cliente: tipoVenta === 'express' ? null : parseInt(idCliente),
@@ -1751,7 +1709,11 @@
                     Id_Canal: tipoVenta === 'express' ? null : parseInt(idCanal),
                     Id_Metodo: parseInt(idMetodo),
                     Fecha: fecha,
-                    Monto: total
+                    Monto: total,
+                    Monto_Efectivo: datosPagoConfirmados.tipo === 'efectivo' ? datosPagoConfirmados.montoEnCordobas :
+                                    datosPagoConfirmados.tipo === 'mixto' ? datosPagoConfirmados.efectivo : null,
+                    Monto_Transferencia: datosPagoConfirmados.tipo === 'transferencia' ? datosPagoConfirmados.monto :
+                                         datosPagoConfirmados.tipo === 'mixto' ? datosPagoConfirmados.transferencia : null
                 };
 
                 const resCompra = await fetch('/api/compras', {
@@ -1765,7 +1727,6 @@
                     throw new Error('Error al guardar compra #' + numFactura + ': ' + (errorData.error || resCompra.statusText));
                 }
 
-                // Guardar órdenes
                 let ordenesGuardadas = 0;
                 const ordenesConError = [];
 
@@ -1773,7 +1734,7 @@
                     const producto = productosSeleccionados[i];
 
                     if (!producto.id || producto.cantidad <= 0 || producto.precio <= 0) {
-                        ordenesConError.push(`Producto ${producto.nombre} tiene datos inválidos`);
+                        ordenesConError.push(`Producto ${producto.nombre} tiene datos invalidos`);
                         continue;
                     }
 
@@ -1802,18 +1763,17 @@
                 }
 
                 if (ordenesConError.length > 0) {
-                    mostrarMensajeSistema(`⚠️ ${ordenesConError.length} errores en productos. ${ordenesGuardadas} guardados.`, 'error');
+                    mostrarMensajeSistema(`${ordenesConError.length} errores en productos. ${ordenesGuardadas} guardados.`, 'error');
                     if (btn) { btn.disabled = false; btn.textContent = 'Confirmar'; }
                     return;
                 }
 
                 if (ordenesGuardadas !== productosSeleccionados.length) {
-                    mostrarMensajeSistema(`⚠️ Se guardaron ${ordenesGuardadas}/${productosSeleccionados.length} productos`, 'error');
+                    mostrarMensajeSistema(`Se guardaron ${ordenesGuardadas}/${productosSeleccionados.length} productos`, 'error');
                     if (btn) { btn.disabled = false; btn.textContent = 'Confirmar'; }
                     return;
                 }
 
-                // Completar ticket si existe
                 if (ticketSeleccionado) {
                     try {
                         await fetch(`/api/tickets/${ticketSeleccionado.codigo}/completar`, {
@@ -1826,23 +1786,20 @@
                     }
                 }
 
-                mostrarMensajeSistema(`✅ Venta #${numFactura} guardada exitosamente`, 'success');
+                mostrarMensajeSistema(`Venta #${numFactura} guardada exitosamente`, 'success');
 
                 restaurarModoNormal();
                 
-                // Reactivar botón antes de redirigir
                 if (btn) { btn.disabled = false; btn.textContent = 'Confirmar'; }
                 
-                // Redirigir después de un breve delay
                 setTimeout(() => {
                     window.location.replace('menu_caja.html');
                 }, 1000);
 
             } catch (error) {
-                console.error('❌ ERROR CRÍTICO:', error);
-                mostrarMensajeSistema('❌ Error: ' + (error.message || 'No se pudo guardar la compra'), 'error');
+                console.error('ERROR CRITICO:', error);
+                mostrarMensajeSistema('Error: ' + (error.message || 'No se pudo guardar la compra'), 'error');
                 
-                // ⭐ REACTIVAR EL BOTÓN EN CASO DE ERROR
                 if (btn) {
                     btn.disabled = false;
                     btn.textContent = 'Confirmar';
@@ -1883,8 +1840,6 @@
             }
         }
 
-        // ====================== INICIALIZACIÓN ======================
-
         document.getElementById('clienteBusqueda').addEventListener('input', buscarCliente);
         setInterval(actualizarFechaHora, 1000);
 
@@ -1906,20 +1861,20 @@
                 document.getElementById('bloqueCanal').style.display = 'none';
                 document.getElementById('cliente').removeAttribute('required');
                 document.getElementById('canal').removeAttribute('required');
-                console.log('⚡ Modo Express activado');
+                console.log('Modo Express activado');
             } else {
                 document.getElementById('bloqueCliente').style.display = 'block';
                 document.getElementById('bloqueCanal').style.display = 'block';
                 document.getElementById('cliente').setAttribute('required', '');
                 document.getElementById('canal').setAttribute('required', '');
-                console.log('📋 Modo Normal activado');
+                console.log('Modo Normal activado');
             }
 
             actualizarEstadoCamara(false, 'Inactivo');
             iniciarPollerTickets();
 
-            console.log('🎫 Sistema de Tickets activado');
-            console.log('⚡ Modo Ticket: QR ocultado instantáneamente');
+            console.log('Sistema de Tickets activado');
+            console.log('Modo Ticket: QR ocultado instantaneamente');
         }
 
         inicializar();

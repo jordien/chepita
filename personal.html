@@ -13,6 +13,124 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <link rel="stylesheet" href="personal.css" />
+    <style>
+      /* ===== REQ-FR-31: ESTILOS DE ASISTENCIA ===== */
+      .asistencia-section {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 2px dashed #e2e8f0;
+      }
+      
+      .asistencia-section-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #a63c89;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      .asistencia-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+      
+      .asistencia-stat-card {
+        background: linear-gradient(135deg, #f8f9ff, white);
+        border-radius: 14px;
+        padding: 12px;
+        text-align: center;
+        border: 1px solid rgba(166, 60, 137, 0.2);
+      }
+      
+      .asistencia-stat-num {
+        font-size: 20px;
+        font-weight: 800;
+        color: #a63c89;
+      }
+      
+      .asistencia-stat-label {
+        font-size: 10px;
+        color: #666;
+        margin-top: 3px;
+        font-weight: 600;
+      }
+      
+      .asistencia-lista {
+        max-height: 320px;
+        overflow-y: auto;
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: 10px;
+      }
+      
+      .asistencia-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 12px;
+        background: white;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        border-left: 4px solid #2e7d32;
+        font-size: 13px;
+      }
+      
+      .asistencia-item.completo { border-left-color: #2e7d32; }
+      .asistencia-item.presente { border-left-color: #ff9800; }
+      .asistencia-item.pendiente { border-left-color: #94a3b8; }
+      
+      .asistencia-fecha {
+        font-weight: 700;
+        color: #4a1d6d;
+        font-size: 12px;
+      }
+      
+      .asistencia-horas {
+        font-size: 11px;
+        color: #666;
+        margin-top: 3px;
+        line-height: 1.5;
+      }
+      
+      .asistencia-estado-badge {
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      
+      .badge-completo { background: #e8f5e9; color: #2e7d32; }
+      .badge-presente { background: #fff3e0; color: #e65100; }
+      .badge-pendiente { background: #f1f5f9; color: #64748b; }
+      
+      .asistencia-empty {
+        text-align: center;
+        padding: 30px 15px;
+        color: #94a3b8;
+        font-size: 13px;
+      }
+      
+      .asistencia-empty .icon {
+        font-size: 36px;
+        margin-bottom: 8px;
+        opacity: 0.5;
+      }
+      
+      .asistencia-loading {
+        text-align: center;
+        padding: 20px;
+        color: #a63c89;
+        font-size: 13px;
+      }
+    </style>
   </head>
   <body>
     <!-- HEADER DE MARCAS -->
@@ -160,14 +278,14 @@
           </div>
         </div>
 
-        <!-- ===== INFO DEL CAJERO ACTUAL (OCULTO - style="display: none;") ===== -->
+        <!-- ===== INFO DEL CAJERO ACTUAL (OCULTO) ===== -->
         <div class="personal-group" style="display: none;">
           <div id="infoCajeroActual" class="info-cajero-actual info">
             <i class="fas fa-spinner fa-spin"></i> Cargando información del cajero actual...
           </div>
         </div>
 
-        <!-- ===== BOTÓN PARA DESACTIVAR CAJERO (SOLO SI EL TRABAJADOR ES EL CAJERO ACTUAL) ===== -->
+        <!-- ===== BOTÓN PARA DESACTIVAR CAJERO ===== -->
         <div id="desactivarCajeroContainer" style="display: none;">
           <button class="personal-modal-cancel" onclick="desactivarCajero()" style="background: #dc3545; width: 100%;">
             <i class="fas fa-user-slash"></i> Desactivar como Cajero
@@ -263,6 +381,38 @@
           <div class="personal-details-item" id="detalleCajeroRow" style="border-left-color: #94a3b8;">
             <span class="personal-details-label"><i class="fas fa-cash-register"></i> Cajero</span>
             <span class="personal-details-value" id="detCajero">-</span>
+          </div>
+        </div>
+
+        <!-- ===== REQ-FR-31: SECCIÓN DE ASISTENCIA ===== -->
+        <div class="asistencia-section">
+          <div class="asistencia-section-title">
+            <i class="fas fa-clock"></i> Registro de Asistencia
+          </div>
+          
+          <div class="asistencia-stats" id="asistenciaStats">
+            <div class="asistencia-stat-card">
+              <div class="asistencia-stat-num" id="statDiasMarcados">-</div>
+              <div class="asistencia-stat-label">DÍAS MARCADOS</div>
+            </div>
+            <div class="asistencia-stat-card">
+              <div class="asistencia-stat-num" id="statJornadasCompletas">-</div>
+              <div class="asistencia-stat-label">JORNADAS COMPLETAS</div>
+            </div>
+            <div class="asistencia-stat-card">
+              <div class="asistencia-stat-num" id="statTotalHoras">-</div>
+              <div class="asistencia-stat-label">TOTAL HORAS</div>
+            </div>
+            <div class="asistencia-stat-card">
+              <div class="asistencia-stat-num" id="statPromedioHoras">-</div>
+              <div class="asistencia-stat-label">PROMEDIO/JORNADA</div>
+            </div>
+          </div>
+          
+          <div class="asistencia-lista" id="asistenciaLista">
+            <div class="asistencia-loading">
+              <i class="fas fa-spinner fa-spin"></i> Cargando asistencia...
+            </div>
           </div>
         </div>
 
@@ -521,19 +671,15 @@
         
         await obtenerCajeroActual();
         
-        // Si hay cajero activo
         if (cajeroActual && cajeroActual.existe) {
-          // La info está oculta (style="display: none;"), solo actualizamos el texto por si acaso
           infoDiv.className = 'info-cajero-actual success';
           infoDiv.innerHTML = `
             <i class="fas fa-check-circle" style="color: #22c55e;"></i>
             <strong>Cajero actual:</strong> ${cajeroActual.nombre}
           `;
           
-          // Ocultar la sección de asignar cajero (checkbox)
           cajeroSection.style.display = 'none';
           
-          // Si el trabajador que estamos editando ES el cajero actual, mostrar botón de desactivar
           if (editId && parseInt(editId) === cajeroActual.id) {
             desactivarContainer.style.display = 'block';
           } else {
@@ -541,7 +687,6 @@
           }
           
         } else {
-          // No hay cajero activo
           infoDiv.className = 'info-cajero-actual warning';
           infoDiv.innerHTML = `
             <i class="fas fa-exclamation-circle" style="color: #ef4444;"></i>
@@ -551,7 +696,6 @@
             </span>
           `;
           
-          // Mostrar la sección de asignar cajero (checkbox)
           cajeroSection.style.display = 'block';
           desactivarContainer.style.display = 'none';
         }
@@ -566,7 +710,6 @@
         const nombreCajero = cajeroActual.nombre;
         const idCajero = cajeroActual.id;
         
-        // Buscar el trabajador en los datos locales para obtener todos sus campos
         const trabajador = trabajadoresData.find(t => t.Id_Trabajador === idCajero);
         if (!trabajador) {
           mostrarError('No se encontraron los datos completos del trabajador');
@@ -577,7 +720,6 @@
           `¿Estás seguro de desactivar a "${nombreCajero}" como cajero?\n\nEsto permitirá asignar un nuevo cajero.`,
           async () => {
             try {
-              // Enviar TODOS los campos del trabajador
               const response = await fetch(`/api/trabajadores/${idCajero}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -596,7 +738,6 @@
                 throw new Error(error.error || 'Error al desactivar el cajero');
               }
               
-              // Limpiar cualquier otro cajero
               await fetch('/api/trabajadores/cambiar-cajero', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -605,11 +746,9 @@
               
               mostrarExito(`✅ Cajero "${nombreCajero}" desactivado correctamente`);
               
-              // Actualizar la información
               await mostrarInfoCajeroActual();
               cargarTrabajadores();
               
-              // Cerrar el modal
               cerrarModalPersonal();
               
             } catch (error) {
@@ -645,7 +784,7 @@
         }
       }
 
-      // ========== MODALES DE CONFIRMACION, EXITO Y ERROR ==========
+      // ========== MODALES ==========
       function mostrarConfirmacion(mensaje, accionSi) {
         const modal = document.getElementById("confirmModal");
         document.getElementById("confirmMessage").innerText = mensaje;
@@ -755,6 +894,120 @@
 
         document.getElementById("btnEditarDesdeDetalles").dataset.trabajadorId = idTrabajador;
         abrirModalDetalles();
+
+        // REQ-FR-31: Cargar asistencia del trabajador desde la BD
+        cargarAsistenciaTrabajador(idTrabajador);
+      }
+
+      // ============================================================
+      // REQ-FR-31: Cargar asistencia del trabajador
+      // ============================================================
+      async function cargarAsistenciaTrabajador(idTrabajador) {
+        const listaDiv = document.getElementById('asistenciaLista');
+        
+        document.getElementById('statDiasMarcados').textContent = '-';
+        document.getElementById('statJornadasCompletas').textContent = '-';
+        document.getElementById('statTotalHoras').textContent = '-';
+        document.getElementById('statPromedioHoras').textContent = '-';
+        
+        listaDiv.innerHTML = `
+          <div class="asistencia-loading">
+            <i class="fas fa-spinner fa-spin"></i> Cargando asistencia...
+          </div>
+        `;
+
+        try {
+          const response = await fetch(`/api/asistencia/trabajador/${idTrabajador}?limite=50`);
+          const data = await response.json();
+
+          if (!data.success) {
+            throw new Error(data.error || 'Error al cargar asistencia');
+          }
+
+          document.getElementById('statDiasMarcados').textContent = data.total_registros || 0;
+          document.getElementById('statJornadasCompletas').textContent = data.total_jornadas_completas || 0;
+          document.getElementById('statTotalHoras').textContent = data.total_horas_trabajadas || '0';
+          document.getElementById('statPromedioHoras').textContent = data.promedio_horas_por_jornada || '0';
+
+          if (!data.registros || data.registros.length === 0) {
+            listaDiv.innerHTML = `
+              <div class="asistencia-empty">
+                <div class="icon">📅</div>
+                <div>Sin registros de asistencia</div>
+                <div style="font-size:11px; margin-top:6px; color:#cbd5e1;">
+                  Este trabajador aún no ha marcado entrada
+                </div>
+              </div>
+            `;
+            return;
+          }
+
+          listaDiv.innerHTML = data.registros.map(r => {
+            const fecha = new Date(r.fecha + 'T00:00:00');
+            const fechaFormateada = fecha.toLocaleDateString('es-ES', {
+              weekday: 'short',
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric'
+            });
+
+            const horaEntrada = r.hora_entrada ? String(r.hora_entrada).substring(0, 5) : '--:--';
+            const horaSalida = r.hora_salida ? String(r.hora_salida).substring(0, 5) : 'Sin marcar';
+            
+            let badgeClass = 'badge-pendiente';
+            let badgeText = 'Pendiente';
+            let itemClass = 'pendiente';
+            
+            if (r.estado === 'completo' && r.hora_salida) {
+              badgeClass = 'badge-completo';
+              badgeText = 'Completo';
+              itemClass = 'completo';
+            } else if (r.hora_entrada && !r.hora_salida) {
+              badgeClass = 'badge-presente';
+              badgeText = 'En jornada';
+              itemClass = 'presente';
+            }
+
+            let horasTexto = '';
+            if (r.hora_entrada && r.hora_salida) {
+              const mins = r.minutos_trabajados || 0;
+              const horas = Math.floor(mins / 60);
+              const minutos = mins % 60;
+              horasTexto = `⏱️ ${horas}h ${minutos}m trabajadas`;
+            } else if (r.hora_entrada) {
+              horasTexto = '⏳ Aún en jornada';
+            }
+
+            return `
+              <div class="asistencia-item ${itemClass}">
+                <div>
+                  <div class="asistencia-fecha">
+                    📅 ${fechaFormateada}
+                  </div>
+                  <div class="asistencia-horas">
+                    🟢 Entrada: <strong>${horaEntrada}</strong>
+                    &nbsp;·&nbsp;
+                    🔴 Salida: <strong>${horaSalida}</strong>
+                    ${horasTexto ? `<br>${horasTexto}` : ''}
+                  </div>
+                </div>
+                <span class="asistencia-estado-badge ${badgeClass}">
+                  ${badgeText}
+                </span>
+              </div>
+            `;
+          }).join('');
+
+        } catch (error) {
+          console.error('Error cargando asistencia:', error);
+          listaDiv.innerHTML = `
+            <div class="asistencia-empty">
+              <div class="icon">⚠️</div>
+              <div>Error al cargar la asistencia</div>
+              <div style="font-size:11px; margin-top:6px;">${error.message}</div>
+            </div>
+          `;
+        }
       }
 
       function editarDesdeDetalles() {
@@ -951,7 +1204,6 @@
 
         document.getElementById("estadoGroup").style.display = "block";
         
-        // Mostrar información del cajero actual y ajustar visibilidad
         await mostrarInfoCajeroActual();
         
         abrirModalPersonal();
@@ -1006,7 +1258,6 @@
         const estado = editId ? document.getElementById("estadoPersonal").value : "1";
         const esCajero = document.getElementById("editarEsCajero").checked;
 
-        // Validaciones
         if (!nombre) {
           mostrarError("Ingrese el nombre completo del trabajador");
           return;
@@ -1110,7 +1361,6 @@
           localStorage.setItem("estadosPersonal", JSON.stringify(estadosData));
           localStorage.setItem("companiasTrabajadores", JSON.stringify(companiasData));
 
-          // Si se marcó como cajero, actualizar el cajero global
           if (esCajero) {
             await cambiarCajero(idTrabajador, nombre);
           }
@@ -1149,7 +1399,6 @@
           localStorage.setItem("estadosPersonal", JSON.stringify(estadosData));
           localStorage.setItem("companiasTrabajadores", JSON.stringify(companiasData));
 
-          // Si se marcó como cajero, actualizar el cajero global
           if (esCajero) {
             await cambiarCajero(editId, nombre);
           }

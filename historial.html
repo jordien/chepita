@@ -11,6 +11,127 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     ></script>
+    <style>
+      /* Estilos para el desglose de pago mixto */
+      .hc-desglose-pago {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 12px;
+      }
+      .hc-desglose-linea {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 6px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        border-left: 3px solid #A63C89;
+      }
+      .hc-desglose-metodo {
+        font-weight: 600;
+        color: #A63C89;
+        min-width: 90px;
+      }
+      .hc-desglose-monto {
+        font-weight: 700;
+        color: #333;
+      }
+      .hc-desglose-ref {
+        font-size: 10px;
+        color: #888;
+        font-style: italic;
+        margin-left: auto;
+      }
+      .badge-mixto {
+        display: inline-block;
+        padding: 3px 8px;
+        background: linear-gradient(135deg, #A63C89, #d94fa8);
+        color: white;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .badge-simple {
+        display: inline-block;
+        padding: 3px 8px;
+        background: #e0e0e0;
+        color: #666;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      .hc-total-desglose {
+        margin-top: 10px;
+        padding: 8px 12px;
+        background: #f0f7ff;
+        border-left: 4px solid #2196F3;
+        border-radius: 6px;
+        font-size: 13px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .hc-total-desglose .label {
+        font-weight: 600;
+        color: #1976D2;
+      }
+      .hc-total-desglose .valor {
+        font-weight: 700;
+        color: #0D47A1;
+        font-size: 15px;
+      }
+      .hc-desglose-titulo {
+        margin: 20px 0 10px;
+        padding-bottom: 6px;
+        border-bottom: 2px solid #A63C89;
+        color: #A63C89;
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      /* PDF */
+      .factura-desglose {
+        margin: 20px 0;
+        padding: 15px;
+        background: #f8f9fa;
+        border-left: 4px solid #A63C89;
+        border-radius: 6px;
+      }
+      .factura-desglose h4 {
+        color: #A63C89;
+        font-size: 13px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+      }
+      .factura-desglose-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px dashed #ddd;
+        font-size: 12px;
+      }
+      .factura-desglose-item:last-child {
+        border-bottom: none;
+      }
+      .factura-desglose-item .metodo {
+        font-weight: 600;
+        color: #333;
+      }
+      .factura-desglose-item .monto {
+        font-weight: 700;
+        color: #A63C89;
+      }
+      .factura-desglose-item .ref {
+        font-size: 10px;
+        color: #888;
+        font-style: italic;
+      }
+    </style>
   </head>
   <body>
     <div class="header-marcas">
@@ -57,6 +178,12 @@
           <option value="">Todos los tipos</option>
           <option value="normal">Normal</option>
           <option value="express">Express</option>
+        </select>
+
+        <select id="tipoPagoSelect" onchange="filtrarEnTiempoReal()">
+          <option value="">Todos los pagos</option>
+          <option value="simple">Pago Simple</option>
+          <option value="mixto">Pago Mixto</option>
         </select>
 
         <select id="canalSelect" onchange="filtrarEnTiempoReal()">
@@ -125,6 +252,8 @@
       const API = "/api";
       let canales = [];
       let metodos = [];
+      // REQ-FR-22: Caché de desgloses de pagos mixtos por Num_Factura
+      let cacheDesglosesPagos = {};
 
       // ==================== FUNCIONES DE VALIDACIÓN ====================
       function normalizarTerminoBusqueda(termino) {
@@ -197,6 +326,41 @@
         }
       }
 
+      // ==================== REQ-FR-22: CARGAR DESGLOSES DE PAGOS MIXTOS ====================
+      async function cargarDesglosesPagosMixtos() {
+        try {
+          const res = await fetch(`${API}/pagos-mixtos`);
+          if (!res.ok) {
+            console.warn("No se pudieron cargar los pagos mixtos");
+            return;
+          }
+          const pagosMixtos = await res.json();
+          
+          // Construir caché por Num_Factura
+          cacheDesglosesPagos = {};
+          pagosMixtos.forEach(pm => {
+            // Parsear el detalle_completo: "Efectivo|200.00|ref1||Transferencia|150.00|ref2"
+            const detalleStr = pm.detalle_completo || "";
+            const items = detalleStr.split("||").map(item => {
+              const [metodo, monto, referencia] = item.split("|");
+              return {
+                Nombre_Metodo: metodo,
+                Monto: parseFloat(monto),
+                Referencia: referencia || null
+              };
+            });
+            cacheDesglosesPagos[pm.Num_Factura] = {
+              cantidad_metodos: pm.cantidad_metodos,
+              desglose: pm.desglose,
+              pagos: items
+            };
+          });
+          console.log(`✅ Desgloses de pagos mixtos cargados: ${Object.keys(cacheDesglosesPagos).length}`);
+        } catch (error) {
+          console.error("Error cargando pagos mixtos:", error);
+        }
+      }
+
       async function cargarDatos() {
         try {
           console.log("Cargando datos...");
@@ -225,6 +389,9 @@
               metodoSelect.innerHTML += `<option value="${metodo.Id_Metodo}">${escapeHtml(metodo.Nombre_Metodo)}</option>`;
             });
           }
+
+          // REQ-FR-22: Cargar desgloses de pagos mixtos antes de renderizar
+          await cargarDesglosesPagosMixtos();
 
           await cargarCompras();
         } catch (error) {
@@ -287,6 +454,8 @@
                 Vendedor: venta.Nombre_Vendedor || "No asignado",
                 Id_Vendedor: venta.Id_Vendedor,
                 productos: [],
+                // REQ-FR-22: Datos del desglose de pago
+                DesglosePago: cacheDesglosesPagos[numFactura] || null
               };
             }
             if (venta.Producto) {
@@ -307,6 +476,8 @@
           const tipoVentaFiltro =
             document.getElementById("tipoVentaSelect").value;
           const metodoFiltro = document.getElementById("metodoSelect").value;
+          const tipoPagoFiltro =
+            document.getElementById("tipoPagoSelect").value;
 
           let facturasArray = Object.values(facturas);
 
@@ -352,6 +523,17 @@
             );
           }
 
+          // REQ-FR-22: Filtrar por tipo de pago (simple/mixto)
+          if (tipoPagoFiltro === "mixto") {
+            facturasArray = facturasArray.filter(
+              (f) => f.DesglosePago && f.DesglosePago.cantidad_metodos > 1
+            );
+          } else if (tipoPagoFiltro === "simple") {
+            facturasArray = facturasArray.filter(
+              (f) => !f.DesglosePago || f.DesglosePago.cantidad_metodos <= 1
+            );
+          }
+
           // Filtrar compras sin productos
           facturasArray = facturasArray.filter(
             (f) => f.productos && f.productos.length > 0,
@@ -365,9 +547,11 @@
               document.getElementById("tipoVentaSelect").value;
             const canalVal = document.getElementById("canalSelect").value;
             const metodoVal = document.getElementById("metodoSelect").value;
+            const tipoPagoVal =
+              document.getElementById("tipoPagoSelect").value;
 
             let mensaje = "No se encontraron compras";
-            if (busquedaVal || tipoVentaVal || canalVal || metodoVal) {
+            if (busquedaVal || tipoVentaVal || canalVal || metodoVal || tipoPagoVal) {
               mensaje =
                 "⚠️ No se encontraron resultados. Intenta con:<br>• Número de factura completo o parcial<br>• Nombre del cliente (ej: Juan, María)<br>• Fecha (ej: 10/06/2026 o 2026-06)<br>• O limpia los filtros para ver todas";
             }
@@ -400,6 +584,12 @@
               ? `<td><span class="hc-badge hc-badge-canal">${escapeHtml(compra.Canal || "N/A")}</span></td>`
               : `<td style="text-align: center; color: #999;">--</td>`;
 
+            // REQ-FR-22: Badge de tipo de pago
+            const esPagoMixto = compra.DesglosePago && compra.DesglosePago.cantidad_metodos > 1;
+            const tipoPagoBadge = esPagoMixto
+              ? `<span class="badge-mixto">💳 Mixto (${compra.DesglosePago.cantidad_metodos})</span>`
+              : `<span class="badge-simple">Simple</span>`;
+
             html += `<tr>
                     <td>#${numeroMostrar}</td>
                     <td>
@@ -410,7 +600,10 @@
                     <td>${escapeHtml(clienteNombre)}</td>
                     <td>${escapeHtml(fecha)}</td>
                     ${canalHtml}
-                    <td><span class="hc-badge hc-badge-metodo">${escapeHtml(compra.Metodo || "N/A")}</span></td>
+                    <td>
+                        <span class="hc-badge hc-badge-metodo">${escapeHtml(compra.Metodo || "N/A")}</span>
+                        <div style="margin-top: 4px;">${tipoPagoBadge}</div>
+                    </td>
                     <td>C$ ${compra.Monto.toFixed(2)}</td>
                     <td><span class="vendedor-badge">${escapeHtml(vendedor)}</span></td>
                     <td>
@@ -472,6 +665,7 @@
         const canalSelect = document.getElementById("canalSelect");
         const metodoSelect = document.getElementById("metodoSelect");
         const tipoVentaSelect = document.getElementById("tipoVentaSelect");
+        const tipoPagoSelect = document.getElementById("tipoPagoSelect");
 
         if (inputBusqueda) {
           inputBusqueda.value = "";
@@ -480,6 +674,7 @@
         if (canalSelect) canalSelect.value = "";
         if (metodoSelect) metodoSelect.value = "";
         if (tipoVentaSelect) tipoVentaSelect.value = "";
+        if (tipoPagoSelect) tipoPagoSelect.value = "";
 
         if (inputBusqueda) {
           inputBusqueda.style.borderColor = "#4CAF50";
@@ -489,6 +684,38 @@
         }
 
         cargarCompras();
+      }
+
+      // REQ-FR-22: Generar HTML del desglose de pago para el modal
+      function generarDesglosePagoHTML(numFacturaReal) {
+        const desglose = cacheDesglosesPagos[numFacturaReal];
+        if (!desglose || desglose.cantidad_metodos <= 1) {
+          return ""; // Pago simple, no mostrar desglose
+        }
+
+        let itemsHtml = "";
+        desglose.pagos.forEach(p => {
+          itemsHtml += `
+            <div class="hc-desglose-linea">
+              <span class="hc-desglose-metodo">${escapeHtml(p.Nombre_Metodo)}</span>
+              <span class="hc-desglose-monto">C$ ${parseFloat(p.Monto).toFixed(2)}</span>
+              ${p.Referencia ? `<span class="hc-desglose-ref">Ref: ${escapeHtml(p.Referencia)}</span>` : ""}
+            </div>
+          `;
+        });
+
+        const sumaTotal = desglose.pagos.reduce((s, p) => s + parseFloat(p.Monto), 0);
+
+        return `
+          <div class="hc-desglose-titulo">💳 Desglose de Pago Mixto (${desglose.cantidad_metodos} métodos)</div>
+          <div class="hc-desglose-pago">
+            ${itemsHtml}
+          </div>
+          <div class="hc-total-desglose">
+            <span class="label">Total del desglose:</span>
+            <span class="valor">C$ ${sumaTotal.toFixed(2)}</span>
+          </div>
+        `;
       }
 
       async function verDetalles(numeroSecuencial) {
@@ -564,6 +791,9 @@
           // ✅ FORMATEAR FACTURA CON NÚMERO SECUENCIAL
           const facturaFormateada = numeroSecuencial;
 
+          // REQ-FR-22: Generar desglose si aplica
+          const desgloseHTML = generarDesglosePagoHTML(numFacturaReal);
+
           let html = `
                 <div class="modal-header">
                     <h3>Detalles de la Compra</h3>
@@ -582,6 +812,8 @@
                         <p><strong>Metodo de Pago:</strong> <span class="hc-badge hc-badge-metodo">${escapeHtml(metodo)}</span></p>
                         <p><strong>Vendedor:</strong> <span class="vendedor-badge">${escapeHtml(vendedor)}</span></p>
                     </div>
+
+                    ${desgloseHTML}
 
                     <h3 class="hc-subtitle">Productos</h3>
                     <table class="hc-detalle-table">
@@ -672,6 +904,28 @@
                 </tr>`;
           });
 
+          // REQ-FR-22: Generar desglose para el PDF
+          const desglose = cacheDesglosesPagos[numFacturaReal];
+          let desglosePDFHTML = "";
+          if (desglose && desglose.cantidad_metodos > 1) {
+            let itemsPDF = "";
+            desglose.pagos.forEach(p => {
+              itemsPDF += `
+                <div class="factura-desglose-item">
+                  <span class="metodo">${escapeHtml(p.Nombre_Metodo)}</span>
+                  <span class="monto">C$ ${parseFloat(p.Monto).toFixed(2)}</span>
+                  ${p.Referencia ? `<span class="ref">Ref: ${escapeHtml(p.Referencia)}</span>` : ""}
+                </div>
+              `;
+            });
+            desglosePDFHTML = `
+              <div class="factura-desglose">
+                <h4>💳 Desglose de Pago Mixto (${desglose.cantidad_metodos} métodos)</h4>
+                ${itemsPDF}
+              </div>
+            `;
+          }
+
           // ✅ FACTURA CON NÚMERO SECUENCIAL
           const facturaFormateada = numeroSecuencial;
 
@@ -715,6 +969,8 @@
                             ${productosHtml}
                         </tbody>
                     </table>
+
+                    ${desglosePDFHTML}
                     
                     <div class="factura-total">
                         <p>Total a Pagar: C$ ${montoTotal.toFixed(2)}</p>
@@ -809,6 +1065,42 @@
                             padding: 8px 10px;
                             border-bottom: 1px solid #e2e8f0;
                             font-size: 11px;
+                        }
+                        .factura-desglose {
+                            margin: 20px 0;
+                            padding: 15px;
+                            background: #f8f9fa;
+                            border-left: 4px solid #A63C89;
+                            border-radius: 6px;
+                        }
+                        .factura-desglose h4 {
+                            color: #A63C89;
+                            font-size: 13px;
+                            margin-bottom: 10px;
+                            text-transform: uppercase;
+                        }
+                        .factura-desglose-item {
+                            display: flex;
+                            justify-content: space-between;
+                            padding: 6px 0;
+                            border-bottom: 1px dashed #ddd;
+                            font-size: 12px;
+                        }
+                        .factura-desglose-item:last-child {
+                            border-bottom: none;
+                        }
+                        .factura-desglose-item .metodo {
+                            font-weight: 600;
+                            color: #333;
+                        }
+                        .factura-desglose-item .monto {
+                            font-weight: 700;
+                            color: #A63C89;
+                        }
+                        .factura-desglose-item .ref {
+                            font-size: 10px;
+                            color: #888;
+                            font-style: italic;
                         }
                         .factura-total {
                             text-align: right;

@@ -55,6 +55,305 @@
         font-size: 16px;
         padding: 0 4px;
       }
+      td:first-child {
+        font-family: "Courier New", monospace;
+        font-weight: 700;
+        color: #7a5b8f;
+        text-align: center;
+        white-space: nowrap;
+      }
+      th:first-child {
+        text-align: center;
+        width: 70px;
+      }
+
+      /* ===== Modal de alerta de stock bajo - compacto y discreto ===== */
+      .modal-stock-bajo {
+        width: 430px !important;
+        max-width: 92% !important;
+        padding: 18px 20px !important;
+      }
+      .modal-stock-bajo-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+      }
+      .modal-stock-bajo-header i {
+        color: #f59e0b;
+        font-size: 16px;
+      }
+      .modal-stock-bajo-header h3 {
+        font-size: 15px !important;
+        font-weight: 600;
+        color: #333;
+        margin: 0 !important;
+        text-align: left !important;
+      }
+      .modal-stock-bajo-mensaje {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 12px;
+        line-height: 1.4;
+      }
+      .modal-stock-bajo-lista {
+        max-height: 260px;
+        overflow-y: auto;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        background: #fafafa;
+      }
+      .stock-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        border-bottom: 1px solid #eee;
+        gap: 10px;
+      }
+      .stock-item:last-child {
+        border-bottom: none;
+      }
+      .stock-item-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+        min-width: 0;
+      }
+      .stock-item-nombre {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .stock-item-detalle {
+        font-size: 10.5px;
+        color: #999;
+      }
+      .stock-item-badge {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 10px;
+        color: white;
+        min-width: 34px;
+        text-align: center;
+      }
+      .badge-rojo {
+        background: #dc3545;
+      }
+      .badge-naranja {
+        background: #f59e0b;
+      }
+      .badge-amarillo {
+        background: #eab308;
+      }
+      .modal-stock-bajo-botones {
+        margin-top: 12px !important;
+      }
+      .modal-stock-bajo-botones .custom-modal-btn {
+        font-size: 12px;
+        padding: 7px 18px;
+      }
+
+      /* ===== Botón movimientos ===== */
+      .btn-movimientos {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+      }
+
+      /* ============================================================
+         ESTILOS PARA TODOS LOS MODALES COMPACTOS
+         ============================================================ */
+      .modal-compacto {
+        width: 520px !important;
+        max-width: 95% !important;
+        padding: 20px 24px !important;
+      }
+      .modal-compacto h3 {
+        font-size: 17px !important;
+        margin-bottom: 12px !important;
+      }
+      .modal-compacto .form-edit {
+        gap: 7px !important;
+      }
+      .modal-compacto .form-group {
+        gap: 2px !important;
+      }
+      .modal-compacto .form-group label {
+        font-size: 11.5px !important;
+        font-weight: 600 !important;
+        color: #475569 !important;
+      }
+      .modal-compacto .form-group input,
+      .modal-compacto .form-group select {
+        padding: 7px 10px !important;
+        font-size: 13px !important;
+        border-radius: 8px !important;
+        border-width: 1.5px !important;
+      }
+      .modal-compacto .form-group .error-msg {
+        font-size: 10px !important;
+        margin-top: 1px !important;
+      }
+      .modal-compacto .custom-modal-buttons {
+        margin-top: 16px !important;
+        gap: 10px !important;
+      }
+      .modal-compacto .custom-modal-btn {
+        padding: 8px 16px !important;
+        font-size: 12.5px !important;
+      }
+      .modal-compacto .proveedor-search-input {
+        padding: 7px 10px !important;
+        font-size: 13px !important;
+      }
+      .modal-compacto .proveedor-dropdown {
+        max-height: 150px !important;
+      }
+      .modal-compacto .proveedor-option {
+        padding: 7px 10px !important;
+        font-size: 12.5px !important;
+      }
+
+      /* Compacto para modales pequeños (editar consumo, editar perdida) */
+      .modal-compacto-sm {
+        width: 400px !important;
+        max-width: 95% !important;
+        padding: 18px 22px !important;
+      }
+      .modal-compacto-sm h3 {
+        font-size: 16px !important;
+        margin-bottom: 12px !important;
+      }
+      .modal-compacto-sm .consumo-form-group,
+      .modal-compacto-sm .perdida-form-group {
+        margin-bottom: 10px !important;
+      }
+      .modal-compacto-sm .consumo-form-group label,
+      .modal-compacto-sm .perdida-form-group label {
+        font-size: 12px !important;
+        margin-bottom: 3px !important;
+      }
+      .modal-compacto-sm .consumo-form-group input,
+      .modal-compacto-sm .perdida-form-group input {
+        padding: 7px 10px !important;
+        font-size: 13px !important;
+        border-radius: 7px !important;
+      }
+      .modal-compacto-sm .custom-modal-buttons {
+        margin-top: 14px !important;
+        gap: 8px !important;
+      }
+      .modal-compacto-sm .custom-modal-btn {
+        padding: 8px 14px !important;
+        font-size: 12.5px !important;
+      }
+      .modal-compacto-sm .error-msg {
+        font-size: 10px !important;
+      }
+
+      /* Compacto para modales medianos (consumo, perdida principal) */
+      .modal-compacto-md {
+        width: 480px !important;
+        max-width: 95% !important;
+        padding: 20px 24px !important;
+      }
+      .modal-compacto-md h3 {
+        font-size: 17px !important;
+        margin-bottom: 14px !important;
+      }
+      .modal-compacto-md .consumo-form-group,
+      .modal-compacto-md .perdida-form-group {
+        margin-bottom: 11px !important;
+      }
+      .modal-compacto-md .consumo-form-group label,
+      .modal-compacto-md .perdida-form-group label {
+        font-size: 12px !important;
+        margin-bottom: 3px !important;
+      }
+      .modal-compacto-md .consumo-form-group input,
+      .modal-compacto-md .perdida-form-group input {
+        padding: 8px 10px !important;
+        font-size: 13px !important;
+        border-radius: 8px !important;
+      }
+      .modal-compacto-md .custom-modal-buttons {
+        margin-top: 16px !important;
+        gap: 10px !important;
+      }
+      .modal-compacto-md .custom-modal-btn {
+        padding: 9px 16px !important;
+        font-size: 13px !important;
+      }
+      .modal-compacto-md .consumo-switch-container,
+      .modal-compacto-md .perdida-switch-container {
+        padding: 8px 12px !important;
+        margin-bottom: 14px !important;
+      }
+      .modal-compacto-md .switch-agregar,
+      .modal-compacto-md .switch-tabla,
+      .modal-compacto-md .switch-agregar-perdida,
+      .modal-compacto-md .switch-tabla-perdida {
+        font-size: 11px !important;
+      }
+      .modal-compacto-md .consumo-switch-label,
+      .modal-compacto-md .perdida-switch-label {
+        font-size: 12px !important;
+      }
+
+      /* Modal de categorías */
+      .modal-compacto-cat {
+        width: 480px !important;
+        max-width: 95% !important;
+        padding: 20px 24px !important;
+      }
+      .modal-compacto-cat h3 {
+        font-size: 17px !important;
+        margin-bottom: 14px !important;
+      }
+      .modal-compacto-cat .form-edit {
+        gap: 10px !important;
+      }
+      .modal-compacto-cat .form-group label {
+        font-size: 12px !important;
+      }
+      .modal-compacto-cat .form-group input {
+        padding: 8px 10px !important;
+        font-size: 13px !important;
+      }
+      .modal-compacto-cat .lista-categorias {
+        max-height: 200px !important;
+      }
+      .modal-compacto-cat .categoria-item {
+        padding: 8px 12px !important;
+      }
+      .modal-compacto-cat .categoria-item span {
+        font-size: 13px !important;
+      }
+      .modal-compacto-cat .btn-eliminar-categoria {
+        padding: 4px 10px !important;
+        font-size: 11px !important;
+      }
+      .modal-compacto-cat .btn-small {
+        padding: 8px 14px !important;
+        font-size: 13px !important;
+      }
+
+      /* Modal de movimientos - mantener tamaño pero reducir padding */
+      .modal-compacto-mov {
+        width: 900px !important;
+        max-width: 95% !important;
+        padding: 22px 26px !important;
+      }
+      .modal-compacto-mov h3 {
+        font-size: 18px !important;
+        margin-bottom: 12px !important;
+      }
     </style>
   </head>
   <body>
@@ -80,7 +379,7 @@
 
     <div class="container">
       <div class="top-nav">
-        <h2>📦 Inventario - Administrador</h2>
+        <h2>Inventario - Administrador</h2>
         <button class="btn-volver-top" onclick="volverMenuAdmin()">
           Volver al menu
         </button>
@@ -92,8 +391,8 @@
         <input
           type="text"
           id="searchInput"
-          placeholder="Buscar producto..."
-          onkeyup="filtrarTabla()"
+          placeholder="Buscar por ID, nombre o marca..."
+          oninput="filtrarTabla()"
         />
         <div class="filtro-categoria-wrapper">
           <select id="categoriaFilter" onchange="filtrarTabla()">
@@ -145,6 +444,12 @@
           <button class="btn-admin btn-informe" onclick="generarInforme()">
             Resumen de Ventas
           </button>
+          <button
+            class="btn-admin btn-movimientos"
+            onclick="abrirModalMovimientos()"
+          >
+            Ver Movimientos
+          </button>
         </div>
         <span id="indicadorModo" class="modo-info"></span>
       </div>
@@ -153,6 +458,7 @@
         <table id="tablaInventario">
           <thead>
             <tr>
+              <th>ID</th>
               <th>Producto</th>
               <th>Marca</th>
               <th>Categoria</th>
@@ -164,16 +470,16 @@
           </thead>
           <tbody id="cuerpoTabla">
             <tr>
-              <td colspan="7" class="loading">Cargando inventario...</td>
+              <td colspan="8" class="loading">Cargando inventario...</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- Modal Agregar Producto -->
+    <!-- Modal Agregar Producto - COMPACTO -->
     <div class="custom-modal-overlay" id="addModal">
-      <div class="custom-modal">
+      <div class="custom-modal modal-compacto">
         <h3>Agregar Nuevo Producto</h3>
         <div class="form-edit">
           <div class="form-group">
@@ -254,12 +560,21 @@
       </div>
     </div>
 
-    <!-- Modal Editar Producto -->
+    <!-- Modal Editar Producto - COMPACTO -->
     <div class="custom-modal-overlay" id="editModal">
-      <div class="custom-modal">
+      <div class="custom-modal modal-compacto">
         <h3>Editar Producto</h3>
         <div class="form-edit">
           <input type="hidden" id="editId" />
+          <div class="form-group">
+            <label>ID del Producto:</label>
+            <input
+              type="text"
+              id="editIdDisplay"
+              readonly
+              style="background: #f0f0f0"
+            />
+          </div>
           <div class="form-group">
             <label>Nombre del Producto:</label>
             <input
@@ -323,14 +638,14 @@
       </div>
     </div>
 
-    <!-- Modal Gestion Categorias -->
+    <!-- Modal Gestion Categorias - COMPACTO -->
     <div class="custom-modal-overlay" id="gestionCategoriasModal">
-      <div class="custom-modal modal-ancha">
+      <div class="custom-modal modal-compacto-cat">
         <h3>Gestionar Categorias</h3>
         <div class="form-edit">
           <div class="form-group">
             <label>Nueva Categoria:</label>
-            <div style="display: flex; gap: 10px">
+            <div style="display: flex; gap: 8px">
               <input
                 type="text"
                 id="nuevaCategoria"
@@ -362,10 +677,10 @@
       </div>
     </div>
 
-    <!-- Modal Consumo Interno -->
+    <!-- Modal Consumo Interno - COMPACTO -->
     <div class="custom-modal-overlay" id="consumoModal">
-      <div class="custom-modal" style="width: 520px; max-width: 95%">
-        <h3 style="text-align: center; margin-bottom: 20px">Consumo Interno</h3>
+      <div class="custom-modal modal-compacto-md">
+        <h3 style="text-align: center">Consumo Interno</h3>
 
         <div class="consumo-switch-container">
           <span class="consumo-switch-label">Modo Historial</span>
@@ -439,12 +754,12 @@
 
           <div
             class="custom-modal-buttons"
-            style="margin-top: 20px; justify-content: space-between"
+            style="justify-content: space-between"
           >
             <button
               class="custom-modal-btn confirm"
               onclick="guardarConsumo()"
-              style="flex: 1; margin-right: 10px"
+              style="flex: 1; margin-right: 8px"
             >
               Registrar Consumo
             </button>
@@ -463,12 +778,12 @@
             <div
               id="listaConsumosModal"
               class="lista-categorias"
-              style="max-height: 350px; overflow-y: auto"
+              style="max-height: 300px; overflow-y: auto"
             >
               <div class="loading">Cargando consumos...</div>
             </div>
           </div>
-          <div class="custom-modal-buttons" style="margin-top: 15px">
+          <div class="custom-modal-buttons" style="margin-top: 12px">
             <button
               class="custom-modal-btn cancel"
               onclick="cerrarModal('consumoModal')"
@@ -480,10 +795,10 @@
       </div>
     </div>
 
-    <!-- Modal Editar Consumo -->
+    <!-- Modal Editar Consumo - COMPACTO SM -->
     <div class="custom-modal-overlay" id="editarConsumoModal">
-      <div class="custom-modal" style="width: 400px; max-width: 95%">
-        <h3 style="text-align: center; margin-bottom: 20px">Editar Consumo</h3>
+      <div class="custom-modal modal-compacto-sm">
+        <h3 style="text-align: center">Editar Consumo</h3>
         <div class="consumo-form-group">
           <label>Producto</label>
           <input
@@ -507,12 +822,12 @@
         </div>
         <div
           class="custom-modal-buttons"
-          style="margin-top: 20px; justify-content: space-between"
+          style="justify-content: space-between"
         >
           <button
             class="custom-modal-btn confirm"
             onclick="guardarEdicionConsumo()"
-            style="flex: 1; margin-right: 10px"
+            style="flex: 1; margin-right: 8px"
           >
             Guardar Cambios
           </button>
@@ -527,12 +842,10 @@
       </div>
     </div>
 
-    <!-- Modal Perdidas -->
+    <!-- Modal Perdidas - COMPACTO MD -->
     <div class="custom-modal-overlay" id="perdidaModal">
-      <div class="custom-modal" style="width: 450px; max-width: 95%">
-        <h3 style="text-align: center; margin-bottom: 20px">
-          Registrar Perdida
-        </h3>
+      <div class="custom-modal modal-compacto-md">
+        <h3 style="text-align: center">Registrar Perdida</h3>
 
         <div class="perdida-switch-container">
           <span class="perdida-switch-label">Modo Historial</span>
@@ -606,12 +919,12 @@
 
           <div
             class="custom-modal-buttons"
-            style="margin-top: 20px; justify-content: space-between"
+            style="justify-content: space-between"
           >
             <button
               class="custom-modal-btn confirm"
               onclick="guardarPerdida()"
-              style="flex: 1; margin-right: 10px"
+              style="flex: 1; margin-right: 8px"
             >
               Registrar Perdida
             </button>
@@ -630,12 +943,12 @@
             <div
               id="listaPerdidasModal"
               class="lista-categorias"
-              style="max-height: 350px; overflow-y: auto"
+              style="max-height: 300px; overflow-y: auto"
             >
               <div class="loading">Cargando perdidas...</div>
             </div>
           </div>
-          <div class="custom-modal-buttons" style="margin-top: 15px">
+          <div class="custom-modal-buttons" style="margin-top: 12px">
             <button
               class="custom-modal-btn cancel"
               onclick="cerrarModal('perdidaModal')"
@@ -647,10 +960,10 @@
       </div>
     </div>
 
-    <!-- Modal Editar Perdida -->
+    <!-- Modal Editar Perdida - COMPACTO SM -->
     <div class="custom-modal-overlay" id="editarPerdidaModal">
-      <div class="custom-modal" style="width: 400px; max-width: 95%">
-        <h3 style="text-align: center; margin-bottom: 20px">Editar Perdida</h3>
+      <div class="custom-modal modal-compacto-sm">
+        <h3 style="text-align: center">Editar Perdida</h3>
         <div class="perdida-form-group">
           <label>Producto</label>
           <input
@@ -681,12 +994,12 @@
         </div>
         <div
           class="custom-modal-buttons"
-          style="margin-top: 20px; justify-content: space-between"
+          style="justify-content: space-between"
         >
           <button
             class="custom-modal-btn confirm"
             onclick="guardarEdicionPerdida()"
-            style="flex: 1; margin-right: 10px"
+            style="flex: 1; margin-right: 8px"
           >
             Guardar Cambios
           </button>
@@ -701,11 +1014,239 @@
       </div>
     </div>
 
+    <!-- Modal Movimientos de Inventario - COMPACTO MOV -->
+    <div class="custom-modal-overlay" id="movimientosModal">
+      <div class="custom-modal modal-compacto-mov">
+        <h3 style="text-align: center">Movimientos de Inventario</h3>
+
+        <!-- Filtros -->
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+            margin-bottom: 12px;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 10px;
+          "
+        >
+          <div>
+            <label
+              style="
+                font-size: 11px;
+                color: #666;
+                display: block;
+                margin-bottom: 3px;
+              "
+            >
+              Tipo
+            </label>
+            <select
+              id="filtroMovTipo"
+              style="
+                width: 100%;
+                padding: 7px;
+                border-radius: 8px;
+                border: 1px solid #ddd;
+                font-size: 12.5px;
+              "
+            >
+              <option value="">Todos</option>
+              <option value="entrada">Entradas</option>
+              <option value="salida">Salidas</option>
+            </select>
+          </div>
+          <div>
+            <label
+              style="
+                font-size: 11px;
+                color: #666;
+                display: block;
+                margin-bottom: 3px;
+              "
+            >
+              Producto
+            </label>
+            <select
+              id="filtroMovProducto"
+              style="
+                width: 100%;
+                padding: 7px;
+                border-radius: 8px;
+                border: 1px solid #ddd;
+                font-size: 12.5px;
+              "
+            >
+              <option value="">Todos los productos</option>
+            </select>
+          </div>
+          <div>
+            <label
+              style="
+                font-size: 11px;
+                color: #666;
+                display: block;
+                margin-bottom: 3px;
+              "
+            >
+              Desde
+            </label>
+            <input
+              type="date"
+              id="filtroMovDesde"
+              style="
+                width: 100%;
+                padding: 7px;
+                border-radius: 8px;
+                border: 1px solid #ddd;
+                font-size: 12.5px;
+              "
+            />
+          </div>
+          <div>
+            <label
+              style="
+                font-size: 11px;
+                color: #666;
+                display: block;
+                margin-bottom: 3px;
+              "
+            >
+              Hasta
+            </label>
+            <input
+              type="date"
+              id="filtroMovHasta"
+              style="
+                width: 100%;
+                padding: 7px;
+                border-radius: 8px;
+                border: 1px solid #ddd;
+                font-size: 12.5px;
+              "
+            />
+          </div>
+        </div>
+
+        <div
+          style="
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+          "
+        >
+          <button
+            class="custom-modal-btn confirm"
+            onclick="cargarMovimientos()"
+            style="padding: 7px 18px; font-size: 12.5px"
+          >
+            Buscar
+          </button>
+          <button
+            class="custom-modal-btn cancel"
+            onclick="limpiarFiltrosMovimientos()"
+            style="padding: 7px 18px; font-size: 12.5px"
+          >
+            Limpiar filtros
+          </button>
+        </div>
+
+        <!-- Resumen -->
+        <div
+          id="resumenMovimientos"
+          style="
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 10px;
+            font-size: 12.5px;
+          "
+        ></div>
+
+        <!-- Tabla -->
+        <div
+          style="
+            max-height: 350px;
+            overflow-y: auto;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+          "
+        >
+          <table
+            style="width: 100%; border-collapse: collapse; font-size: 12.5px"
+          >
+            <thead
+              style="
+                position: sticky;
+                top: 0;
+                background: linear-gradient(135deg, #7a5b8f, #8d679f);
+                color: white;
+                z-index: 1;
+              "
+            >
+              <tr>
+                <th style="padding: 7px; text-align: left">Fecha</th>
+                <th style="padding: 7px; text-align: left">Producto</th>
+                <th style="padding: 7px; text-align: center">Tipo</th>
+                <th style="padding: 7px; text-align: center">Cantidad</th>
+                <th style="padding: 7px; text-align: left">Motivo</th>
+                <th style="padding: 7px; text-align: left">Referencia</th>
+              </tr>
+            </thead>
+            <tbody id="cuerpoMovimientos">
+              <tr>
+                <td
+                  colspan="6"
+                  style="padding: 20px; text-align: center; color: #999"
+                >
+                  Cargando movimientos...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="custom-modal-buttons" style="margin-top: 12px">
+          <button
+            class="custom-modal-btn cancel"
+            onclick="cerrarModal('movimientosModal')"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Alerta de Stock Bajo (compacto) -->
+    <div class="custom-modal-overlay" id="alertaStockModal">
+      <div class="custom-modal modal-stock-bajo">
+        <div class="modal-stock-bajo-header">
+          <i class="fas fa-exclamation-triangle"></i>
+          <h3>Aviso de stock</h3>
+        </div>
+        <p id="alertaStockMensaje" class="modal-stock-bajo-mensaje"></p>
+        <div id="alertaStockLista" class="modal-stock-bajo-lista">
+          <div class="loading">Cargando...</div>
+        </div>
+        <div class="custom-modal-buttons modal-stock-bajo-botones">
+          <button
+            class="custom-modal-btn cancel"
+            onclick="cerrarModal('alertaStockModal')"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal Confirmacion -->
     <div class="custom-modal-overlay" id="confirmModal">
-      <div class="custom-modal">
-        <h3 id="confirmTitle">Confirmar accion</h3>
-        <p id="confirmMessage" style="margin: 15px 0; text-align: center"></p>
+      <div class="custom-modal modal-compacto-sm">
+        <h3 id="confirmTitle" style="text-align: center">Confirmar accion</h3>
+        <p id="confirmMessage" style="margin: 12px 0; text-align: center; font-size: 13px"></p>
         <div class="custom-modal-buttons">
           <button class="custom-modal-btn confirm" id="confirmYes">
             Si, continuar
@@ -719,9 +1260,9 @@
 
     <!-- Modal Mensajes -->
     <div class="custom-modal-overlay" id="mensajeModal">
-      <div class="custom-modal">
-        <h3 id="mensajeTitulo"></h3>
-        <p id="mensajeTexto" style="margin: 15px 0; text-align: center"></p>
+      <div class="custom-modal modal-compacto-sm">
+        <h3 id="mensajeTitulo" style="text-align: center"></h3>
+        <p id="mensajeTexto" style="margin: 12px 0; text-align: center; font-size: 13px"></p>
         <div class="custom-modal-buttons">
           <button
             class="custom-modal-btn confirm"
@@ -736,7 +1277,6 @@
     <script>
       // ========== PROTECCION DE NAVEGACION ==========
       (function bloquearBotonAtras() {
-        const paginaAdmin = "menu_admin.html";
         const paginaLogin = "PAG.html";
 
         const token = localStorage.getItem("token");
@@ -788,11 +1328,15 @@
 
       // ========== VOLVER AL MENU CON CONFIRMACION ==========
       function volverMenuAdmin() {
-        mostrarConfirmacion("¿Está seguro de que desea volver al menú principal?", function() {
-          window.location.replace("menu_admin.html");
-        });
+        mostrarConfirmacion(
+          "¿Está seguro de que desea volver al menú principal?",
+          function () {
+            window.location.replace("menu_admin.html");
+          }
+        );
       }
 
+      // ========== VARIABLES GLOBALES ==========
       let inventarioData = [];
       let proveedoresLista = [];
       let categoriasLista = [];
@@ -805,11 +1349,13 @@
       let perdidasData = [];
       let perdidaEditandoId = null;
 
-      // ========== VARIABLES DE PAGINACIÓN ==========
+      let listaParaMostrar = [];
+
       let paginaActualInventario = 1;
       let totalPaginasInventario = 1;
       let productosCompletos = [];
 
+      // ========== VALIDADORES ==========
       function soloNumeros(event) {
         const charCode = event.which ? event.which : event.keyCode;
         if (charCode < 48 || charCode > 57) {
@@ -849,15 +1395,21 @@
             "No use simbolos ni comillas";
           document.getElementById("addNombreError").classList.add("show");
         } else {
-          document.getElementById("addNombreError").classList.remove("show");
+          const mensajeActual =
+            document.getElementById("addNombreError").innerText || "";
+          if (!mensajeActual.includes("ya existe en el sistema")) {
+            document.getElementById("addNombreError").classList.remove("show");
+          }
         }
 
         if (valor && valor.length < 2) {
-          document.getElementById("addNombreError").innerText =
-            "El nombre debe tener al menos 2 caracteres";
-          document.getElementById("addNombreError").classList.add("show");
-        } else if (valor && regex.test(valor)) {
-          document.getElementById("addNombreError").classList.remove("show");
+          const mensajeActual =
+            document.getElementById("addNombreError").innerText || "";
+          if (!mensajeActual.includes("ya existe en el sistema")) {
+            document.getElementById("addNombreError").innerText =
+              "El nombre debe tener al menos 2 caracteres";
+            document.getElementById("addNombreError").classList.add("show");
+          }
         }
         input.value = valor;
       }
@@ -954,7 +1506,7 @@
         if (valor && !regex.test(valor)) {
           valor = valor.replace(
             /[^a-zA-Z0-9\s\u00C0-\u00FF\u00E1\u00E9\u00ED\u00F3\u00FA\u00F1]/g,
-            "",
+            ""
           );
           input.value = valor;
           document.getElementById("perdidaMotivoError").innerText =
@@ -977,7 +1529,7 @@
         if (valor && !regex.test(valor)) {
           valor = valor.replace(
             /[^a-zA-Z0-9\s\u00C0-\u00FF\u00E1\u00E9\u00ED\u00F3\u00FA\u00F1]/g,
-            "",
+            ""
           );
           input.value = valor;
         }
@@ -1094,10 +1646,10 @@
         limpiarErrores();
         const proveedorDropdown = document.getElementById("proveedorDropdown");
         const consumoSuggestionBox = document.getElementById(
-          "consumoSuggestionBox",
+          "consumoSuggestionBox"
         );
         const perdidaSuggestionBox = document.getElementById(
-          "perdidaSuggestionBox",
+          "perdidaSuggestionBox"
         );
         if (proveedorDropdown) proveedorDropdown.classList.remove("show");
         if (consumoSuggestionBox) consumoSuggestionBox.classList.remove("show");
@@ -1123,6 +1675,19 @@
           cerrarModal("confirmModal");
       }
 
+      function escapeHtml(str) {
+        if (!str) return "";
+        return str
+          .replace(/[&<>]/g, function (m) {
+            if (m === "&") return "&amp;";
+            if (m === "<") return "&lt;";
+            if (m === ">") return "&gt;";
+            return m;
+          })
+          .replace(/["']/g, "");
+      }
+
+      // ========== CATEGORIAS ==========
       function cargarCategorias() {
         return fetch("/api/categorias")
           .then((res) => res.json())
@@ -1181,7 +1746,7 @@
                 <span>${escapeHtml(c.Nombre)}</span>
                 <button class="btn-eliminar-categoria" onclick="eliminarCategoria(${c.Id_Categoria}, '${escapeHtml(c.Nombre)}')">Eliminar</button>
             </div>
-        `,
+        `
           )
           .join("");
       }
@@ -1207,7 +1772,7 @@
           mostrarMensaje(
             "Error",
             "El nombre de la categoria no puede contener espacios",
-            true,
+            true
           );
           return;
         }
@@ -1217,7 +1782,7 @@
           mostrarMensaje(
             "Error",
             "La categoria solo puede contener letras y numeros",
-            true,
+            true
           );
           return;
         }
@@ -1240,7 +1805,7 @@
             mostrarMensaje(
               "Error",
               error.error || "No se pudo crear la categoria",
-              true,
+              true
             );
           }
         } catch (e) {
@@ -1269,17 +1834,17 @@
                 mostrarMensaje(
                   "Error",
                   error.error || "No se pudo eliminar la categoria",
-                  true,
+                  true
                 );
               }
             } catch (e) {
               mostrarMensaje("Error", "Error al eliminar categoria", true);
             }
-          },
+          }
         );
       }
 
-      // ========== CARGA DE INVENTARIO (OPTIMIZADO) ==========
+      // ========== CARGA DE INVENTARIO ==========
       async function cargarInventario() {
         try {
           const [resProd, resProv] = await Promise.all([
@@ -1290,14 +1855,11 @@
           const productos = await resProd.json();
           proveedoresLista = await resProv.json();
 
-          // ✅ El proveedor ya viene incluido en la consulta SQL
-          // Ya no necesitamos hacer consultas extra por cada producto
-
           await cargarCategorias();
 
-          inventarioData = productos;
           productosCompletos = [...productos];
-          totalPaginasInventario = Math.ceil(productos.length / 50);
+          listaParaMostrar = [...productos];
+          totalPaginasInventario = Math.ceil(productos.length / 50) || 1;
           paginaActualInventario = 1;
           mostrarPaginaInventario();
         } catch (error) {
@@ -1306,49 +1868,43 @@
         }
       }
 
-      function escapeHtml(str) {
-        if (!str) return "";
-        return str
-          .replace(/[&<>]/g, function (m) {
-            if (m === "&") return "&amp;";
-            if (m === "<") return "&lt;";
-            if (m === ">") return "&gt;";
-            return m;
-          })
-          .replace(/["']/g, "");
-      }
-
+      // ========== TABLA ==========
       function mostrarTabla() {
         const tbody = document.getElementById("cuerpoTabla");
 
         if (inventarioData.length === 0) {
           tbody.innerHTML =
-            '<tr><td colspan="7" class="loading">No hay resultados</td></tr>';
+            '<tr><td colspan="8" class="loading">No hay resultados</td></tr>';
           return;
         }
 
         tbody.innerHTML = inventarioData
           .map(
             (p) => `
-            <tr onclick="manejarClickFila(${p.Id_Producto})" style="cursor: ${modoActual ? "pointer" : "default"}">
+            <tr onclick="manejarClickFila(${p.Id_Producto})" style="cursor: ${
+              modoActual ? "pointer" : "default"
+            }">
+                <td><strong>#${p.Id_Producto}</strong></td>
                 <td><strong>${escapeHtml(p.Nombre)}</strong></td>
                 <td>${escapeHtml(p.Marca || "N/A")}</td>
                 <td>${escapeHtml(p.Nombre_Categoria)}</td>
                 <td>C$ ${parseFloat(p.Precio).toFixed(2)}</td>
                 <td class="stock-valor">${p.Stock}</td>
                 <td>${escapeHtml(p.Proveedor)}</td>
-                <td><span class="status-badge status-${p.Nombre_Estado}">${p.Nombre_Estado}</span></td>
+                <td><span class="status-badge status-${p.Nombre_Estado}">${
+              p.Nombre_Estado
+            }</span></td>
              </tr>
-        `,
+        `
           )
           .join("");
       }
 
-      // ========== FUNCIONES DE PAGINACIÓN ==========
+      // ========== PAGINACIÓN ==========
       function mostrarPaginaInventario() {
         const inicio = (paginaActualInventario - 1) * 50;
         const fin = inicio + 50;
-        inventarioData = productosCompletos.slice(inicio, fin);
+        inventarioData = listaParaMostrar.slice(inicio, fin);
         mostrarTabla();
         actualizarControlesPaginacion();
       }
@@ -1377,28 +1933,27 @@
         }
 
         paginacionDiv.style.display = "flex";
-        paginacionDiv.style.justifyContent = "center";
-        paginacionDiv.style.alignItems = "center";
-        paginacionDiv.style.gap = "8px";
-        paginacionDiv.style.marginTop = "20px";
-        paginacionDiv.style.padding = "10px";
-        paginacionDiv.style.flexWrap = "wrap";
 
         let html = "";
 
-        html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(${paginaActualInventario - 1})" ${paginaActualInventario === 1 ? 'disabled' : ''}>« Anterior</button>`;
+        html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(${
+          paginaActualInventario - 1
+        })" ${
+          paginaActualInventario === 1 ? "disabled" : ""
+        }>« Anterior</button>`;
 
         let inicio = Math.max(1, paginaActualInventario - 2);
         let fin = Math.min(totalPaginasInventario, paginaActualInventario + 2);
 
         if (inicio > 1) {
           html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(1)">1</button>`;
-          if (inicio > 2)
-            html += `<span class="paginacion-puntos">...</span>`;
+          if (inicio > 2) html += `<span class="paginacion-puntos">...</span>`;
         }
 
         for (let i = inicio; i <= fin; i++) {
-          html += `<button class="btn-paginacion ${i === paginaActualInventario ? "active" : ""}" onclick="cambiarPaginaInventario(${i})">${i}</button>`;
+          html += `<button class="btn-paginacion ${
+            i === paginaActualInventario ? "active" : ""
+          }" onclick="cambiarPaginaInventario(${i})">${i}</button>`;
         }
 
         if (fin < totalPaginasInventario) {
@@ -1407,13 +1962,18 @@
           html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(${totalPaginasInventario})">${totalPaginasInventario}</button>`;
         }
 
-        html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(${paginaActualInventario + 1})" ${paginaActualInventario === totalPaginasInventario ? 'disabled' : ''}>Siguiente »</button>`;
+        html += `<button class="btn-paginacion" onclick="cambiarPaginaInventario(${
+          paginaActualInventario + 1
+        })" ${
+          paginaActualInventario === totalPaginasInventario ? "disabled" : ""
+        }>Siguiente »</button>`;
 
         html += `<span style="margin-left: 15px; color: #666; font-size: 13px;">Página ${paginaActualInventario} de ${totalPaginasInventario}</span>`;
 
         paginacionDiv.innerHTML = html;
       }
 
+      // ========== MODO EDITAR/ELIMINAR ==========
       function toggleModo(modo) {
         const indicador = document.getElementById("indicadorModo");
         if (modoActual === modo) {
@@ -1435,6 +1995,42 @@
         mostrarTabla();
       }
 
+      // ========== FILTRO ==========
+      function filtrarTabla() {
+        const search = (document.getElementById("searchInput").value || "")
+          .toLowerCase()
+          .trim();
+        const catF = document.getElementById("categoriaFilter").value;
+        const estF = document.getElementById("estadoFilter").value;
+
+        let filtrados = productosCompletos.filter((p) => {
+          let matchTxt = true;
+
+          if (search !== "") {
+            const searchSinHash = search.replace("#", "");
+            const idStr = String(p.Id_Producto || "");
+            const nombreStr = String(p.Nombre || "").toLowerCase();
+            const marcaStr = String(p.Marca || "").toLowerCase();
+
+            const matchId = idStr.includes(searchSinHash);
+            const matchNombre = nombreStr.includes(search);
+            const matchMarca = marcaStr.includes(search);
+
+            matchTxt = matchId || matchNombre || matchMarca;
+          }
+
+          const matchCat = !catF || p.Nombre_Categoria === catF;
+          const matchEst = !estF || p.Nombre_Estado === estF;
+          return matchTxt && matchCat && matchEst;
+        });
+
+        listaParaMostrar = filtrados;
+        totalPaginasInventario = Math.ceil(filtrados.length / 50) || 1;
+        paginaActualInventario = 1;
+        mostrarPaginaInventario();
+      }
+
+      // ========== PROVEEDOR BUSCADOR ==========
       function initProveedorBuscador() {
         const searchInput = document.getElementById("addProveedorSearch");
         const dropdown = document.getElementById("proveedorDropdown");
@@ -1442,7 +2038,7 @@
 
         function renderProveedores(filter = "") {
           const filtered = proveedoresLista.filter((p) =>
-            p.Nombre.toLowerCase().includes(filter.toLowerCase()),
+            (p.Nombre || "").toLowerCase().includes(filter.toLowerCase())
           );
 
           if (filtered.length === 0) {
@@ -1452,10 +2048,12 @@
             dropdown.innerHTML = filtered
               .map(
                 (p) => `
-                    <div class="proveedor-option" data-id="${p.Id_Proveedor}" data-nombre="${escapeHtml(p.Nombre)}">
+                    <div class="proveedor-option" data-id="${
+                      p.Id_Proveedor
+                    }" data-nombre="${escapeHtml(p.Nombre)}">
                         ${escapeHtml(p.Nombre)} - ${escapeHtml(p.Empresa || "")}
                     </div>
-                `,
+                `
               )
               .join("");
           }
@@ -1489,7 +2087,8 @@
         });
       }
 
-      function abrirModalAgregar() {
+      // ========== AGREGAR PRODUCTO ==========
+      async function abrirModalAgregar() {
         limpiarErrores();
         document.getElementById("addNombre").value = "";
         document.getElementById("addStock").value = "1";
@@ -1497,14 +2096,32 @@
         document.getElementById("addMarca").value = "";
         document.getElementById("addProveedorSearch").value = "";
         document.getElementById("addProveedorId").value = "";
+
+        const errorDiv = document.getElementById("addNombreError");
+        errorDiv.innerText = "";
+        errorDiv.classList.remove("show");
+        errorDiv.style.fontWeight = "normal";
+        document.getElementById("addNombre").classList.remove("invalid");
+        document.getElementById("addMarca").classList.remove("invalid");
+
         document.getElementById("addModal").style.display = "flex";
-        fetch("/api/proveedores")
-          .then((res) => res.json())
-          .then((data) => {
-            proveedoresLista = data;
-          });
+
+        try {
+          const [resProd, resProv] = await Promise.all([
+            fetch("/api/productos"),
+            fetch("/api/proveedores"),
+          ]);
+
+          const productos = await resProd.json();
+          proveedoresLista = await resProv.json();
+
+          productosCompletos = [...productos];
+        } catch (error) {
+          console.error("Error actualizando productos:", error);
+        }
       }
 
+      // ========== GUARDAR NUEVO PRODUCTO ==========
       async function guardarNuevoProducto() {
         limpiarErrores();
         let isValid = true;
@@ -1515,7 +2132,7 @@
         const nombreValid = validarTexto(
           nombreValor,
           nombreInput,
-          "El nombre no puede estar vacio",
+          "El nombre no puede estar vacio"
         );
         if (!nombreValid.valid) {
           document.getElementById("addNombreError").innerText =
@@ -1530,10 +2147,11 @@
           stockInput,
           1,
           9999,
-          "Stock debe estar entre 1 y 9999",
+          "Stock debe estar entre 1 y 9999"
         );
         if (!stockValid.valid) {
-          document.getElementById("addStockError").innerText = stockValid.error;
+          document.getElementById("addStockError").innerText =
+            stockValid.error;
           document.getElementById("addStockError").classList.add("show");
           isValid = false;
         }
@@ -1544,7 +2162,7 @@
           precioInput,
           1,
           10000,
-          "Precio debe estar entre C$1 y C$10000",
+          "Precio debe estar entre C$1 y C$10000"
         );
         if (!precioValid.valid) {
           document.getElementById("addPrecioError").innerText =
@@ -1563,6 +2181,44 @@
 
         if (!isValid) return;
 
+        const nombreActual = (nombreValid.value || "").trim().toLowerCase();
+        const marcaActual = eliminarComillas(
+          document.getElementById("addMarca").value
+        )
+          .trim()
+          .toLowerCase();
+
+        try {
+          const resProd = await fetch("/api/productos");
+          productosCompletos = await resProd.json();
+        } catch (e) {
+          console.warn("No se pudo recargar productos, usando caché local");
+        }
+
+        const duplicado = productosCompletos.find((p) => {
+          const nombreExistente = (p.Nombre || "").trim().toLowerCase();
+          const marcaExistente = (p.Marca || "").trim().toLowerCase();
+          return (
+            nombreExistente === nombreActual &&
+            marcaExistente === marcaActual
+          );
+        });
+
+        if (duplicado) {
+          const errorDiv = document.getElementById("addNombreError");
+          errorDiv.innerText =
+            `❌ Ya existe un producto con ese nombre y marca (ID #${duplicado.Id_Producto}). ` +
+            `Cambie el nombre o la marca para poder agregarlo.`;
+          errorDiv.classList.add("show");
+          errorDiv.style.fontWeight = "bold";
+          errorDiv.style.color = "#dc3545";
+
+          nombreInput.classList.add("invalid");
+          document.getElementById("addMarca").classList.add("invalid");
+          nombreInput.focus();
+          return;
+        }
+
         const datos = {
           Nombre: nombreValid.value,
           Stock: stockValid.value,
@@ -1578,19 +2234,40 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(datos),
           });
+
+          const data = await res.json();
+
           if (res.ok) {
             cerrarModal("addModal");
             mostrarMensaje("Exito", "Producto agregado correctamente");
-            cargarInventario();
+            await cargarInventario();
+
+            try {
+              const resProd = await fetch("/api/productos");
+              productosCompletos = await resProd.json();
+            } catch (e) {
+              console.error("Error refrescando productos:", e);
+            }
           } else {
-            const error = await res.json();
-            mostrarMensaje("Error", error.error || "No se pudo guardar", true);
+            const errorDiv = document.getElementById("addNombreError");
+            errorDiv.innerText = data.error || "No se pudo guardar";
+            errorDiv.classList.add("show");
+            errorDiv.style.fontWeight = "bold";
+            errorDiv.style.color = "#dc3545";
+
+            nombreInput.classList.add("invalid");
+            return;
           }
         } catch (e) {
-          mostrarMensaje("Error", "No se pudo guardar", true);
+          const errorDiv = document.getElementById("addNombreError");
+          errorDiv.innerText = "Error de conexión al guardar el producto";
+          errorDiv.classList.add("show");
+          errorDiv.style.fontWeight = "bold";
+          errorDiv.style.color = "#dc3545";
         }
       }
 
+      // ========== EDITAR / ELIMINAR ==========
       function manejarClickFila(id) {
         const producto = inventarioData.find((p) => p.Id_Producto === id);
         if (!producto) return;
@@ -1598,7 +2275,7 @@
         if (modoActual === "eliminar") {
           mostrarConfirmacion(
             "Eliminar definitivamente " + producto.Nombre + "?",
-            () => eliminarProducto(id),
+            () => eliminarProducto(id)
           );
         }
       }
@@ -1606,6 +2283,7 @@
       function abrirModalEditar(p) {
         limpiarErrores();
         document.getElementById("editId").value = p.Id_Producto;
+        document.getElementById("editIdDisplay").value = "#" + p.Id_Producto;
         document.getElementById("editNombre").value = p.Nombre;
         document.getElementById("editPrecio").value = p.Precio;
         document.getElementById("editMarca").value = p.Marca || "";
@@ -1626,7 +2304,7 @@
         const nombreValid = validarTexto(
           nombreValor,
           nombreInput,
-          "El nombre no puede estar vacio",
+          "El nombre no puede estar vacio"
         );
         if (!nombreValid.valid) {
           document.getElementById("editNombreError").innerText =
@@ -1641,7 +2319,7 @@
           precioInput,
           1,
           10000,
-          "Precio debe estar entre C$1 y C$10000",
+          "Precio debe estar entre C$1 y C$10000"
         );
         if (!precioValid.valid) {
           document.getElementById("editPrecioError").innerText =
@@ -1656,7 +2334,7 @@
           stockInput,
           1,
           9999,
-          "Stock debe estar entre 1 y 9999",
+          "Stock debe estar entre 1 y 9999"
         );
         if (!stockValid.valid) {
           document.getElementById("editStockError").innerText =
@@ -1677,21 +2355,40 @@
         const stock = stockValid.value;
 
         try {
-          await Promise.all([
-            fetch("/api/productos/" + id, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(datos),
-            }),
-            fetch("/api/productos/" + id + "/stock", {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ stock: stock }),
-            }),
-          ]);
+          const res = await fetch("/api/productos/" + id, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            document.getElementById("editNombreError").innerText =
+              data.error || "Error al actualizar";
+            document.getElementById("editNombreError").classList.add("show");
+            document.getElementById("editNombreError").style.fontWeight =
+              "bold";
+            mostrarMensaje("Error", data.error || "Error al actualizar", true);
+            return;
+          }
+
+          await fetch("/api/productos/" + id + "/stock", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ stock: stock }),
+          });
+
           cerrarModal("editModal");
           mostrarMensaje("Exito", "Producto actualizado correctamente");
           await cargarInventario();
+
+          try {
+            const resProd = await fetch("/api/productos");
+            productosCompletos = await resProd.json();
+          } catch (e) {
+            console.error("Error refrescando productos:", e);
+          }
         } catch (e) {
           mostrarMensaje("Error", "Error al actualizar", true);
         }
@@ -1699,10 +2396,19 @@
 
       async function eliminarProducto(id) {
         try {
-          const res = await fetch("/api/productos/" + id, { method: "DELETE" });
+          const res = await fetch("/api/productos/" + id, {
+            method: "DELETE",
+          });
           if (res.ok) {
             mostrarMensaje("Eliminado", "Producto borrado correctamente");
-            cargarInventario();
+            await cargarInventario();
+
+            try {
+              const resProd = await fetch("/api/productos");
+              productosCompletos = await resProd.json();
+            } catch (e) {
+              console.error("Error refrescando productos:", e);
+            }
           } else {
             const error = await res.json();
             mostrarMensaje("Error", error.error || "Error al eliminar", true);
@@ -1712,40 +2418,11 @@
         }
       }
 
-      function filtrarTabla() {
-        const search = document
-          .getElementById("searchInput")
-          .value.toLowerCase();
-        const catF = document.getElementById("categoriaFilter").value;
-        const estF = document.getElementById("estadoFilter").value;
-
-        let filtrados = productosCompletos.filter((p) => {
-          const matchTxt =
-            p.Nombre.toLowerCase().includes(search) ||
-            (p.Marca && p.Marca.toLowerCase().includes(search));
-          const matchCat = !catF || p.Nombre_Categoria === catF;
-          const matchEst = !estF || p.Nombre_Estado === estF;
-          return matchTxt && matchCat && matchEst;
-        });
-
-        inventarioData = filtrados;
-        totalPaginasInventario = Math.ceil(filtrados.length / 50);
-        paginaActualInventario = 1;
-        mostrarPaginaInventario();
-      }
-
       function generarInforme() {
-        fetch("/api/productos/bajo-stock")
-          .then((res) => res.json())
-          .then((productos) => {
-            window.location.href = "informe.html";
-          })
-          .catch((err) => {
-            window.location.href = "informe.html";
-          });
+        window.location.href = "informe.html";
       }
 
-      // ================= FUNCIONES DE CONSUMO INTERNO =================
+      // ========== CONSUMO INTERNO ==========
       async function cargarProductosParaConsumo() {
         try {
           const respuesta = await fetch("/api/productos");
@@ -1771,8 +2448,9 @@
           const matches = productosData
             .filter(
               (p) =>
-                p.Nombre.toLowerCase().includes(value.toLowerCase()) &&
-                p.Stock > 0,
+                (p.Nombre || "")
+                  .toLowerCase()
+                  .includes(value.toLowerCase()) && p.Stock > 0
             )
             .slice(0, 8);
 
@@ -1784,11 +2462,17 @@
           suggestionBox.innerHTML = matches
             .map(
               (p) => `
-                <div class="autocomplete-suggestion-item" data-id="${p.Id_Producto}" data-nombre="${escapeHtml(p.Nombre)}" data-precio="${p.Precio}">
+                <div class="autocomplete-suggestion-item" data-id="${
+                  p.Id_Producto
+                }" data-nombre="${escapeHtml(
+                p.Nombre
+              )}" data-precio="${p.Precio}">
                     <strong>${escapeHtml(p.Nombre)}</strong>
-                    <small style="display: block; font-size: 11px; color: #666;">Stock: ${p.Stock} und - Precio: C$${parseFloat(p.Precio).toFixed(2)}</small>
+                    <small style="display: block; font-size: 11px; color: #666;">Stock: ${
+                      p.Stock
+                    } und - Precio: C$${parseFloat(p.Precio).toFixed(2)}</small>
                 </div>
-            `,
+            `
             )
             .join("");
 
@@ -1796,7 +2480,7 @@
 
           document
             .querySelectorAll(
-              "#consumoSuggestionBox .autocomplete-suggestion-item",
+              "#consumoSuggestionBox .autocomplete-suggestion-item"
             )
             .forEach((item) => {
               item.addEventListener("click", () => {
@@ -1804,12 +2488,12 @@
                 document.getElementById("consumoProductoId").value =
                   item.dataset.id;
                 document.getElementById("consumoPrecio").value = parseFloat(
-                  item.dataset.precio,
+                  item.dataset.precio
                 ).toFixed(2);
                 suggestionBox.style.display = "none";
                 input.classList.remove("invalid");
                 const errorDiv = document.getElementById(
-                  "consumoProductoError",
+                  "consumoProductoError"
                 );
                 if (errorDiv) errorDiv.classList.remove("show");
               });
@@ -1920,17 +2604,27 @@
               ? new Date(consumo.Fecha).toLocaleDateString("es-ES")
               : "Sin fecha";
             return `
-                <div class="consumo-item-modal" data-id="${consumo.Id_Consumo_Interno}">
+                <div class="consumo-item-modal" data-id="${
+                  consumo.Id_Consumo_Interno
+                }">
                     <div class="consumo-info">
-                        <strong class="consumo-nombre">${escapeHtml(consumo.Nombre_Producto || "Producto")}</strong>
+                        <strong class="consumo-nombre">${escapeHtml(
+                          consumo.Nombre_Producto || "Producto"
+                        )}</strong>
                         <div class="consumo-detalle">
-                            <span class="consumo-cantidad">${consumo.Cantidad || 0} unidades</span>
+                            <span class="consumo-cantidad">${
+                              consumo.Cantidad || 0
+                            } unidades</span>
                             <span class="consumo-fecha">${fecha}</span>
                         </div>
                     </div>
                     <div class="consumo-actions">
-                        <button class="btn-edit-consumo" onclick="abrirModalEditarConsumo(${consumo.Id_Consumo_Interno})">Editar</button>
-                        <button class="btn-delete-consumo" onclick="eliminarConsumo(${consumo.Id_Consumo_Interno})">Eliminar</button>
+                        <button class="btn-edit-consumo" onclick="abrirModalEditarConsumo(${
+                          consumo.Id_Consumo_Interno
+                        })">Editar</button>
+                        <button class="btn-delete-consumo" onclick="eliminarConsumo(${
+                          consumo.Id_Consumo_Interno
+                        })">Eliminar</button>
                     </div>
                 </div>
             `;
@@ -1952,7 +2646,7 @@
 
       async function guardarEdicionConsumo() {
         const nuevaCantidad = document.getElementById(
-          "editarConsumoCantidad",
+          "editarConsumoCantidad"
         ).value;
 
         if (!nuevaCantidad || nuevaCantidad < 1) {
@@ -1963,7 +2657,7 @@
         }
 
         const consumo = consumosData.find(
-          (c) => c.Id_Consumo_Interno === consumoEditandoId,
+          (c) => c.Id_Consumo_Interno === consumoEditandoId
         );
         if (!consumo) return;
 
@@ -2085,7 +2779,7 @@
         errores.forEach((el) => el.classList.remove("show"));
       }
 
-      // ================= FUNCIONES DE PERDIDAS =================
+      // ========== PERDIDAS ==========
       async function cargarProductosParaPerdida() {
         try {
           const respuesta = await fetch("/api/productos");
@@ -2111,8 +2805,9 @@
           const matches = productosData
             .filter(
               (p) =>
-                p.Nombre.toLowerCase().includes(value.toLowerCase()) &&
-                p.Stock > 0,
+                (p.Nombre || "")
+                  .toLowerCase()
+                  .includes(value.toLowerCase()) && p.Stock > 0
             )
             .slice(0, 8);
 
@@ -2124,11 +2819,15 @@
           suggestionBox.innerHTML = matches
             .map(
               (p) => `
-                <div class="autocomplete-suggestion-item" data-id="${p.Id_Producto}" data-nombre="${escapeHtml(p.Nombre)}">
+                <div class="autocomplete-suggestion-item" data-id="${
+                  p.Id_Producto
+                }" data-nombre="${escapeHtml(p.Nombre)}">
                     <strong>${escapeHtml(p.Nombre)}</strong>
-                    <small style="display: block; font-size: 11px; color: #666;">Stock: ${p.Stock} und - Precio: C$${parseFloat(p.Precio).toFixed(2)}</small>
+                    <small style="display: block; font-size: 11px; color: #666;">Stock: ${
+                      p.Stock
+                    } und - Precio: C$${parseFloat(p.Precio).toFixed(2)}</small>
                 </div>
-            `,
+            `
             )
             .join("");
 
@@ -2136,7 +2835,7 @@
 
           document
             .querySelectorAll(
-              "#perdidaSuggestionBox .autocomplete-suggestion-item",
+              "#perdidaSuggestionBox .autocomplete-suggestion-item"
             )
             .forEach((item) => {
               item.addEventListener("click", () => {
@@ -2146,7 +2845,7 @@
                 suggestionBox.style.display = "none";
                 input.classList.remove("invalid");
                 const errorDiv = document.getElementById(
-                  "perdidaProductoError",
+                  "perdidaProductoError"
                 );
                 if (errorDiv) errorDiv.classList.remove("show");
               });
@@ -2186,7 +2885,7 @@
         const checkbox = document.getElementById("modoPerdidaCheckbox");
         const modoAgregar = document.getElementById("modoAgregarPerdida");
         const modoHistorial = document.getElementById(
-          "modoVerHistorialPerdida",
+          "modoVerHistorialPerdida"
         );
 
         if (checkbox.checked) {
@@ -2268,16 +2967,24 @@
             return `
                 <div class="perdida-item-modal" data-id="${perdida.Id_Perdida}">
                     <div class="perdida-info">
-                        <strong class="perdida-nombre">${escapeHtml(perdida.Nombre_Producto || "Producto")}</strong>
+                        <strong class="perdida-nombre">${escapeHtml(
+                          perdida.Nombre_Producto || "Producto"
+                        )}</strong>
                         <div class="perdida-detalle">
-                            <span class="perdida-cantidad">${perdida.Cantidad || 0} unidades</span>
+                            <span class="perdida-cantidad">${
+                              perdida.Cantidad || 0
+                            } unidades</span>
                             <span class="perdida-fecha">${fecha}</span>
                         </div>
                         <div class="perdida-motivo">${escapeHtml(motivo)}</div>
                     </div>
                     <div class="perdida-actions">
-                        <button class="btn-edit-perdida" onclick="abrirModalEditarPerdida(${perdida.Id_Perdida})">Editar</button>
-                        <button class="btn-delete-perdida" onclick="eliminarPerdida(${perdida.Id_Perdida})">Eliminar</button>
+                        <button class="btn-edit-perdida" onclick="abrirModalEditarPerdida(${
+                          perdida.Id_Perdida
+                        })">Editar</button>
+                        <button class="btn-delete-perdida" onclick="eliminarPerdida(${
+                          perdida.Id_Perdida
+                        })">Eliminar</button>
                     </div>
                 </div>
             `;
@@ -2306,10 +3013,10 @@
 
       async function guardarEdicionPerdida() {
         const nuevaCantidad = document.getElementById(
-          "editarPerdidaCantidad",
+          "editarPerdidaCantidad"
         ).value;
         const nuevoMotivo = eliminarComillas(
-          document.getElementById("editarPerdidaMotivo").value,
+          document.getElementById("editarPerdidaMotivo").value
         );
 
         if (!nuevaCantidad || nuevaCantidad < 1) {
@@ -2320,7 +3027,7 @@
         }
 
         const perdida = perdidasData.find(
-          (p) => p.Id_Perdida === perdidaEditandoId,
+          (p) => p.Id_Perdida === perdidaEditandoId
         );
         if (!perdida) return;
 
@@ -2358,7 +3065,7 @@
         const cantidad = document.getElementById("perdidaCantidad").value;
         const fecha = document.getElementById("perdidaFecha").value;
         let motivo = eliminarComillas(
-          document.getElementById("perdidaMotivo").value,
+          document.getElementById("perdidaMotivo").value
         );
 
         if (!idProducto) {
@@ -2452,9 +3159,245 @@
         errores.forEach((el) => el.classList.remove("show"));
       }
 
+      // ========== MOVIMIENTOS DE INVENTARIO ==========
+      async function abrirModalMovimientos() {
+        document.getElementById("movimientosModal").style.display = "flex";
+
+        const selectProducto = document.getElementById("filtroMovProducto");
+        selectProducto.innerHTML =
+          '<option value="">Todos los productos</option>';
+
+        try {
+          const res = await fetch("/api/productos");
+          const productos = await res.json();
+
+          productos.forEach((p) => {
+            const opt = new Option(
+              `#${p.Id_Producto} - ${p.Nombre}`,
+              p.Id_Producto
+            );
+            selectProducto.add(opt);
+          });
+        } catch (error) {
+          console.error("Error cargando productos para el filtro:", error);
+        }
+
+        document.getElementById("filtroMovTipo").value = "";
+        document.getElementById("filtroMovProducto").value = "";
+        document.getElementById("filtroMovDesde").value = "";
+        document.getElementById("filtroMovHasta").value = "";
+
+        cargarMovimientos();
+      }
+
+      function limpiarFiltrosMovimientos() {
+        document.getElementById("filtroMovTipo").value = "";
+        document.getElementById("filtroMovProducto").value = "";
+        document.getElementById("filtroMovDesde").value = "";
+        document.getElementById("filtroMovHasta").value = "";
+        cargarMovimientos();
+      }
+
+      async function cargarMovimientos() {
+        const tbody = document.getElementById("cuerpoMovimientos");
+        const resumenDiv = document.getElementById("resumenMovimientos");
+
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="padding: 20px; text-align: center; color: #999">
+              Cargando movimientos...
+            </td>
+          </tr>
+        `;
+
+        const params = new URLSearchParams();
+
+        const tipo = document.getElementById("filtroMovTipo").value;
+        const producto = document.getElementById("filtroMovProducto").value;
+        const desde = document.getElementById("filtroMovDesde").value;
+        const hasta = document.getElementById("filtroMovHasta").value;
+
+        if (tipo) params.append("tipo", tipo);
+        if (producto) params.append("id_producto", producto);
+        if (desde) params.append("desde", desde);
+        if (hasta) params.append("hasta", hasta);
+
+        try {
+          const res = await fetch("/api/movimientos?" + params.toString());
+          const movimientos = await res.json();
+
+          if (!res.ok) {
+            throw new Error(movimientos.error || "Error al obtener movimientos");
+          }
+
+          if (!movimientos || movimientos.length === 0) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="6" style="padding: 30px; text-align: center; color: #999">
+                  No hay movimientos que coincidan con los filtros
+                </td>
+              </tr>
+            `;
+            resumenDiv.innerHTML = "";
+            return;
+          }
+
+          let totalEntradas = 0;
+          let totalSalidas = 0;
+
+          movimientos.forEach((m) => {
+            if (m.tipo_movimiento === "entrada") {
+              totalEntradas += parseInt(m.cantidad) || 0;
+            } else {
+              totalSalidas += parseInt(m.cantidad) || 0;
+            }
+          });
+
+          resumenDiv.innerHTML = `
+            <span style="background: #dcfce7; color: #166534; padding: 5px 12px; border-radius: 15px; font-weight: 600;">
+              Entradas: ${totalEntradas}
+            </span>
+            <span style="background: #fee2e2; color: #991b1b; padding: 5px 12px; border-radius: 15px; font-weight: 600;">
+              Salidas: ${totalSalidas}
+            </span>
+            <span style="background: #e0e7ff; color: #3730a3; padding: 5px 12px; border-radius: 15px; font-weight: 600;">
+              Total: ${movimientos.length} movimientos
+            </span>
+          `;
+
+          tbody.innerHTML = movimientos
+            .map((m) => {
+              const fecha = m.fecha
+                ? new Date(m.fecha).toLocaleString("es-ES", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "Sin fecha";
+
+              const esEntrada = m.tipo_movimiento === "entrada";
+
+              const badgeTipo = esEntrada
+                ? '<span style="background: #dcfce7; color: #166534; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;">ENTRADA</span>'
+                : '<span style="background: #fee2e2; color: #991b1b; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;">SALIDA</span>';
+
+              const colorCantidad = esEntrada ? "#166534" : "#991b1b";
+              const signo = esEntrada ? "+" : "-";
+
+              return `
+                <tr style="border-bottom: 1px solid #f0f0f0;">
+                  <td style="padding: 8px; color: #666; font-size: 12px; white-space: nowrap;">
+                    ${fecha}
+                  </td>
+                  <td style="padding: 8px; font-weight: 600; color: #333;">
+                    ${escapeHtml(m.nombre_producto || "Producto eliminado")}
+                    <br>
+                    <span style="font-size: 11px; color: #888; font-weight: 400;">
+                      ID #${m.id_producto}
+                    </span>
+                  </td>
+                  <td style="padding: 8px; text-align: center;">${badgeTipo}</td>
+                  <td style="padding: 8px; text-align: center; font-weight: 700; color: ${colorCantidad};">
+                    ${signo}${m.cantidad}
+                  </td>
+                  <td style="padding: 8px; color: #555; font-size: 12px;">
+                    ${escapeHtml(m.motivo || "Sin motivo")}
+                  </td>
+                  <td style="padding: 8px; color: #888; font-size: 11px;">
+                    ${escapeHtml(m.referencia || "—")}
+                  </td>
+                </tr>
+              `;
+            })
+            .join("");
+        } catch (error) {
+          console.error("Error cargando movimientos:", error);
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" style="padding: 30px; text-align: center; color: #dc3545;">
+                Error al cargar movimientos: ${error.message}
+              </td>
+            </tr>
+          `;
+        }
+      }
+
+      // ========== ALERTA DE STOCK BAJO ==========
+      async function mostrarAlertaStockBajo() {
+        try {
+          const res = await fetch("/api/productos/bajo-stock");
+          const productos = await res.json();
+
+          if (!res.ok) {
+            console.error("Error obteniendo productos bajo stock:", productos);
+            return;
+          }
+
+          if (!productos || productos.length === 0) {
+            return;
+          }
+
+          const mensaje = document.getElementById("alertaStockMensaje");
+          if (productos.length === 1) {
+            mensaje.innerText =
+              "1 producto con menos de 10 unidades en stock.";
+          } else {
+            mensaje.innerText =
+              productos.length +
+              " productos con menos de 10 unidades en stock.";
+          }
+
+          const contenedor = document.getElementById("alertaStockLista");
+
+          contenedor.innerHTML = productos
+            .map((p) => {
+              const stock = parseInt(p.Stock) || 0;
+              let claseBadge = "badge-rojo";
+
+              if (stock === 0 || stock <= 3) {
+                claseBadge = "badge-rojo";
+              } else if (stock <= 6) {
+                claseBadge = "badge-naranja";
+              } else {
+                claseBadge = "badge-amarillo";
+              }
+
+              return `
+                <div class="stock-item">
+                  <div class="stock-item-info">
+                    <span class="stock-item-nombre">
+                      ${escapeHtml(p.Nombre)}
+                    </span>
+                    <span class="stock-item-detalle">
+                      ID #${p.Id_Producto} &middot; C$${parseFloat(
+                p.Precio
+              ).toFixed(2)}
+                    </span>
+                  </div>
+                  <span class="stock-item-badge ${claseBadge}">
+                    ${stock}
+                  </span>
+                </div>
+              `;
+            })
+            .join("");
+
+          document.getElementById("alertaStockModal").style.display = "flex";
+        } catch (error) {
+          console.error("Error mostrando alerta de stock:", error);
+        }
+      }
+
+      // ========== INICIALIZACIÓN ==========
       window.onload = () => {
         cargarInventario();
         initProveedorBuscador();
+
+        setTimeout(() => {
+          mostrarAlertaStockBajo();
+        }, 800);
       };
     </script>
   </body>

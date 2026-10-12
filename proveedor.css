@@ -1212,3 +1212,574 @@ button {
 .prov-card-btn-delete:active {
     transform: translateY(0);
 }
+/* ============================================================
+   BOTONES DE ACCIÓN ADICIONALES EN LAS TARJETAS
+   (Ingreso, Devolución, Regalías)
+   ============================================================ */
+
+/* Botón de INGRESO (verde) */
+.prov-card-btn-ingreso {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  color: white !important;
+  border-color: #10b981 !important;
+  transition: all 0.3s ease;
+}
+
+.prov-card-btn-ingreso:hover {
+  background: linear-gradient(135deg, #059669, #047857) !important;
+  border-color: #047857 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+/* Botón de DEVOLUCIÓN (rojo) */
+.prov-card-btn-devolucion {
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  color: white !important;
+  border-color: #ef4444 !important;
+  transition: all 0.3s ease;
+}
+
+.prov-card-btn-devolucion:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+  border-color: #b91c1c !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+
+/* Botón de REGALÍAS (morado) */
+.prov-card-btn-regalias {
+  background: linear-gradient(135deg, #a63c89, #7a2d68) !important;
+  color: white !important;
+  border-color: #a63c89 !important;
+  transition: all 0.3s ease;
+}
+
+.prov-card-btn-regalias:hover {
+  background: linear-gradient(135deg, #7a2d68, #5c1f4d) !important;
+  border-color: #5c1f4d !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(166, 60, 137, 0.35);
+}
+
+/* ============================================================
+   ARREGLO DE BOTONES DE LAS TARJETAS (para que se acomoden bien)
+   ============================================================ */
+.prov-card-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.prov-card-btn {
+  flex: 1 1 calc(50% - 4px);
+  min-width: 100px;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  font-family: "Poppins", sans-serif;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* En pantallas grandes los botones se ven mejor en 3 columnas */
+@media (min-width: 900px) {
+  .prov-card-btn {
+    flex: 1 1 calc(33.333% - 6px);
+  }
+}
+
+/* ============================================================
+   BOTÓN GLOBAL DE DEVOLUCIONES (arriba)
+   ============================================================ */
+.prov-devoluciones-btn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  font-family: "Poppins", sans-serif;
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.25);
+}
+
+.prov-devoluciones-btn:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(239, 68, 68, 0.35);
+}
+
+/* ============================================================
+   BOTÓN GLOBAL DE INGRESOS (verde)
+   ============================================================ */
+.prov-ingresos-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  font-family: "Poppins", sans-serif;
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25);
+}
+
+.prov-ingresos-btn:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(16, 185, 129, 0.35);
+}
+
+/* ============================================================
+   FORMULARIOS DE LOS MODALES (ingreso y devolución)
+   ============================================================ */
+.ingreso-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.ingreso-form-group label {
+  font-weight: 600;
+  color: #334155;
+  font-size: 13px;
+  display: block;
+}
+
+.ingreso-form-group input,
+.ingreso-form-group select,
+.ingreso-form-group textarea {
+  padding: 10px 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: "Poppins", sans-serif;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.2s;
+  background: white;
+}
+
+.ingreso-form-group input:focus,
+.ingreso-form-group select:focus,
+.ingreso-form-group textarea:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.ingreso-form-group input[readonly] {
+  background: #f3f4f6;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   AUTOCOMPLETE
+   ============================================================ */
+.autocomplete-wrapper {
+  position: relative;
+}
+
+.autocomplete-suggestion-box {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 100;
+  display: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 4px;
+}
+
+.autocomplete-suggestion-box.show {
+  display: block;
+}
+
+.autocomplete-suggestion-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.15s;
+  font-size: 13px;
+}
+
+.autocomplete-suggestion-item:hover {
+  background: #f0fdf4;
+}
+
+.autocomplete-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+/* ============================================================
+   MENSAJES DE ERROR
+   ============================================================ */
+.error-msg {
+  color: #dc3545;
+  font-size: 11px;
+  margin-top: 3px;
+  font-weight: 600;
+  display: none;
+}
+
+.error-msg.show {
+  display: block;
+}
+
+/* ============================================================
+   HISTORIAL DE INGRESOS
+   ============================================================ */
+.ingreso-historial-item {
+  background: white;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-left: 4px solid #10b981;
+  font-size: 13px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.ingreso-historial-nombre {
+  font-weight: 700;
+  color: #166534;
+  font-size: 13px;
+  margin-bottom: 3px;
+}
+
+.ingreso-historial-detalle {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.ingreso-historial-cantidad {
+  display: inline-block;
+  background: #dcfce7;
+  color: #166534;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 11px;
+  margin-right: 6px;
+}
+
+/* ============================================================
+   FILTROS (historial ingresos y devoluciones)
+   ============================================================ */
+.ingreso-filtros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.ingreso-filtros label {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 3px;
+}
+
+.ingreso-filtros select,
+.ingreso-filtros input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: "Poppins", sans-serif;
+  box-sizing: border-box;
+}
+
+.ingreso-filtros select:focus,
+.ingreso-filtros input:focus {
+  outline: none;
+  border-color: #a63c89;
+  box-shadow: 0 0 0 2px rgba(166, 60, 137, 0.15);
+}
+
+/* ============================================================
+   RESUMEN TOTAL (ingresos y devoluciones)
+   ============================================================ */
+.ingreso-resumen {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.ingreso-resumen span {
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* ============================================================
+   ITEMS DE DEVOLUCIONES
+   ============================================================ */
+.dev-item {
+  background: white;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-left: 4px solid #ef4444;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.dev-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.dev-producto {
+  font-weight: 700;
+  color: #991b1b;
+  font-size: 14px;
+}
+
+.dev-badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-block;
+}
+
+/* Badges de motivo */
+.dev-badge-mal_estado {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.dev-badge-vencimiento {
+  background: #fef3c7;
+  color: #92400e;
+}
+.dev-badge-error_entrega {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.dev-badge-otro {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+/* Badges de estado */
+.dev-badge-pendiente {
+  background: #fef3c7;
+  color: #92400e;
+}
+.dev-badge-enviado {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.dev-badge-reembolsado {
+  background: #dcfce7;
+  color: #166534;
+}
+.dev-badge-reemplazado {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+.dev-badge-cancelado {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.dev-detalle {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.6;
+  margin-top: 4px;
+}
+
+.dev-acciones {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-dev {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  font-family: "Poppins", sans-serif;
+}
+
+.btn-dev:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.btn-dev-aprobar {
+  background: #10b981;
+  color: white;
+}
+
+.btn-dev-eliminar {
+  background: #ef4444;
+  color: white;
+}
+
+/* ============================================================
+   LISTA DE REGALÍAS
+   ============================================================ */
+.regalias-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px;
+  background: #f8fafc;
+}
+
+.regalia-item {
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-left: 4px solid #a63c89;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.regalia-item:last-child {
+  margin-bottom: 0;
+}
+
+.regalia-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.regalia-tipo {
+  font-weight: 700;
+  color: #a63c89;
+  font-size: 14px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.regalia-detalle {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.regalia-condicion {
+  font-style: italic;
+  color: #94a3b8;
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.regalia-badge-activa {
+  background: #dcfce7;
+  color: #166534;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.regalia-badge-inactiva {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.regalia-actions {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.btn-regalia {
+  background: #a63c89;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.2s;
+  font-family: "Poppins", sans-serif;
+}
+
+.btn-regalia-danger {
+  background: #ef4444;
+}
+
+.btn-regalia:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.sin-regalias {
+  text-align: center;
+  color: #94a3b8;
+  padding: 20px;
+  font-size: 13px;
+}
+
+/* ============================================================
+   RESPONSIVE PARA LOS BOTONES DE LAS TARJETAS
+   ============================================================ */
+@media (max-width: 768px) {
+  .prov-card-btn {
+    flex: 1 1 100%;
+    font-size: 13px;
+  }
+  
+  .ingreso-filtros {
+    grid-template-columns: 1fr;
+  }
+  
+  .dev-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -128,7 +128,7 @@
       }
 
       /* ============================================================
-         MODAL DE PREMIOS - VENTANA ESTANDAR SIN SCROLL
+         MODAL DE PREMIOS
          ============================================================ */
       .premios-modal-overlay {
         display: none;
@@ -486,6 +486,165 @@
         box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
       }
 
+      /* ============================================================
+         REQ-FR-34 al REQ-FR-38: CONFIGURACIÓN Y MEJOR DESEMPEÑO
+         ============================================================ */
+      .et-config-section {
+        background: linear-gradient(135deg, #f8f9ff 0%, #faf5ff 100%);
+        border: 2px solid #e0d5f0;
+        border-radius: 20px;
+        padding: 20px 24px;
+        margin-bottom: 20px;
+      }
+
+      .et-config-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .et-config-header h3 {
+        margin: 0;
+        color: #4a1d6d;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .et-config-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 14px;
+      }
+
+      .et-config-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .et-config-item label {
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 600;
+      }
+
+      .et-config-item input {
+        padding: 10px 12px;
+        border: 2px solid #e8e8f0;
+        border-radius: 12px;
+        font-size: 14px;
+        font-family: inherit;
+        transition: all 0.3s;
+        background: white;
+      }
+
+      .et-config-item input:focus {
+        outline: none;
+        border-color: #a63c89;
+        box-shadow: 0 0 0 3px rgba(166, 60, 137, 0.1);
+      }
+
+      .et-config-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #a63c89, #4a1d6d);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: inherit;
+      }
+
+      .et-config-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(166, 60, 137, 0.3);
+      }
+
+      .et-config-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .badge-asistencia {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .badge-asistencia.ok {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+
+      .badge-asistencia.warn {
+        background: #fff3e0;
+        color: #e65100;
+      }
+
+      .badge-asistencia.fail {
+        background: #ffebee;
+        color: #c62828;
+      }
+
+      .mejor-desempeno-card {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        border: 2px solid #f59e0b;
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 30px rgba(245, 158, 11, 0.2);
+      }
+
+      .mejor-desempeno-card h3 {
+        margin: 0 0 12px 0;
+        color: #92400e;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 18px;
+      }
+
+      .mejor-desempeno-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 12px;
+      }
+
+      .mejor-desempeno-info .item {
+        text-align: center;
+        padding: 10px;
+        background: white;
+        border-radius: 12px;
+      }
+
+      .mejor-desempeno-info .item .label {
+        font-size: 11px;
+        color: #92400e;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .mejor-desempeno-info .item .valor {
+        font-size: 16px;
+        font-weight: 800;
+        color: #78350f;
+        margin-top: 4px;
+        word-break: break-word;
+      }
+
       @media (max-width: 768px) {
         body {
           padding-top: 80px;
@@ -506,7 +665,7 @@
           overflow-x: auto;
         }
         .et-table {
-          min-width: 650px;
+          min-width: 850px;
         }
         .custom-modal {
           width: 95%;
@@ -637,6 +796,40 @@
         </button>
       </div>
 
+      <!-- ===== REQ-FR-38: CONFIGURACIÓN DE INCENTIVOS ===== -->
+      <div class="et-config-section" id="configSection">
+        <div class="et-config-header">
+          <h3><i class="fas fa-cog"></i> Configuración de Incentivos</h3>
+          <button class="et-config-btn" onclick="guardarConfiguracion()" id="btnGuardarConfig">
+            <i class="fas fa-save"></i> Guardar
+          </button>
+        </div>
+        <div class="et-config-grid">
+          <div class="et-config-item">
+            <label><i class="fas fa-percentage"></i> % Mínimo Asistencia</label>
+            <input type="number" id="cfgPorcentaje" min="0" max="100" step="0.01" value="80">
+          </div>
+          <div class="et-config-item">
+            <label><i class="fas fa-medal"></i> Incentivo 1° (C$)</label>
+            <input type="number" id="cfgMonto1" min="0" step="0.01" value="1500">
+          </div>
+          <div class="et-config-item">
+            <label><i class="fas fa-medal"></i> Incentivo 2° (C$)</label>
+            <input type="number" id="cfgMonto2" min="0" step="0.01" value="1000">
+          </div>
+          <div class="et-config-item">
+            <label><i class="fas fa-medal"></i> Incentivo 3° (C$)</label>
+            <input type="number" id="cfgMonto3" min="0" step="0.01" value="500">
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== REQ-FR-36 / 37: MEJOR DESEMPEÑO ===== -->
+      <div class="mejor-desempeno-card" id="mejorDesempenoCard" style="display: none;">
+        <h3><i class="fas fa-trophy" style="color:#f59e0b;"></i> Mejor Desempeño del Mes</h3>
+        <div class="mejor-desempeno-info" id="mejorDesempenoInfo"></div>
+      </div>
+
       <div class="et-table-container">
         <div class="et-loading" id="loadingMessage">
           <i class="fas fa-spinner fa-spin"></i> Cargando...
@@ -649,8 +842,10 @@
                 <th>Ventas</th>
                 <th>Días Ventas</th>
                 <th>Asistencia</th>
+                <th>% Asistencia</th>
                 <th>Promedio</th>
                 <th>Puntaje</th>
+                <th>Incentivo</th>
               </tr>
             </thead>
             <tbody id="tablaEvaluacion"></tbody>
@@ -666,7 +861,7 @@
       </div>
     </div>
 
-    <!-- MODAL DE PREMIOS - VENTANA ESTANDAR -->
+    <!-- MODAL DE PREMIOS -->
     <div class="premios-modal-overlay" id="premiosModal">
       <div class="premios-modal">
         <div class="premios-modal-header">
@@ -710,16 +905,20 @@
 
     <script>
       let datosEvaluacionGlobal = [];
+      let datosDesempenoActual = null;
+      let configActual = {
+        porcentaje_minimo_asistencia: 80,
+        monto_incentivo_1: 1500,
+        monto_incentivo_2: 1000,
+        monto_incentivo_3: 500
+      };
 
       function obtenerPremio(puntaje) {
-        if (puntaje >= 50)
-          return { texto: "C$ 1,000 + Diploma", clase: "premio-oro" };
+        if (puntaje >= 50) return { texto: "C$ 1,000 + Diploma", clase: "premio-oro" };
         if (puntaje >= 40) return { texto: "C$ 750", clase: "premio-plata" };
-        if (puntaje >= 30)
-          return { texto: "C$ 500", clase: "premio-bronce" };
+        if (puntaje >= 30) return { texto: "C$ 500", clase: "premio-bronce" };
         if (puntaje >= 20) return { texto: "C$ 250", clase: "premio-cobre" };
-        if (puntaje >= 10)
-          return { texto: "Vale C$ 100", clase: "premio-vale" };
+        if (puntaje >= 10) return { texto: "Vale C$ 100", clase: "premio-vale" };
         return { texto: "Sin premio", clase: "premio-nada" };
       }
 
@@ -738,80 +937,190 @@
       function verificarDiciembreActual(year, month) {
         const fechaActual = new Date();
         const añoActual = fechaActual.getFullYear();
-        const mesActual = fechaActual.getMonth() + 1;
-
-        if (year == añoActual && month == 12) {
-          if (fechaActual.getMonth() + 1 <= 12 && fechaActual.getFullYear() == añoActual) {
-            return true;
-          }
-        }
+        if (year == añoActual && month == 12) return true;
         return false;
       }
 
+      // ============================================================
+      // REQ-FR-38: Cargar configuración
+      // ============================================================
+      async function cargarConfiguracion() {
+        try {
+          const res = await fetch('/api/configuracion-incentivos');
+          const data = await res.json();
+          configActual = data;
+
+          document.getElementById('cfgPorcentaje').value = data.porcentaje_minimo_asistencia;
+          document.getElementById('cfgMonto1').value = data.monto_incentivo_1;
+          document.getElementById('cfgMonto2').value = data.monto_incentivo_2;
+          document.getElementById('cfgMonto3').value = data.monto_incentivo_3;
+        } catch (error) {
+          console.error('Error cargando configuración:', error);
+        }
+      }
+
+      // ============================================================
+      // REQ-FR-38: Guardar configuración
+      // ============================================================
+      async function guardarConfiguracion() {
+        const porcentaje = parseFloat(document.getElementById('cfgPorcentaje').value);
+        const monto1 = parseFloat(document.getElementById('cfgMonto1').value);
+        const monto2 = parseFloat(document.getElementById('cfgMonto2').value);
+        const monto3 = parseFloat(document.getElementById('cfgMonto3').value);
+
+        if (isNaN(porcentaje) || porcentaje < 0 || porcentaje > 100) {
+          alert('El porcentaje debe estar entre 0 y 100');
+          return;
+        }
+        if (isNaN(monto1) || isNaN(monto2) || isNaN(monto3) || monto1 < 0 || monto2 < 0 || monto3 < 0) {
+          alert('Los montos no pueden ser negativos');
+          return;
+        }
+
+        const btn = document.getElementById('btnGuardarConfig');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+        btn.disabled = true;
+
+        try {
+          const res = await fetch('/api/configuracion-incentivos', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              porcentaje_minimo_asistencia: porcentaje,
+              monto_incentivo_1: monto1,
+              monto_incentivo_2: monto2,
+              monto_incentivo_3: monto3
+            })
+          });
+          const data = await res.json();
+
+          if (res.ok && data.success) {
+            // Toast de éxito
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#2e7d32;color:white;padding:14px 22px;border-radius:12px;font-weight:600;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,0.2);font-family:Poppins,sans-serif;';
+            toast.textContent = '✅ Configuración guardada';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+
+            // Recargar
+            const year = document.getElementById("filterYear").value;
+            const month = document.getElementById("filterMonth").value;
+            cargarEvaluacion(year, month);
+          } else {
+            alert(data.error || 'Error al guardar');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Error de conexión');
+        } finally {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
+      }
+
+      // ============================================================
+      // REQ-FR-34 al 37: Cargar desempeño mensual
+      // ============================================================
       async function cargarEvaluacion(year, month) {
         const loadingDiv = document.getElementById("loadingMessage");
         const resultadosDiv = document.getElementById("resultadosEvaluacion");
         const tablaBody = document.getElementById("tablaEvaluacion");
+        const mejorCard = document.getElementById("mejorDesempenoCard");
+        const mejorInfo = document.getElementById("mejorDesempenoInfo");
 
         if (year && month && verificarDiciembreActual(parseInt(year), parseInt(month))) {
-          const errorModal = document.getElementById("errorModal");
           document.getElementById("errorMessage").innerText = "Aún no hay datos para diciembre del año actual. Los datos estarán disponibles cuando el mes haya terminado.";
-          errorModal.style.display = "flex";
+          document.getElementById("errorModal").style.display = "flex";
           loadingDiv.style.display = "none";
           resultadosDiv.style.display = "none";
+          mejorCard.style.display = "none";
           return;
         }
 
         loadingDiv.style.display = "flex";
         resultadosDiv.style.display = "none";
+        mejorCard.style.display = "none";
 
         try {
-          let url = "/api/evaluacion-completa";
-          const params = [];
-          if (year) params.push(`year=${year}`);
-          if (month) params.push(`month=${month}`);
-          if (params.length > 0) url += `?${params.join("&")}`;
+          // Si no hay filtro, usar el mes actual
+          let anioFinal = year;
+          let mesFinal = month;
 
+          if (!year || !month) {
+            const hoy = new Date();
+            anioFinal = hoy.getFullYear();
+            mesFinal = hoy.getMonth() + 1;
+          }
+
+          const url = `/api/desempeno-mensual?anio=${anioFinal}&mes=${mesFinal}`;
           const respuesta = await fetch(url);
+
           if (!respuesta.ok) throw new Error(`Error HTTP: ${respuesta.status}`);
 
-          const datos = await respuesta.json();
-          datosEvaluacionGlobal = datos;
+          const data = await respuesta.json();
+          datosDesempenoActual = data;
+          datosEvaluacionGlobal = data.trabajadores || [];
 
-          if (!datos.length) {
-            if (year && month && parseInt(month) === 12) {
-              const errorModal = document.getElementById("errorModal");
-              document.getElementById("errorMessage").innerText = "Aún no hay datos para este período. Los datos estarán disponibles cuando el mes haya terminado.";
-              errorModal.style.display = "flex";
-              loadingDiv.style.display = "none";
-              resultadosDiv.style.display = "none";
-              return;
-            }
-            tablaBody.innerHTML =
-              '<tr><td colspan="6" style="text-align:center;padding:40px;">No hay datos para el período seleccionado.</td></tr>';
+          // REQ-FR-36 / 37: Mostrar mejor desempeño
+          if (data.mejor_desempeno) {
+            const md = data.mejor_desempeno;
+            mejorCard.style.display = 'block';
+            mejorInfo.innerHTML = `
+              <div class="item">
+                <div class="label">Trabajador</div>
+                <div class="valor">${md.nombre_completo}</div>
+              </div>
+              <div class="item">
+                <div class="label">Ventas</div>
+                <div class="valor">${md.total_facturas}</div>
+              </div>
+              <div class="item">
+                <div class="label">% Asistencia</div>
+                <div class="valor">${md.porcentaje_asistencia}%</div>
+              </div>
+              <div class="item">
+                <div class="label">Puntaje</div>
+                <div class="valor">${md.puntaje}</div>
+              </div>
+              <div class="item" style="background: linear-gradient(135deg, #fbbf24, #f59e0b);">
+                <div class="label" style="color: white;">Incentivo</div>
+                <div class="valor" style="color: white;">C$${parseFloat(md.incentivo || data.incentivo_1).toFixed(2)}</div>
+              </div>
+            `;
+          }
+
+          // Renderizar tabla
+          if (!data.trabajadores || data.trabajadores.length === 0) {
+            tablaBody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">No hay datos para el período seleccionado.</td></tr>';
           } else {
             tablaBody.innerHTML = "";
-            datos.forEach((trabajador) => {
-              const diasAsistencia = trabajador.dias_ventas || 0;
-              const asistenciaNumero = diasAsistencia;
-              const asistenciaClase = asistenciaNumero > 0 ? 'et-asistencia-numero' : 'et-asistencia-cero';
+            data.trabajadores.forEach((trab) => {
+              // Badge de % asistencia
+              let badgeClass = 'ok';
+              if (trab.porcentaje_asistencia < data.porcentaje_minimo) {
+                badgeClass = trab.porcentaje_asistencia >= data.porcentaje_minimo * 0.75 ? 'warn' : 'fail';
+              }
 
-              const totalVentas = trabajador.total_ventas || 0;
-              const diasVentas = trabajador.dias_ventas || 0;
-              const puntajeRecalculado = parseFloat(
-                ((totalVentas * 0.3) + (diasVentas * 0.3) + (diasAsistencia * 0.4)).toFixed(2)
-              );
+              // Incentivo
+              let incentivoTexto = '<span style="color:#94a3b8;">—</span>';
+              if (trab.incentivo !== undefined && trab.incentivo > 0) {
+                const icono = trab.posicion === 1 ? '🥇' : trab.posicion === 2 ? '🥈' : trab.posicion === 3 ? '🥉' : '';
+                incentivoTexto = `<strong style="color:#92400e;">${icono} C$${parseFloat(trab.incentivo).toFixed(2)}</strong>`;
+              } else if (!trab.cumple_asistencia) {
+                incentivoTexto = '<span style="color:#c62828;font-size:11px;font-weight:600;">No elegible</span>';
+              }
 
               tablaBody.innerHTML += `
                 <tr>
-                  <td><strong>${trabajador.nombre_completo}</strong></td>
-                  <td>${trabajador.total_ventas}</td>
-                  <td>${trabajador.dias_ventas}</td>
-                  <td>
-                    <span class="${asistenciaClase}">${asistenciaNumero}</span>
-                  </td>
-                  <td>${trabajador.promedio_diario || 0}</td>
-                  <td class="et-puntaje"><strong>${puntajeRecalculado}</strong></td>
+                  <td><strong>${trab.nombre_completo}</strong>${trab.es_cajero ? ' <span style="font-size:10px;background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:10px;">Cajero</span>' : ''}</td>
+                  <td>${trab.total_facturas}</td>
+                  <td>${trab.dias_con_ventas}</td>
+                  <td><span class="et-asistencia-numero">${trab.dias_asistidos}</span> / ${trab.dias_laborables}</td>
+                  <td><span class="badge-asistencia ${badgeClass}">${trab.porcentaje_asistencia}%</span></td>
+                  <td>${trab.promedio_diario}</td>
+                  <td class="et-puntaje"><strong>${trab.puntaje}</strong></td>
+                  <td>${incentivoTexto}</td>
                 </tr>
               `;
             });
@@ -819,6 +1128,7 @@
 
           loadingDiv.style.display = "none";
           resultadosDiv.style.display = "block";
+
         } catch (error) {
           console.error("Error:", error);
           loadingDiv.innerHTML =
@@ -839,7 +1149,7 @@
         cargarEvaluacion("", "");
       }
 
-      // ==================== FUNCIÓN VOLVER AL MENÚ CON CONFIRMACIÓN ====================
+      // ==================== VOLVER AL MENÚ ====================
       function volverMenuAdmin() {
         window.location.href = "menu_admin.html";
       }
@@ -873,14 +1183,24 @@
         modal.style.display = "flex";
         body.innerHTML = '<div class="et-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
 
-        if (datosEvaluacionGlobal && datosEvaluacionGlobal.length > 0) {
-          mostrarPremios(datosEvaluacionGlobal);
+        if (datosDesempenoActual && datosDesempenoActual.trabajadores) {
+          mostrarPremios(datosDesempenoActual);
         } else {
-          fetch("/api/evaluacion-completa")
+          const year = document.getElementById("filterYear").value;
+          const month = document.getElementById("filterMonth").value;
+          let anioFinal = year;
+          let mesFinal = month;
+          if (!year || !month) {
+            const hoy = new Date();
+            anioFinal = hoy.getFullYear();
+            mesFinal = hoy.getMonth() + 1;
+          }
+
+          fetch(`/api/desempeno-mensual?anio=${anioFinal}&mes=${mesFinal}`)
             .then(res => res.json())
-            .then(datos => {
-              datosEvaluacionGlobal = datos;
-              mostrarPremios(datos);
+            .then(data => {
+              datosDesempenoActual = data;
+              mostrarPremios(data);
             })
             .catch(err => {
               body.innerHTML = `
@@ -893,10 +1213,10 @@
         }
       }
 
-      function mostrarPremios(datos) {
+      function mostrarPremios(data) {
         const body = document.getElementById("premiosBody");
 
-        if (!datos || datos.length === 0) {
+        if (!data || !data.trabajadores || data.trabajadores.length === 0) {
           body.innerHTML = `
             <div class="premios-vacio">
               <i class="fas fa-trophy"></i>
@@ -906,35 +1226,45 @@
           return;
         }
 
-        const trabajadoresConPuntaje = datos.map(t => {
-          const diasAsistencia = t.dias_ventas || 0;
-          const totalVentas = t.total_ventas || 0;
-          const diasVentas = t.dias_ventas || 0;
-          const puntaje = parseFloat(
-            ((totalVentas * 0.3) + (diasVentas * 0.3) + (diasAsistencia * 0.4)).toFixed(2)
-          );
-          return { ...t, puntaje_calculado: puntaje };
-        });
+        // Filtrar elegibles (cumplen asistencia) y ordenar por puntaje
+        const elegibles = data.trabajadores
+          .filter(t => t.cumple_asistencia && t.puntaje > 0)
+          .sort((a, b) => b.puntaje - a.puntaje)
+          .slice(0, 3);
 
-        const ordenados = trabajadoresConPuntaje.sort((a, b) => b.puntaje_calculado - a.puntaje_calculado);
-        const top3 = ordenados.slice(0, 3);
+        if (elegibles.length === 0) {
+          body.innerHTML = `
+            <div class="premios-vacio">
+              <i class="fas fa-user-slash"></i>
+              <p>Ningún trabajador cumple con el ${data.porcentaje_minimo}% mínimo de asistencia.</p>
+            </div>
+          `;
+          return;
+        }
+
+        const premiosPorNivel = [
+          data.incentivo_1,
+          data.incentivo_2,
+          data.incentivo_3
+        ];
 
         let podioHtml = '';
         const posiciones = [
-          { pos: 1, clase: 'premio-puesto-oro', medalla: '🥇', label: '1er Lugar', premio: 'C$ 1,500 + 1 dia de descanso' },
-          { pos: 2, clase: 'premio-puesto-plata', medalla: '🥈', label: '2do Lugar', premio: 'C$ 1,000' },
-          { pos: 3, clase: 'premio-puesto-bronce', medalla: '🥉', label: '3er Lugar', premio: 'C$ 500' }
+          { pos: 1, clase: 'premio-puesto-oro', medalla: '🥇', label: '1er Lugar' },
+          { pos: 2, clase: 'premio-puesto-plata', medalla: '🥈', label: '2do Lugar' },
+          { pos: 3, clase: 'premio-puesto-bronce', medalla: '🥉', label: '3er Lugar' }
         ];
 
         posiciones.forEach((p, index) => {
-          const trabajador = top3[index];
+          const trabajador = elegibles[index];
           if (trabajador) {
             podioHtml += `
               <div class="premio-puesto ${p.clase}">
                 <div class="puesto-medalla">${p.medalla}</div>
                 <div class="puesto-nombre">${trabajador.nombre_completo}</div>
-                <div class="puesto-puntaje">Puntaje: ${trabajador.puntaje_calculado}</div>
-                <div class="puesto-premio">${p.premio}</div>
+                <div class="puesto-puntaje">Puntaje: ${trabajador.puntaje}</div>
+                <div class="puesto-puntaje" style="font-size:11px;">Asistencia: ${trabajador.porcentaje_asistencia}%</div>
+                <div class="puesto-premio">C$${parseFloat(premiosPorNivel[index] || 0).toFixed(2)}</div>
               </div>
             `;
           } else {
@@ -943,7 +1273,7 @@
                 <div class="puesto-medalla">${p.medalla}</div>
                 <div class="puesto-nombre">---</div>
                 <div class="puesto-puntaje">Sin datos</div>
-                <div class="puesto-premio">${p.premio}</div>
+                <div class="puesto-premio">C$${parseFloat(premiosPorNivel[index] || 0).toFixed(2)}</div>
               </div>
             `;
           }
@@ -966,8 +1296,17 @@
         }
       });
 
+      // ==================== INICIALIZAR ====================
       cargarAnios();
+      cargarConfiguracion();
       cargarEvaluacion("", "");
+
+      // Setear el mes/año actual en los filtros
+      (function setMesActual() {
+        const hoy = new Date();
+        document.getElementById("filterYear").value = hoy.getFullYear();
+        document.getElementById("filterMonth").value = hoy.getMonth() + 1;
+      })();
     </script>
   </body>
 </html>

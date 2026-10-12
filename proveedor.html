@@ -12,6 +12,385 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="proveedor.css" />
+    <style>
+      /* ===== Estilos para el modal de regalías ===== */
+      .regalias-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px;
+        background: #f8fafc;
+      }
+      .regalia-item {
+        background: white;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+        border-left: 4px solid #a63c89;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+      .regalia-item:last-child {
+        margin-bottom: 0;
+      }
+      .regalia-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .regalia-tipo {
+        font-weight: 700;
+        color: #a63c89;
+        font-size: 14px;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .regalia-detalle {
+        font-size: 12px;
+        color: #64748b;
+        line-height: 1.4;
+      }
+      .regalia-condicion {
+        font-style: italic;
+        color: #94a3b8;
+        margin-top: 4px;
+      }
+      .regalia-badge-activa {
+        background: #dcfce7;
+        color: #166534;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 700;
+      }
+      .regalia-badge-inactiva {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 700;
+      }
+      .regalia-actions {
+        display: flex;
+        gap: 5px;
+        flex-shrink: 0;
+      }
+      .btn-regalia {
+        background: #a63c89;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+      .btn-regalia-danger {
+        background: #ef4444;
+      }
+      .btn-regalia:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+      .sin-regalias {
+        text-align: center;
+        color: #94a3b8;
+        padding: 20px;
+        font-size: 13px;
+      }
+
+      /* ===== Botón de regalías en las tarjetas ===== */
+      .prov-card-btn-regalias {
+        background: linear-gradient(135deg, #a63c89, #7a2d68) !important;
+        color: white !important;
+      }
+      .prov-card-btn-regalias:hover {
+        background: linear-gradient(135deg, #7a2d68, #5c1f4d) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(166, 60, 137, 0.3);
+      }
+
+      /* ===== Botón de ingreso en las tarjetas ===== */
+      .prov-card-btn-ingreso {
+        background: linear-gradient(135deg, #10b981, #059669) !important;
+        color: white !important;
+      }
+      .prov-card-btn-ingreso:hover {
+        background: linear-gradient(135deg, #059669, #047857) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      }
+
+      /* ===== Botón de devolución en las tarjetas ===== */
+      .prov-card-btn-devolucion {
+        background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+        color: white !important;
+      }
+      .prov-card-btn-devolucion:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+      }
+
+      /* ===== Botón global ver ingresos ===== */
+      .prov-ingresos-btn {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        font-family: "Poppins", sans-serif;
+      }
+      .prov-ingresos-btn:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      }
+
+      /* ===== Botón global devoluciones ===== */
+      .prov-devoluciones-btn {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        font-family: "Poppins", sans-serif;
+      }
+      .prov-devoluciones-btn:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+      }
+
+      /* ===== Estilos del modal de ingreso ===== */
+      .ingreso-form-group {
+        margin-bottom: 14px;
+      }
+      .ingreso-form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 5px;
+      }
+      .ingreso-form-group input,
+      .ingreso-form-group select,
+      .ingreso-form-group textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: "Poppins", sans-serif;
+        transition: all 0.2s;
+      }
+      .ingreso-form-group input:focus,
+      .ingreso-form-group select:focus,
+      .ingreso-form-group textarea:focus {
+        outline: none;
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+      }
+      .ingreso-form-group input[readonly] {
+        background: #f3f4f6;
+        color: #6b7280;
+      }
+      .autocomplete-wrapper {
+        position: relative;
+      }
+      .autocomplete-suggestion-box {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        max-height: 220px;
+        overflow-y: auto;
+        z-index: 100;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        margin-top: 4px;
+      }
+      .autocomplete-suggestion-box.show {
+        display: block;
+      }
+      .autocomplete-suggestion-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.15s;
+        font-size: 13px;
+      }
+      .autocomplete-suggestion-item:hover {
+        background: #f0fdf4;
+      }
+      .autocomplete-suggestion-item:last-child {
+        border-bottom: none;
+      }
+      .error-msg {
+        color: #dc3545;
+        font-size: 11px;
+        margin-top: 3px;
+        font-weight: 600;
+        display: none;
+      }
+      .error-msg.show {
+        display: block;
+      }
+
+      /* ===== Historial de ingresos ===== */
+      .ingreso-historial-item {
+        background: white;
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        border-left: 4px solid #10b981;
+        font-size: 13px;
+      }
+      .ingreso-historial-nombre {
+        font-weight: 700;
+        color: #166534;
+        font-size: 13px;
+        margin-bottom: 3px;
+      }
+      .ingreso-historial-detalle {
+        font-size: 11px;
+        color: #64748b;
+        line-height: 1.5;
+      }
+      .ingreso-historial-cantidad {
+        display: inline-block;
+        background: #dcfce7;
+        color: #166534;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 11px;
+        margin-right: 6px;
+      }
+
+      /* ===== Filtros ===== */
+      .ingreso-filtros {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 8px;
+        margin-bottom: 12px;
+        padding: 10px;
+        background: #f8fafc;
+        border-radius: 10px;
+      }
+      .ingreso-filtros label {
+        font-size: 11px;
+        color: #64748b;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 3px;
+      }
+      .ingreso-filtros select,
+      .ingreso-filtros input {
+        width: 100%;
+        padding: 7px 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 12px;
+        font-family: "Poppins", sans-serif;
+      }
+
+      /* ===== Resumen total ===== */
+      .ingreso-resumen {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+      .ingreso-resumen span {
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 12px;
+      }
+
+      /* ===== Items de devolución ===== */
+      .dev-item {
+        background: white;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+        border-left: 4px solid #ef4444;
+      }
+      .dev-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 6px;
+      }
+      .dev-producto {
+        font-weight: 700;
+        color: #991b1b;
+        font-size: 14px;
+      }
+      .dev-badge {
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 700;
+      }
+      .dev-badge-mal_estado { background: #fee2e2; color: #991b1b; }
+      .dev-badge-vencimiento { background: #fef3c7; color: #92400e; }
+      .dev-badge-error_entrega { background: #dbeafe; color: #1e40af; }
+      .dev-badge-otro { background: #f3f4f6; color: #4b5563; }
+
+      .dev-badge-pendiente { background: #fef3c7; color: #92400e; }
+      .dev-badge-enviado { background: #dbeafe; color: #1e40af; }
+      .dev-badge-reembolsado { background: #dcfce7; color: #166534; }
+      .dev-badge-reemplazado { background: #e0e7ff; color: #3730a3; }
+      .dev-badge-cancelado { background: #f3f4f6; color: #6b7280; }
+
+      .dev-detalle {
+        font-size: 11px;
+        color: #64748b;
+        line-height: 1.6;
+        margin-top: 4px;
+      }
+      .dev-acciones {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+      }
+      .btn-dev {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+      }
+      .btn-dev:hover { opacity: 0.85; }
+      .btn-dev-aprobar { background: #10b981; color: white; }
+      .btn-dev-eliminar { background: #ef4444; color: white; }
+    </style>
   </head>
   <body>
     <div class="header-marcas">
@@ -45,6 +424,15 @@
         <button class="prov-add-btn" id="btnAgregarProveedor">
           Agregar Proveedor
         </button>
+        <button class="prov-ingresos-btn" onclick="abrirModalIngresoGlobal()">
+          Registrar Ingreso de Mercancia
+        </button>
+        <button class="prov-ingresos-btn" style="background: linear-gradient(135deg, #6366f1, #4f46e5);" onclick="abrirModalHistorialIngresos()">
+          Ver Historial de Ingresos
+        </button>
+        <button class="prov-devoluciones-btn" onclick="abrirModalHistorialDevoluciones()">
+          Historial de Devoluciones
+        </button>
         <div class="prov-search-group">
           <input
             type="text"
@@ -67,7 +455,7 @@
       </div>
     </div>
 
-    <!-- MODAL PRINCIPAL -->
+    <!-- MODAL PRINCIPAL PROVEEDOR -->
     <div id="modalProveedor" class="prov-modal-overlay">
       <div class="prov-modal">
         <h2 id="modalTitle">Agregar Proveedor</h2>
@@ -170,6 +558,401 @@
       </div>
     </div>
 
+    <!-- MODAL DE REGALÍAS -->
+    <div id="modalRegalias" class="prov-modal-overlay">
+      <div class="prov-modal" style="max-width: 550px">
+        <h2 id="regaliaModalTitle">Gestionar Regalías</h2>
+        <input type="hidden" id="regaliaIdProveedor" value="" />
+        <input type="hidden" id="regaliaEditId" value="" />
+
+        <p
+          style="
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 15px;
+            font-size: 13px;
+          "
+          id="regaliaProveedorNombre"
+        ></p>
+
+        <div class="prov-group">
+          <label>Regalías registradas</label>
+          <div id="listaRegalias" class="regalias-list">
+            <div class="sin-regalias">Cargando...</div>
+          </div>
+        </div>
+
+        <hr
+          style="margin: 15px 0; border: none; border-top: 1px solid #e2e8f0"
+        />
+
+        <h3
+          id="formRegaliaTitle"
+          style="
+            font-size: 14px;
+            color: #a63c89;
+            margin-bottom: 10px;
+            text-align: center;
+          "
+        >
+          Agregar nueva regalía
+        </h3>
+
+        <div class="prov-group">
+          <label>Tipo de Regalía / Bonificación *</label>
+          <input
+            type="text"
+            id="regaliaTipo"
+            placeholder="Ej: Descuento, Bonificación, 2x1, Regalo, Comisión..."
+            maxlength="50"
+          />
+          <small>Tipo o categoría de la regalía (máximo 50 caracteres)</small>
+        </div>
+
+        <div class="prov-group">
+          <label>Producto asociado (opcional)</label>
+          <select id="regaliaProducto">
+            <option value="">Sin producto específico</option>
+          </select>
+        </div>
+
+        <div class="prov-group">
+          <label>Cantidad (opcional)</label>
+          <input
+            type="number"
+            id="regaliaCantidad"
+            placeholder="Ej: 10"
+            min="1"
+          />
+          <small>Cantidad de unidades o porcentaje</small>
+        </div>
+
+        <div class="prov-group">
+          <label>Condición</label>
+          <input
+            type="text"
+            id="regaliaCondicion"
+            placeholder="Ej: por compras mayores a C$5000, válido en temporada navideña..."
+            maxlength="255"
+          />
+          <small
+            >Describe la condición de la regalía (máximo 255 caracteres)</small
+          >
+        </div>
+
+        <button
+          class="prov-modal-save"
+          onclick="guardarRegalia()"
+          id="btnGuardarRegalia"
+        >
+          Agregar Regalía
+        </button>
+        <button
+          class="prov-modal-cancel"
+          onclick="cancelarEdicionRegalia()"
+          id="btnCancelarRegalia"
+          style="display: none"
+        >
+          Cancelar Edición
+        </button>
+        <button class="prov-modal-cancel" onclick="cerrarModalRegalias()">
+          Cerrar
+        </button>
+      </div>
+    </div>
+
+    <!-- MODAL DE INGRESO DE MERCANCÍA -->
+    <div id="modalIngreso" class="prov-modal-overlay">
+      <div class="prov-modal" style="max-width: 560px">
+        <h2 id="ingresoModalTitle">Registrar Ingreso de Mercancía</h2>
+
+        <p
+          style="
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 15px;
+            font-size: 13px;
+          "
+          id="ingresoProveedorInfo"
+        ></p>
+
+        <div class="ingreso-form-group">
+          <label>Proveedor de Origen *</label>
+          <div class="autocomplete-wrapper">
+            <input
+              type="text"
+              id="ingresoProveedorSearch"
+              placeholder="Escriba el nombre o empresa del proveedor..."
+              autocomplete="off"
+            />
+            <div
+              id="ingresoProveedorSuggestionBox"
+              class="autocomplete-suggestion-box"
+            ></div>
+          </div>
+          <input type="hidden" id="ingresoProveedorId" />
+          <div id="ingresoProveedorError" class="error-msg"></div>
+        </div>
+
+        <div class="ingreso-form-group">
+          <label>Producto *</label>
+          <div class="autocomplete-wrapper">
+            <input
+              type="text"
+              id="ingresoProductoSearch"
+              placeholder="Escriba el nombre del producto..."
+              autocomplete="off"
+            />
+            <div
+              id="ingresoProductoSuggestionBox"
+              class="autocomplete-suggestion-box"
+            ></div>
+          </div>
+          <input type="hidden" id="ingresoProductoId" />
+          <div id="ingresoProductoError" class="error-msg"></div>
+        </div>
+
+        <div class="ingreso-form-group">
+          <label>Cantidad *</label>
+          <input
+            type="text"
+            id="ingresoCantidad"
+            value="1"
+            onkeypress="return soloNumeros(event);"
+            oninput="validarCampoNumerico(this, 1, 9999)"
+          />
+          <div id="ingresoCantidadError" class="error-msg"></div>
+        </div>
+
+        <div class="ingreso-form-group">
+          <label>Precio de Compra Unitario (C$) *</label>
+          <input
+            type="text"
+            id="ingresoPrecioCompra"
+            placeholder="Ej: 250.00"
+            onkeypress="return soloNumerosDecimal(event);"
+            oninput="validarCampoNumericoDecimal(this, 1, 100000)"
+          />
+          <div id="ingresoPrecioError" class="error-msg"></div>
+        </div>
+
+        <div class="ingreso-form-group">
+          <label>Fecha de Ingreso</label>
+          <input type="date" id="ingresoFecha" />
+        </div>
+
+        <div class="ingreso-form-group">
+          <label>Observaciones (opcional)</label>
+          <input
+            type="text"
+            id="ingresoObservaciones"
+            placeholder="Ej: Factura #123, lote nuevo..."
+            maxlength="100"
+          />
+        </div>
+
+        <button class="prov-modal-save" onclick="guardarIngreso()" style="background: linear-gradient(135deg, #10b981, #059669);">
+          Registrar Ingreso
+        </button>
+        <button class="prov-modal-cancel" onclick="cerrarModalIngreso()">
+          Cancelar
+        </button>
+      </div>
+    </div>
+
+    <!-- MODAL DE HISTORIAL DE INGRESOS -->
+    <div id="modalHistorialIngresos" class="prov-modal-overlay">
+      <div class="prov-modal" style="max-width: 700px">
+        <h2>Historial de Ingresos de Mercancía</h2>
+
+        <div class="ingreso-filtros">
+          <div>
+            <label>Proveedor</label>
+            <select id="filtroIngresoProveedor">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div>
+            <label>Producto</label>
+            <select id="filtroIngresoProducto">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div>
+            <label>Desde</label>
+            <input type="date" id="filtroIngresoDesde" />
+          </div>
+          <div>
+            <label>Hasta</label>
+            <input type="date" id="filtroIngresoHasta" />
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-bottom: 12px; justify-content: center; flex-wrap: wrap;">
+          <button class="prov-modal-save" style="padding: 8px 18px; font-size: 13px;" onclick="cargarHistorialIngresos()">
+            Buscar
+          </button>
+          <button class="prov-modal-cancel" style="padding: 8px 18px; font-size: 13px;" onclick="limpiarFiltrosIngresos()">
+            Limpiar filtros
+          </button>
+        </div>
+
+        <div id="resumenIngresos" class="ingreso-resumen"></div>
+
+        <div
+          id="listaIngresosModal"
+          style="
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 10px;
+            background: #f8fafc;
+          "
+        >
+          <div class="sin-regalias">Cargando ingresos...</div>
+        </div>
+
+        <button class="prov-modal-cancel" onclick="cerrarModalHistorialIngresos()" style="margin-top: 15px;">
+          Cerrar
+        </button>
+      </div>
+    </div>
+
+    <!-- MODAL REGISTRAR DEVOLUCIÓN -->
+    <div id="modalDevolucion" class="prov-modal-overlay">
+      <div class="prov-modal" style="max-width: 560px">
+        <h2>Registrar Devolución a Proveedor</h2>
+
+        <p style="text-align: center; color: #64748b; margin-bottom: 15px; font-size: 13px;" id="devProveedorInfo"></p>
+
+        <div class="ingreso-form-group">
+          <label>Proveedor *</label>
+          <input type="text" id="devProveedorNombre" readonly style="background:#f3f4f6;color:#6b7280;" />
+          <input type="hidden" id="devProveedorId" />
+        </div>
+
+        <div class="ingreso-form-group">
+          <label>Producto *</label>
+          <div class="autocomplete-wrapper">
+            <input type="text" id="devProductoSearch" placeholder="Escriba el nombre del producto..." autocomplete="off" />
+            <div id="devProductoSuggestionBox" class="autocomplete-suggestion-box"></div>
+          </div>
+          <input type="hidden" id="devProductoId" />
+          <div id="devProductoError" class="error-msg"></div>
+        </div>
+
+        <div class="ingreso-form-group">
+          <label>Cantidad a devolver *</label>
+          <input type="text" id="devCantidad" value="1" onkeypress="return soloNumeros(event);" oninput="validarCampoNumerico(this, 1, 9999)" />
+          <div id="devCantidadError" class="error-msg"></div>
+        </div>
+
+        <div class="ingreso-form-group">
+          <label>Motivo *</label>
+          <select id="devMotivo">
+            <option value="">Seleccione un motivo</option>
+            <option value="mal_estado">Mal estado</option>
+            <option value="vencimiento">Vencimiento</option>
+            <option value="error_entrega">Error en la entrega</option>
+            <option value="otro">Otro</option>
+          </select>
+          <div id="devMotivoError" class="error-msg"></div>
+        </div>
+
+        <div class="ingreso-form-group">
+          <label>Descripción (opcional)</label>
+          <input type="text" id="devDescripcion" placeholder="Detalle adicional del motivo" maxlength="255" />
+        </div>
+
+        <div class="ingreso-form-group">
+          <label>Monto a reclamar (C$)</label>
+          <input type="text" id="devMontoReclamado" placeholder="0.00" onkeypress="return soloNumerosDecimal(event);" />
+        </div>
+
+        <div class="ingreso-form-group">
+          <label>Fecha *</label>
+          <input type="date" id="devFecha" />
+        </div>
+
+        <button class="prov-modal-save" onclick="guardarDevolucion()" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+          Registrar Devolución
+        </button>
+        <button class="prov-modal-cancel" onclick="cerrarModalDevolucion()">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- MODAL HISTORIAL DEVOLUCIONES -->
+    <div id="modalHistorialDevoluciones" class="prov-modal-overlay">
+      <div class="prov-modal" style="max-width: 750px">
+        <h2>Historial de Devoluciones a Proveedores</h2>
+
+        <div class="ingreso-filtros">
+          <div>
+            <label>Proveedor</label>
+            <select id="filtroDevProveedor"><option value="">Todos</option></select>
+          </div>
+          <div>
+            <label>Motivo</label>
+            <select id="filtroDevMotivo">
+              <option value="">Todos</option>
+              <option value="mal_estado">Mal estado</option>
+              <option value="vencimiento">Vencimiento</option>
+              <option value="error_entrega">Error entrega</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div>
+            <label>Estado</label>
+            <select id="filtroDevEstado">
+              <option value="">Todos</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="enviado">Enviado</option>
+              <option value="reembolsado">Reembolsado</option>
+              <option value="reemplazado">Reemplazado</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
+          </div>
+          <div>
+            <label>Desde</label>
+            <input type="date" id="filtroDevDesde" />
+          </div>
+          <div>
+            <label>Hasta</label>
+            <input type="date" id="filtroDevHasta" />
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-bottom: 12px; justify-content: center; flex-wrap: wrap;">
+          <button class="prov-modal-save" style="padding: 8px 18px; font-size: 13px; background: linear-gradient(135deg, #ef4444, #dc2626);" onclick="cargarHistorialDevoluciones()">
+            Buscar
+          </button>
+          <button class="prov-modal-cancel" style="padding: 8px 18px; font-size: 13px;" onclick="limpiarFiltrosDevoluciones()">
+            Limpiar filtros
+          </button>
+        </div>
+
+        <div id="resumenDevoluciones" class="ingreso-resumen"></div>
+
+        <div          id="listaDevolucionesModal"
+          style="
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 10px;
+            background: #f8fafc;
+          "
+        >
+          <div class="sin-regalias">Cargando devoluciones...</div>
+        </div>
+
+        <button class="prov-modal-cancel" onclick="cerrarModalHistorialDevoluciones()" style="margin-top: 15px;">
+          Cerrar
+        </button>
+      </div>
+    </div>
+
     <!-- MODAL DE CONFIRMACION -->
     <div id="confirmModal" class="custom-modal-overlay">
       <div class="custom-modal">
@@ -261,6 +1044,17 @@
           </div>
         </div>
 
+        <div class="prov-details-section">
+          <div class="prov-details-section-title">
+            Regalías y Bonificaciones
+          </div>
+          <div id="detRegaliasLista" style="margin-top: 8px">
+            <div style="text-align: center; color: #94a3b8; font-size: 12px">
+              Cargando regalías...
+            </div>
+          </div>
+        </div>
+
         <div class="prov-details-actions">
           <button
             class="prov-details-edit-btn"
@@ -268,6 +1062,14 @@
             onclick="editarDesdeDetalles()"
           >
             Editar
+          </button>
+          <button
+            class="prov-details-edit-btn"
+            id="btnRegaliasDesdeDetalles"
+            onclick="abrirRegaliasDesdeDetalles()"
+            style="background: #a63c89"
+          >
+            Gestionar Regalías
           </button>
           <button
             class="prov-details-close-action-btn"
@@ -327,10 +1129,15 @@
         });
       })();
 
+      // ========== VARIABLES GLOBALES ==========
       let proveedoresData = [];
       let estadosData = {};
       let nombresCompletosData = {};
+      let productosLista = [];
+      let ingresosData = [];
+      let adminActual = { id: null, nombre: null };
 
+      // ========== MODAL PROVEEDOR ==========
       function abrirModalProveedor() {
         document.getElementById("modalProveedor").classList.add("active");
         document.body.classList.add("modal-open");
@@ -412,6 +1219,7 @@
         document.getElementById("successModalBtn").onclick = cerrarSuccessModal;
       });
 
+      // ========== MODALES AUXILIARES ==========
       function mostrarConfirmacion(mensaje, accionSi) {
         const modal = document.getElementById("confirmModal");
         document.getElementById("confirmMessage").innerText = mensaje;
@@ -460,6 +1268,7 @@
         document.getElementById("successModal").classList.remove("active");
       }
 
+      // ========== MODAL DETALLES ==========
       function abrirModalDetalles() {
         document
           .getElementById("modalDetallesProveedor")
@@ -502,6 +1311,10 @@
           proveedor.Direccion_Empresa || "No especificada";
         document.getElementById("btnEditarDesdeDetalles").dataset.proveedorId =
           idProveedor;
+        document.getElementById("btnRegaliasDesdeDetalles").dataset.proveedorId =
+          idProveedor;
+
+        cargarRegaliasEnDetalles(idProveedor);
 
         abrirModalDetalles();
       }
@@ -513,6 +1326,14 @@
         setTimeout(() => editarProveedor(parseInt(idProveedor)), 300);
       }
 
+      function abrirRegaliasDesdeDetalles() {
+        const idProveedor = document.getElementById("btnRegaliasDesdeDetalles")
+          .dataset.proveedorId;
+        cerrarModalDetalles();
+        setTimeout(() => abrirModalRegalias(parseInt(idProveedor)), 300);
+      }
+
+      // ========== NAVEGACIÓN ==========
       function volverAlMenuAdmin() {
         window.location.replace("menu_admin.html");
       }
@@ -524,6 +1345,7 @@
         );
       }
 
+      // ========== CARGA DE PROVEEDORES ==========
       async function cargarProveedores() {
         const tabla = document.getElementById("tablaProveedores");
         try {
@@ -557,6 +1379,8 @@
             JSON.stringify(nombresCompletosData),
           );
 
+          await cargarProductos();
+
           mostrarProveedores();
         } catch (error) {
           console.error("Error cargando proveedores:", error);
@@ -565,7 +1389,16 @@
         }
       }
 
-      // ========== NUEVA FUNCIÓN: ELIMINAR PROVEEDOR ==========
+      async function cargarProductos() {
+        try {
+          const respuesta = await fetch("/api/productos");
+          productosLista = await respuesta.json();
+        } catch (error) {
+          console.error("Error cargando productos:", error);
+        }
+      }
+
+      // ========== ELIMINAR PROVEEDOR ==========
       async function eliminarProveedor(idProveedor) {
         mostrarConfirmacion(
           "¿Esta seguro de que desea eliminar este proveedor? Esta accion no se puede deshacer.",
@@ -581,23 +1414,24 @@
               const resultado = await respuesta.json();
 
               if (!respuesta.ok) {
-                throw new Error(resultado.error || "Error al eliminar el proveedor");
+                throw new Error(
+                  resultado.error || "Error al eliminar el proveedor",
+                );
               }
 
-              // Eliminar de los datos locales
               proveedoresData = proveedoresData.filter(
-                (p) => p.Id_Proveedor !== idProveedor
+                (p) => p.Id_Proveedor !== idProveedor,
               );
               delete estadosData[idProveedor];
               delete nombresCompletosData[idProveedor];
 
               localStorage.setItem(
                 "estadosProveedores",
-                JSON.stringify(estadosData)
+                JSON.stringify(estadosData),
               );
               localStorage.setItem(
                 "nombresCompletosProveedores",
-                JSON.stringify(nombresCompletosData)
+                JSON.stringify(nombresCompletosData),
               );
 
               mostrarExito("Proveedor eliminado exitosamente", () => {
@@ -606,11 +1440,12 @@
             } catch (error) {
               mostrarError(error.message || "Error al eliminar el proveedor");
             }
-          }
+          },
         );
       }
 
-      function mostrarProveedores() {
+      // ========== MOSTRAR PROVEEDORES ==========
+      async function mostrarProveedores() {
         const tabla = document.getElementById("tablaProveedores");
         const busqueda = document
           .getElementById("buscarProveedor")
@@ -634,6 +1469,21 @@
           return;
         }
 
+        let regaliasPorProveedor = {};
+        try {
+          const resReg = await fetch("/api/regalias");
+          const regalias = await resReg.json();
+          regalias.forEach((r) => {
+            if (r.Id_Proveedor) {
+              if (!regaliasPorProveedor[r.Id_Proveedor])
+                regaliasPorProveedor[r.Id_Proveedor] = 0;
+              regaliasPorProveedor[r.Id_Proveedor]++;
+            }
+          });
+        } catch (e) {
+          console.warn("No se pudieron cargar regalías:", e);
+        }
+
         tabla.innerHTML = "";
         filteredData.forEach((prov) => {
           const nombreCompleto =
@@ -654,26 +1504,34 @@
             operadorStyle =
               'style="background:#e0f2fe;color:#0369a1;border:1px solid #0284c7;"';
 
+          const tieneRegalias = regaliasPorProveedor[prov.Id_Proveedor] > 0;
+          const badgeRegalia = tieneRegalias
+            ? `<span style="background:#fce7f3; color:#a63c89; padding:3px 8px; border-radius:10px; font-size:10px; font-weight:700; margin-left:6px;">${regaliasPorProveedor[prov.Id_Proveedor]} regalia(s)</span>`
+            : "";
+
           tabla.innerHTML += `
                     <div class="prov-card">
                         <div class="prov-card-header">
-                            <div class="prov-card-name">${escapeHtml(nombreCompleto)}</div>
+                            <div class="prov-card-name">${escapeHtml(nombreCompleto)}${badgeRegalia}</div>
                             <span class="prov-card-estado ${estadoClass}">${estado}</span>
                         </div>
-                        <div class="prov-card-empresa">📍 ${escapeHtml(prov.Empresa || "Sin empresa")}</div>
+                        <div class="prov-card-empresa">${escapeHtml(prov.Empresa || "Sin empresa")}</div>
                         <div class="prov-card-info">
                             <div class="prov-card-info-row">
-                                <span class="prov-card-info-label">📞 Teléfono:</span>
-                                <span class="prov-card-info-value">${prov.Num_celular || "Sin teléfono"}</span>
+                                <span class="prov-card-info-label">Telefono:</span>
+                                <span class="prov-card-info-value">${prov.Num_celular || "Sin telefono"}</span>
                             </div>
                             <div class="prov-card-info-row">
-                                <span class="prov-card-info-label">📡 Operador:</span>
+                                <span class="prov-card-info-label">Operador:</span>
                                 <span class="prov-card-operador" ${operadorStyle}>${operador}</span>
                             </div>
                         </div>
                         <div class="prov-card-buttons">
                             <button class="prov-card-btn prov-card-btn-details" onclick="verDetallesProveedor(${prov.Id_Proveedor})">Ver Detalles</button>
                             <button class="prov-card-btn prov-card-btn-edit" onclick="editarProveedor(${prov.Id_Proveedor})">Editar</button>
+                            <button class="prov-card-btn prov-card-btn-ingreso" onclick="abrirModalIngresoDesdeProveedor(${prov.Id_Proveedor})">Ingreso</button>
+                            <button class="prov-card-btn prov-card-btn-devolucion" onclick="abrirModalDevolucion(${prov.Id_Proveedor})">Devolucion</button>
+                            <button class="prov-card-btn prov-card-btn-regalias" onclick="abrirModalRegalias(${prov.Id_Proveedor})">Regalias</button>
                             <button class="prov-card-btn prov-card-btn-delete" onclick="eliminarProveedor(${prov.Id_Proveedor})">Eliminar</button>
                         </div>
                     </div>`;
@@ -691,6 +1549,7 @@
         mostrarProveedores();
       }
 
+      // ========== VALIDACIONES ==========
       function detectarOperadorPorNumero(telefono) {
         if (!telefono || telefono.length < 8) return "";
         const prefijosClaro = [
@@ -776,6 +1635,53 @@
         }
       }
 
+      function soloNumerosDecimal(event) {
+        const key = event.key;
+        if (
+          ![
+            "Backspace",
+            "Tab",
+            "Enter",
+            "Delete",
+            "ArrowLeft",
+            "ArrowRight",
+            ".",
+          ].includes(key) &&
+          (key < "0" || key > "9")
+        ) {
+          event.preventDefault();
+        }
+      }
+
+      function validarCampoNumerico(input, min, max) {
+        let valor = input.value;
+        if (valor === "") return;
+        let num = parseInt(valor);
+        if (isNaN(num)) {
+          input.value = "";
+          return;
+        }
+        if (num < min) input.value = min;
+        else if (num > max) input.value = max;
+      }
+
+      function validarCampoNumericoDecimal(input, min, max) {
+        let valor = input.value;
+        if (valor === "") return;
+        let num = parseFloat(valor);
+        if (isNaN(num)) {
+          input.value = "";
+          return;
+        }
+        if (num < min) input.value = min;
+        else if (num > max) input.value = max;
+      }
+
+      function eliminarComillas(texto) {
+        if (!texto) return "";
+        return texto.replace(/["']/g, "");
+      }
+
       function validarNombreCompleto(input) {
         input.value = input.value.replace(/\s+/g, " ");
         const valor = input.value;
@@ -842,6 +1748,7 @@
         );
       }
 
+      // ========== GUARDAR PROVEEDOR ==========
       async function guardarProveedor() {
         const nombreCompleto = document
           .getElementById("provNombre")
@@ -1062,7 +1969,1185 @@
         }
       }
 
-      window.onload = cargarProveedores;
+      // ========== REGALÍAS ==========
+      function abrirModalRegalias(idProveedor) {
+        const proveedor = proveedoresData.find(
+          (p) => p.Id_Proveedor === idProveedor,
+        );
+        if (!proveedor) {
+          mostrarError("Proveedor no encontrado");
+          return;
+        }
+
+        const nombreCompleto =
+          nombresCompletosData[proveedor.Id_Proveedor] ||
+          proveedor.Nombre ||
+          "Sin nombre";
+
+        document.getElementById("regaliaIdProveedor").value = idProveedor;
+        document.getElementById("regaliaProveedorNombre").textContent =
+          "Proveedor: " + nombreCompleto + " - " + (proveedor.Empresa || "");
+
+        resetearFormularioRegalia();
+
+        const selectProducto = document.getElementById("regaliaProducto");
+        selectProducto.innerHTML =
+          '<option value="">Sin producto específico</option>';
+        productosLista.forEach((p) => {
+          const opt = new Option(
+            `#${p.Id_Producto} - ${p.Nombre} (${p.Marca || "Sin marca"})`,
+            p.Id_Producto,
+          );
+          selectProducto.add(opt);
+        });
+
+        cargarRegaliasProveedor(idProveedor);
+
+        document.getElementById("modalRegalias").classList.add("active");
+        document.body.classList.add("modal-open");
+      }
+
+      function cerrarModalRegalias() {
+        document.getElementById("modalRegalias").classList.remove("active");
+        document.body.classList.remove("modal-open");
+        resetearFormularioRegalia();
+      }
+
+      function resetearFormularioRegalia() {
+        document.getElementById("regaliaEditId").value = "";
+        document.getElementById("regaliaTipo").value = "";
+        document.getElementById("regaliaProducto").value = "";
+        document.getElementById("regaliaCantidad").value = "";
+        document.getElementById("regaliaCondicion").value = "";
+        document.getElementById("formRegaliaTitle").textContent =
+          "Agregar nueva regalía";
+        document.getElementById("btnGuardarRegalia").textContent =
+          "Agregar Regalía";
+        document.getElementById("btnCancelarRegalia").style.display = "none";
+      }
+
+      function cancelarEdicionRegalia() {
+        resetearFormularioRegalia();
+      }
+
+      async function cargarRegaliasProveedor(idProveedor) {
+        const contenedor = document.getElementById("listaRegalias");
+        contenedor.innerHTML =
+          '<div class="sin-regalias">Cargando regalías...</div>';
+
+        try {
+          const res = await fetch(`/api/regalias/proveedor/${idProveedor}`);
+          const regalias = await res.json();
+
+          if (!res.ok) throw new Error(regalias.error || "Error");
+
+          if (!regalias || regalias.length === 0) {
+            contenedor.innerHTML =
+              '<div class="sin-regalias">Este proveedor no tiene regalías registradas</div>';
+            return;
+          }
+
+          contenedor.innerHTML = regalias
+            .map((r) => {
+              const activa = r.Activa === 1 || r.Activa === true;
+              const badgeActiva = activa
+                ? '<span class="regalia-badge-activa">ACTIVA</span>'
+                : '<span class="regalia-badge-inactiva">INACTIVA</span>';
+
+              const producto = r.Nombre_Producto
+                ? `Producto: ${escapeHtml(r.Nombre_Producto)}`
+                : "Sin producto específico";
+              const cantidad = r.Cantidad
+                ? ` | Cantidad: ${r.Cantidad}`
+                : "";
+
+              return `
+                <div class="regalia-item">
+                  <div class="regalia-info">
+                    <div class="regalia-tipo">
+                      ${escapeHtml(r.Tipo_Premio || "Sin tipo")}
+                      ${badgeActiva}
+                    </div>
+                    <div class="regalia-detalle">
+                      ${producto}${cantidad}
+                    </div>
+                    ${
+                      r.Condicion
+                        ? `<div class="regalia-condicion">"${escapeHtml(
+                            r.Condicion,
+                          )}"</div>`
+                        : ""
+                    }
+                  </div>
+                  <div class="regalia-actions">
+                    <button class="btn-regalia" onclick="editarRegalia(${
+                      r.Id_Regalia
+                    })">Editar</button>
+                    <button class="btn-regalia btn-regalia-danger" onclick="eliminarRegalia(${
+                      r.Id_Regalia
+                    })">Eliminar</button>
+                  </div>
+                </div>
+              `;
+            })
+            .join("");
+        } catch (error) {
+          console.error("Error cargando regalías:", error);
+          contenedor.innerHTML =
+            '<div class="sin-regalias" style="color:#c00">Error al cargar regalías</div>';
+        }
+      }
+
+      async function editarRegalia(idRegalia) {
+        const idProveedor = document.getElementById("regaliaIdProveedor").value;
+
+        try {
+          const res = await fetch(`/api/regalias/proveedor/${idProveedor}`);
+          const regalias = await res.json();
+          const regalia = regalias.find((r) => r.Id_Regalia === idRegalia);
+
+          if (!regalia) {
+            mostrarError("Regalía no encontrada");
+            return;
+          }
+
+          document.getElementById("regaliaEditId").value = idRegalia;
+          document.getElementById("regaliaTipo").value =
+            regalia.Tipo_Premio || "";
+          document.getElementById("regaliaProducto").value =
+            regalia.Id_Producto || "";
+          document.getElementById("regaliaCantidad").value =
+            regalia.Cantidad || "";
+          document.getElementById("regaliaCondicion").value =
+            regalia.Condicion || "";
+
+          document.getElementById("formRegaliaTitle").textContent =
+            "Editar regalía";
+          document.getElementById("btnGuardarRegalia").textContent =
+            "Guardar Cambios";
+          document.getElementById("btnCancelarRegalia").style.display = "block";
+
+          document
+            .getElementById("formRegaliaTitle")
+            .scrollIntoView({ behavior: "smooth", block: "center" });
+        } catch (error) {
+          console.error("Error cargando regalía:", error);
+          mostrarError("Error al cargar la regalía");
+        }
+      }
+
+      async function guardarRegalia() {
+        const idProveedor = document.getElementById("regaliaIdProveedor").value;
+        const editId = document.getElementById("regaliaEditId").value;
+        const tipo = document.getElementById("regaliaTipo").value.trim();
+        const idProducto = document.getElementById("regaliaProducto").value;
+        const cantidad = document.getElementById("regaliaCantidad").value;
+        const condicion = document
+          .getElementById("regaliaCondicion")
+          .value.trim();
+
+        if (!tipo) {
+          mostrarError("Ingrese el tipo de regalía");
+          return;
+        }
+
+        const datos = {
+          Id_Proveedor: parseInt(idProveedor),
+          Id_Producto: idProducto ? parseInt(idProducto) : null,
+          Cantidad: cantidad ? parseInt(cantidad) : null,
+          Tipo_Premio: tipo,
+          Condicion: condicion || null,
+        };
+
+        try {
+          let respuesta;
+          if (editId) {
+            respuesta = await fetch(`/api/regalias/${editId}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                Id_Producto: datos.Id_Producto,
+                Cantidad: datos.Cantidad,
+                Tipo_Premio: datos.Tipo_Premio,
+                Condicion: datos.Condicion,
+                Activa: 1,
+              }),
+            });
+          } else {
+            respuesta = await fetch("/api/regalias", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(datos),
+            });
+          }
+
+          const resultado = await respuesta.json();
+
+          if (!respuesta.ok) {
+            throw new Error(resultado.error || "Error al guardar");
+          }
+
+          mostrarExito(
+            editId
+              ? "Regalía actualizada exitosamente"
+              : "Regalía agregada exitosamente",
+            () => {
+              resetearFormularioRegalia();
+              cargarRegaliasProveedor(parseInt(idProveedor));
+              mostrarProveedores();
+            },
+          );
+        } catch (error) {
+          console.error("Error guardando regalía:", error);
+          mostrarError(error.message || "Error al guardar la regalía");
+        }
+      }
+
+      function eliminarRegalia(idRegalia) {
+        const idProveedor = document.getElementById("regaliaIdProveedor").value;
+
+        mostrarConfirmacion(
+          "¿Esta seguro de que desea eliminar esta regalía?",
+          async () => {
+            try {
+              const respuesta = await fetch(`/api/regalias/${idRegalia}`, {
+                method: "DELETE",
+              });
+
+              const resultado = await respuesta.json();
+
+              if (!respuesta.ok) {
+                throw new Error(
+                  resultado.error || "Error al eliminar la regalía",
+                );
+              }
+
+              mostrarExito("Regalía eliminada exitosamente", () => {
+                cargarRegaliasProveedor(parseInt(idProveedor));
+                mostrarProveedores();
+              });
+            } catch (error) {
+              console.error("Error eliminando regalía:", error);
+              mostrarError(error.message || "Error al eliminar la regalía");
+            }
+          },
+        );
+      }
+
+      async function cargarRegaliasEnDetalles(idProveedor) {
+        const contenedor = document.getElementById("detRegaliasLista");
+        contenedor.innerHTML =
+          '<div style="text-align: center; color: #94a3b8; font-size: 12px;">Cargando...</div>';
+
+        try {
+          const res = await fetch(`/api/regalias/proveedor/${idProveedor}`);
+          const regalias = await res.json();
+
+          if (!res.ok) throw new Error(regalias.error || "Error");
+
+          if (!regalias || regalias.length === 0) {
+            contenedor.innerHTML =
+              '<div style="text-align: center; color: #94a3b8; font-size: 12px; padding: 10px;">Este proveedor no ofrece regalías</div>';
+            return;
+          }
+
+          contenedor.innerHTML = regalias
+            .map((r) => {
+              const producto = r.Nombre_Producto
+                ? `Producto: ${escapeHtml(r.Nombre_Producto)}`
+                : "Sin producto";
+              const cantidad = r.Cantidad ? ` | Cant: ${r.Cantidad}` : "";
+              const condicion = r.Condicion
+                ? `<div style="font-style: italic; color: #94a3b8; font-size: 11px; margin-top: 3px;">"${escapeHtml(
+                    r.Condicion,
+                  )}"</div>`
+                : "";
+
+              return `
+                <div style="background: white; border-radius: 8px; padding: 10px; margin-bottom: 8px; border-left: 3px solid #a63c89;">
+                  <div style="font-weight: 700; color: #a63c89; font-size: 13px;">${escapeHtml(
+                    r.Tipo_Premio || "Sin tipo",
+                  )}</div>
+                  <div style="font-size: 11px; color: #64748b; margin-top: 3px;">${producto}${cantidad}</div>
+                  ${condicion}
+                </div>
+              `;
+            })
+            .join("");
+        } catch (error) {
+          console.error("Error cargando regalías en detalles:", error);
+          contenedor.innerHTML =
+            '<div style="text-align: center; color: #c00; font-size: 12px;">Error al cargar regalías</div>';
+        }
+      }
+
+      // ========== INGRESO DE MERCANCÍA ==========
+      function abrirModalIngresoGlobal() {
+        document.getElementById("ingresoModalTitle").textContent =
+          "Registrar Ingreso de Mercancía";
+        document.getElementById("ingresoProveedorInfo").textContent =
+          "Complete los datos del ingreso";
+
+        document.getElementById("ingresoProveedorId").value = "";
+        document.getElementById("ingresoProveedorSearch").value = "";
+
+        prepararModalIngreso();
+      }
+
+      function abrirModalIngresoDesdeProveedor(idProveedor) {
+        const proveedor = proveedoresData.find(
+          (p) => p.Id_Proveedor === idProveedor,
+        );
+        if (!proveedor) {
+          mostrarError("Proveedor no encontrado");
+          return;
+        }
+
+        const nombreCompleto =
+          nombresCompletosData[proveedor.Id_Proveedor] ||
+          proveedor.Nombre ||
+          "Sin nombre";
+
+        document.getElementById("ingresoModalTitle").textContent =
+          "Registrar Ingreso de Mercancía";
+        document.getElementById("ingresoProveedorInfo").textContent =
+          "Proveedor: " + nombreCompleto + " - " + (proveedor.Empresa || "");
+
+        document.getElementById("ingresoProveedorId").value = idProveedor;
+        document.getElementById("ingresoProveedorSearch").value = nombreCompleto;
+
+        prepararModalIngreso();
+      }
+
+      async function prepararModalIngreso() {
+        const hoy = new Date();
+        const year = hoy.getFullYear();
+        const month = String(hoy.getMonth() + 1).padStart(2, "0");
+        const day = String(hoy.getDate()).padStart(2, "0");
+        document.getElementById("ingresoFecha").value =
+          year + "-" + month + "-" + day;
+
+        document.getElementById("ingresoProductoSearch").value = "";
+        document.getElementById("ingresoProductoId").value = "";
+        document.getElementById("ingresoCantidad").value = "1";
+        document.getElementById("ingresoPrecioCompra").value = "";
+        document.getElementById("ingresoObservaciones").value = "";
+
+        document.querySelectorAll("#modalIngreso .error-msg").forEach((el) => {
+          el.classList.remove("show");
+        });
+
+        await cargarProductos();
+
+        initIngresoProveedorAutocomplete();
+        initIngresoProductoAutocomplete();
+
+        document.getElementById("modalIngreso").classList.add("active");
+        document.body.classList.add("modal-open");
+      }
+
+      function cerrarModalIngreso() {
+        document.getElementById("modalIngreso").classList.remove("active");
+        document.body.classList.remove("modal-open");
+      }
+
+      function initIngresoProveedorAutocomplete() {
+        const input = document.getElementById("ingresoProveedorSearch");
+        const box = document.getElementById(
+          "ingresoProveedorSuggestionBox",
+        );
+
+        const newInput = input.cloneNode(true);
+        input.parentNode.replaceChild(newInput, input);
+
+        const inputActual = document.getElementById("ingresoProveedorSearch");
+
+        function mostrarSugerencias(value) {
+          if (value.length === 0) {
+            box.style.display = "none";
+            box.innerHTML = "";
+            return;
+          }
+
+          const matches = proveedoresData
+            .filter(
+              (p) =>
+                (p.Nombre || "")
+                  .toLowerCase()
+                  .includes(value.toLowerCase()) ||
+                (p.Empresa || "")
+                  .toLowerCase()
+                  .includes(value.toLowerCase()),
+            )
+            .slice(0, 8);
+
+          if (matches.length === 0) {
+            box.style.display = "none";
+            return;
+          }
+
+          box.innerHTML = matches
+            .map(
+              (p) => `
+              <div class="autocomplete-suggestion-item" data-id="${
+                p.Id_Proveedor
+              }" data-nombre="${escapeHtml(p.Nombre)}">
+                <strong>${escapeHtml(p.Nombre)}</strong>
+                <small style="display: block; font-size: 11px; color: #666;">Empresa: ${escapeHtml(
+                  p.Empresa || "Sin empresa",
+                )} - Tel: ${p.Num_celular || "N/A"}</small>
+              </div>
+            `,
+            )
+            .join("");
+
+          box.style.display = "block";
+
+          box
+            .querySelectorAll(".autocomplete-suggestion-item")
+            .forEach((item) => {
+              item.addEventListener("click", () => {
+                inputActual.value = item.dataset.nombre;
+                document.getElementById("ingresoProveedorId").value =
+                  item.dataset.id;
+                box.style.display = "none";
+                document
+                  .getElementById("ingresoProveedorError")
+                  .classList.remove("show");
+              });
+            });
+        }
+
+        inputActual.addEventListener("input", (e) => {
+          let valor = eliminarComillas(e.target.value);
+          inputActual.value = valor;
+          mostrarSugerencias(valor);
+        });
+
+        inputActual.addEventListener("focus", () => {
+          if (inputActual.value.length > 0)
+            mostrarSugerencias(inputActual.value);
+        });
+
+        document.addEventListener("click", (e) => {
+          if (!inputActual.contains(e.target) && !box.contains(e.target)) {
+            box.style.display = "none";
+          }
+        });
+      }
+
+      function initIngresoProductoAutocomplete() {
+        const input = document.getElementById("ingresoProductoSearch");
+        const box = document.getElementById(
+          "ingresoProductoSuggestionBox",
+        );
+
+        const newInput = input.cloneNode(true);
+        input.parentNode.replaceChild(newInput, input);
+
+        const inputActual = document.getElementById("ingresoProductoSearch");
+
+        function mostrarSugerencias(value) {
+          if (value.length === 0) {
+            box.style.display = "none";
+            box.innerHTML = "";
+            return;
+          }
+
+          const matches = productosLista
+            .filter((p) =>
+              (p.Nombre || "").toLowerCase().includes(value.toLowerCase()),
+            )
+            .slice(0, 8);
+
+          if (matches.length === 0) {
+            box.style.display = "none";
+            return;
+          }
+
+          box.innerHTML = matches
+            .map(
+              (p) => `
+              <div class="autocomplete-suggestion-item" data-id="${
+                p.Id_Producto
+              }" data-nombre="${escapeHtml(p.Nombre)}">
+                <strong>${escapeHtml(p.Nombre)}</strong>
+                <small style="display: block; font-size: 11px; color: #666;">ID #${
+                  p.Id_Producto
+                } - Stock: ${p.Stock} und - Precio venta: C$${parseFloat(
+                  p.Precio,
+                ).toFixed(2)}</small>
+              </div>
+            `,
+            )
+            .join("");
+
+          box.style.display = "block";
+
+          box
+            .querySelectorAll(".autocomplete-suggestion-item")
+            .forEach((item) => {
+              item.addEventListener("click", () => {
+                inputActual.value = item.dataset.nombre;
+                document.getElementById("ingresoProductoId").value =
+                  item.dataset.id;
+                box.style.display = "none";
+                document
+                  .getElementById("ingresoProductoError")
+                  .classList.remove("show");
+              });
+            });
+        }
+
+        inputActual.addEventListener("input", (e) => {
+          let valor = eliminarComillas(e.target.value);
+          inputActual.value = valor;
+          mostrarSugerencias(valor);
+        });
+
+        inputActual.addEventListener("focus", () => {
+          if (inputActual.value.length > 0)
+            mostrarSugerencias(inputActual.value);
+        });
+
+        document.addEventListener("click", (e) => {
+          if (!inputActual.contains(e.target) && !box.contains(e.target)) {
+            box.style.display = "none";
+          }
+        });
+      }
+
+      async function guardarIngreso() {
+        document
+          .querySelectorAll("#modalIngreso .error-msg")
+          .forEach((el) => el.classList.remove("show"));
+
+        const idProveedor = document.getElementById("ingresoProveedorId").value;
+        const idProducto = document.getElementById("ingresoProductoId").value;
+        const cantidad = document.getElementById("ingresoCantidad").value;
+        const precioCompra = document
+          .getElementById("ingresoPrecioCompra")
+          .value;
+        const fecha = document.getElementById("ingresoFecha").value;
+
+        let isValid = true;
+
+        if (!idProveedor) {
+          const e = document.getElementById("ingresoProveedorError");
+          e.innerText = "Seleccione un proveedor de la lista";
+          e.classList.add("show");
+          isValid = false;
+        }
+        if (!idProducto) {
+          const e = document.getElementById("ingresoProductoError");
+          e.innerText = "Seleccione un producto de la lista";
+          e.classList.add("show");
+          isValid = false;
+        }
+        if (!cantidad || cantidad < 1 || cantidad > 9999) {
+          const e = document.getElementById("ingresoCantidadError");
+          e.innerText = "Cantidad debe estar entre 1 y 9999";
+          e.classList.add("show");
+          isValid = false;
+        }
+        if (!precioCompra || precioCompra <= 0) {
+          const e = document.getElementById("ingresoPrecioError");
+          e.innerText = "Ingrese un precio de compra válido";
+          e.classList.add("show");
+          isValid = false;
+        }
+
+        if (!isValid) return;
+
+        try {
+          const res = await fetch("/api/abastecimiento/ingreso", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              Id_Producto: parseInt(idProducto),
+              Id_Proveedor: parseInt(idProveedor),
+              Cantidad: parseInt(cantidad),
+              Precio_Compra: parseFloat(precioCompra),
+              Fecha: fecha,
+            }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || "Error al registrar el ingreso");
+          }
+
+          mostrarExito(
+            `Ingreso registrado:\n\nProducto: ${data.producto}\nProveedor: ${data.proveedor}\nCantidad: +${data.cantidad} unidades\nStock: ${data.stock_anterior} → ${data.stock_nuevo}`,
+            () => {
+              cerrarModalIngreso();
+              cargarProveedores();
+            },
+          );
+        } catch (error) {
+          console.error("Error registrando ingreso:", error);
+          mostrarError(error.message || "Error al registrar el ingreso");
+        }
+      }
+
+      // ========== HISTORIAL DE INGRESOS ==========
+      function abrirModalHistorialIngresos() {
+        document.getElementById("modalHistorialIngresos").classList.add("active");
+        document.body.classList.add("modal-open");
+
+        const selectProv = document.getElementById("filtroIngresoProveedor");
+        selectProv.innerHTML = '<option value="">Todos</option>';
+        proveedoresData.forEach((p) => {
+          const opt = new Option(
+            nombresCompletosData[p.Id_Proveedor] ||
+              p.Nombre ||
+              "Sin nombre",
+            p.Id_Proveedor,
+          );
+          selectProv.add(opt);
+        });
+
+        const selectProd = document.getElementById("filtroIngresoProducto");
+        selectProd.innerHTML = '<option value="">Todos</option>';
+        productosLista.forEach((p) => {
+          const opt = new Option(`#${p.Id_Producto} - ${p.Nombre}`, p.Id_Producto);
+          selectProd.add(opt);
+        });
+
+        document.getElementById("filtroIngresoProveedor").value = "";
+        document.getElementById("filtroIngresoProducto").value = "";
+        document.getElementById("filtroIngresoDesde").value = "";
+        document.getElementById("filtroIngresoHasta").value = "";
+
+        cargarHistorialIngresos();
+      }
+
+      function cerrarModalHistorialIngresos() {
+        document
+          .getElementById("modalHistorialIngresos")
+          .classList.remove("active");
+        document.body.classList.remove("modal-open");
+      }
+
+      function limpiarFiltrosIngresos() {
+        document.getElementById("filtroIngresoProveedor").value = "";
+        document.getElementById("filtroIngresoProducto").value = "";
+        document.getElementById("filtroIngresoDesde").value = "";
+        document.getElementById("filtroIngresoHasta").value = "";
+        cargarHistorialIngresos();
+      }
+
+      async function cargarHistorialIngresos() {
+        const contenedor = document.getElementById("listaIngresosModal");
+        const resumen = document.getElementById("resumenIngresos");
+
+        contenedor.innerHTML =
+          '<div class="sin-regalias">Cargando ingresos...</div>';
+
+        const params = new URLSearchParams();
+        const idProv = document.getElementById("filtroIngresoProveedor").value;
+        const idProd = document.getElementById("filtroIngresoProducto").value;
+        const desde = document.getElementById("filtroIngresoDesde").value;
+        const hasta = document.getElementById("filtroIngresoHasta").value;
+
+        if (idProv) params.append("id_proveedor", idProv);
+        if (idProd) params.append("id_producto", idProd);
+        if (desde) params.append("desde", desde);
+        if (hasta) params.append("hasta", hasta);
+
+        try {
+          const res = await fetch(
+            "/api/abastecimiento/historial?" + params.toString(),
+          );
+          const ingresos = await res.json();
+
+          if (!res.ok) throw new Error(ingresos.error || "Error");
+
+          if (!ingresos || ingresos.length === 0) {
+            contenedor.innerHTML =
+              '<div class="sin-regalias">No hay ingresos registrados con esos filtros</div>';
+            resumen.innerHTML = "";
+            return;
+          }
+
+          let totalUnidades = 0;
+          let totalInvertido = 0;
+          ingresos.forEach((i) => {
+            totalUnidades += parseInt(i.Cantidad_Entrada) || 0;
+            totalInvertido +=
+              (parseFloat(i.Precio_Compra) || 0) *
+              (parseInt(i.Cantidad_Entrada) || 0);
+          });
+
+          resumen.innerHTML = `
+            <span style="background: #dcfce7; color: #166534;">
+              Total unidades: ${totalUnidades}
+            </span>
+            <span style="background: #fef3c7; color: #92400e;">
+              Total invertido: C$${totalInvertido.toFixed(2)}
+            </span>
+            <span style="background: #e0e7ff; color: #3730a3;">
+              ${ingresos.length} ingreso(s)
+            </span>
+          `;
+
+          contenedor.innerHTML = ingresos
+            .map((i) => {
+              const fecha = i.FechaEntrada
+                ? new Date(i.FechaEntrada).toLocaleDateString("es-ES")
+                : "Sin fecha";
+              const total =
+                (parseFloat(i.Precio_Compra) || 0) *
+                (parseInt(i.Cantidad_Entrada) || 0);
+              return `
+                <div class="ingreso-historial-item">
+                  <div class="ingreso-historial-nombre">
+                    ${escapeHtml(i.Nombre_Producto || "Producto")}
+                  </div>
+                  <div class="ingreso-historial-detalle">
+                    <span class="ingreso-historial-cantidad">+${i.Cantidad_Entrada} und</span>
+                    <strong>Fecha:</strong> ${fecha}<br>
+                    <strong>Proveedor:</strong> ${escapeHtml(i.Nombre_Proveedor || "N/A")} - ${escapeHtml(i.Empresa_Proveedor || "")}<br>
+                    <strong>Precio compra:</strong> C$${parseFloat(i.Precio_Compra || 0).toFixed(2)} | <strong>Total:</strong> C$${total.toFixed(2)}
+                  </div>
+                </div>
+              `;
+            })
+            .join("");
+        } catch (error) {
+          console.error("Error cargando historial:", error);
+          contenedor.innerHTML =
+            '<div class="sin-regalias" style="color:#c00">Error al cargar historial</div>';
+          resumen.innerHTML = "";
+        }
+      }
+
+      // ========== DEVOLUCIONES A PROVEEDORES ==========
+
+      function abrirModalDevolucion(idProveedor) {
+        const proveedor = proveedoresData.find(
+          (p) => p.Id_Proveedor === idProveedor,
+        );
+        if (!proveedor) {
+          mostrarError("Proveedor no encontrado");
+          return;
+        }
+
+        const nombreCompleto =
+          nombresCompletosData[proveedor.Id_Proveedor] ||
+          proveedor.Nombre ||
+          "Sin nombre";
+
+        document.getElementById("devProveedorInfo").textContent =
+          "Proveedor: " + nombreCompleto + " - " + (proveedor.Empresa || "");
+
+        document.getElementById("devProveedorId").value = idProveedor;
+        document.getElementById("devProveedorNombre").value = nombreCompleto;
+
+        // Reset
+        document.getElementById("devProductoSearch").value = "";
+        document.getElementById("devProductoId").value = "";
+        document.getElementById("devCantidad").value = "1";
+        document.getElementById("devMotivo").value = "";
+        document.getElementById("devDescripcion").value = "";
+        document.getElementById("devMontoReclamado").value = "";
+
+        const hoy = new Date();
+        document.getElementById("devFecha").value =
+          hoy.getFullYear() + "-" +
+          String(hoy.getMonth() + 1).padStart(2, "0") + "-" +
+          String(hoy.getDate()).padStart(2, "0");
+
+        document.querySelectorAll("#modalDevolucion .error-msg").forEach(el => {
+          el.classList.remove("show");
+        });
+
+        initDevProductoAutocomplete();
+
+        document.getElementById("modalDevolucion").classList.add("active");
+        document.body.classList.add("modal-open");
+      }
+
+      function cerrarModalDevolucion() {
+        document.getElementById("modalDevolucion").classList.remove("active");
+        document.body.classList.remove("modal-open");
+      }
+
+      function initDevProductoAutocomplete() {
+        const input = document.getElementById("devProductoSearch");
+        const box = document.getElementById("devProductoSuggestionBox");
+
+        const newInput = input.cloneNode(true);
+        input.parentNode.replaceChild(newInput, input);
+
+        const inputActual = document.getElementById("devProductoSearch");
+
+        function mostrarSugerencias(value) {
+          if (value.length === 0) {
+            box.style.display = "none";
+            box.innerHTML = "";
+            return;
+          }
+
+          const matches = productosLista
+            .filter(p => (p.Nombre || "").toLowerCase().includes(value.toLowerCase()))
+            .slice(0, 8);
+
+          if (matches.length === 0) {
+            box.style.display = "none";
+            return;
+          }
+
+          box.innerHTML = matches.map(p => `
+            <div class="autocomplete-suggestion-item" data-id="${p.Id_Producto}" data-nombre="${escapeHtml(p.Nombre)}">
+              <strong>${escapeHtml(p.Nombre)}</strong>
+              <small style="display:block; font-size:11px; color:#666;">
+                ID #${p.Id_Producto} - Stock: ${p.Stock} und - Marca: ${escapeHtml(p.Marca || "Sin marca")}
+              </small>
+            </div>
+          `).join("");
+
+          box.style.display = "block";
+
+          box.querySelectorAll(".autocomplete-suggestion-item").forEach(item => {
+            item.addEventListener("click", () => {
+              inputActual.value = item.dataset.nombre;
+              document.getElementById("devProductoId").value = item.dataset.id;
+              box.style.display = "none";
+              document.getElementById("devProductoError").classList.remove("show");
+            });
+          });
+        }
+
+        inputActual.addEventListener("input", (e) => {
+          let valor = eliminarComillas(e.target.value);
+          inputActual.value = valor;
+          mostrarSugerencias(valor);
+        });
+
+        inputActual.addEventListener("focus", () => {
+          if (inputActual.value.length > 0) mostrarSugerencias(inputActual.value);
+        });
+
+        document.addEventListener("click", (e) => {
+          if (!inputActual.contains(e.target) && !box.contains(e.target)) {
+            box.style.display = "none";
+          }
+        });
+      }
+
+      async function guardarDevolucion() {
+        document.querySelectorAll("#modalDevolucion .error-msg").forEach(el => {
+          el.classList.remove("show");
+        });
+
+        const idProveedor = document.getElementById("devProveedorId").value;
+        const idProducto = document.getElementById("devProductoId").value;
+        const cantidad = document.getElementById("devCantidad").value;
+        const motivo = document.getElementById("devMotivo").value;
+        const descripcion = document.getElementById("devDescripcion").value.trim();
+        const montoReclamado = document.getElementById("devMontoReclamado").value;
+        const fecha = document.getElementById("devFecha").value;
+
+        let isValid = true;
+
+        if (!idProducto) {
+          const e = document.getElementById("devProductoError");
+          e.innerText = "Seleccione un producto de la lista";
+          e.classList.add("show");
+          isValid = false;
+        }
+        if (!cantidad || cantidad < 1 || cantidad > 9999) {
+          const e = document.getElementById("devCantidadError");
+          e.innerText = "Cantidad debe estar entre 1 y 9999";
+          e.classList.add("show");
+          isValid = false;
+        }
+        if (!motivo) {
+          const e = document.getElementById("devMotivoError");
+          e.innerText = "Seleccione un motivo";
+          e.classList.add("show");
+          isValid = false;
+        }
+        if (!fecha) {
+          mostrarError("La fecha es requerida");
+          isValid = false;
+        }
+
+        if (!isValid) return;
+
+        // Confirmación
+        mostrarConfirmacion(
+          `¿Registrar devolución de ${cantidad} unidad(es)?\nEl stock se reducirá automáticamente.`,
+          async () => {
+            try {
+              const res = await fetch("/api/devoluciones-proveedor", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  Id_Proveedor: parseInt(idProveedor),
+                  Id_Producto: parseInt(idProducto),
+                  Cantidad: parseInt(cantidad),
+                  Fecha: fecha,
+                  Motivo: motivo,
+                  Descripcion: descripcion || null,
+                  Id_Trabajador_Registro: adminActual.id || null,
+                  Monto_Reclamado: montoReclamado ? parseFloat(montoReclamado) : 0,
+                }),
+              });
+
+              const data = await res.json();
+
+              if (!res.ok) {
+                throw new Error(data.error || "Error al registrar la devolución");
+              }
+
+              mostrarExito(
+                `Devolución registrada:\n\nProducto: ${data.producto}\nProveedor: ${data.proveedor}\nCantidad: -${data.cantidad} unidades\nStock: ${data.stock_anterior} → ${data.stock_nuevo}`,
+                () => {
+                  cerrarModalDevolucion();
+                  cargarProveedores();
+                },
+              );
+            } catch (error) {
+              console.error("Error registrando devolución:", error);
+              mostrarError(error.message || "Error al registrar la devolución");
+            }
+          },
+        );
+      }
+
+      // ========== HISTORIAL DE DEVOLUCIONES ==========
+      function abrirModalHistorialDevoluciones() {
+        document.getElementById("modalHistorialDevoluciones").classList.add("active");
+        document.body.classList.add("modal-open");
+
+        const selectProv = document.getElementById("filtroDevProveedor");
+        selectProv.innerHTML = '<option value="">Todos</option>';
+        proveedoresData.forEach((p) => {
+          const opt = new Option(
+            nombresCompletosData[p.Id_Proveedor] || p.Nombre || "Sin nombre",
+            p.Id_Proveedor,
+          );
+          selectProv.add(opt);
+        });
+
+        document.getElementById("filtroDevProveedor").value = "";
+        document.getElementById("filtroDevMotivo").value = "";
+        document.getElementById("filtroDevEstado").value = "";
+        document.getElementById("filtroDevDesde").value = "";
+        document.getElementById("filtroDevHasta").value = "";
+
+        cargarHistorialDevoluciones();
+      }
+
+      function cerrarModalHistorialDevoluciones() {
+        document
+          .getElementById("modalHistorialDevoluciones")
+          .classList.remove("active");
+        document.body.classList.remove("modal-open");
+      }
+
+      function limpiarFiltrosDevoluciones() {
+        document.getElementById("filtroDevProveedor").value = "";
+        document.getElementById("filtroDevMotivo").value = "";
+        document.getElementById("filtroDevEstado").value = "";
+        document.getElementById("filtroDevDesde").value = "";
+        document.getElementById("filtroDevHasta").value = "";
+        cargarHistorialDevoluciones();
+      }
+
+      function obtenerBadgeMotivo(motivo) {
+        const map = {
+          mal_estado: "Mal estado",
+          vencimiento: "Vencimiento",
+          error_entrega: "Error entrega",
+          otro: "Otro"
+        };
+        return `<span class="dev-badge dev-badge-${motivo}">${map[motivo] || motivo}</span>`;
+      }
+
+      function obtenerBadgeEstado(estado) {
+        const map = {
+          pendiente: "Pendiente",
+          enviado: "Enviado",
+          reembolsado: "Reembolsado",
+          reemplazado: "Reemplazado",
+          cancelado: "Cancelado"
+        };
+        return `<span class="dev-badge dev-badge-${estado}">${map[estado] || estado}</span>`;
+      }
+
+      async function cargarHistorialDevoluciones() {
+        const contenedor = document.getElementById("listaDevolucionesModal");
+        const resumen = document.getElementById("resumenDevoluciones");
+
+        contenedor.innerHTML =
+          '<div class="sin-regalias">Cargando devoluciones...</div>';
+
+        const params = new URLSearchParams();
+        const idProv = document.getElementById("filtroDevProveedor").value;
+        const motivo = document.getElementById("filtroDevMotivo").value;
+        const estado = document.getElementById("filtroDevEstado").value;
+        const desde = document.getElementById("filtroDevDesde").value;
+        const hasta = document.getElementById("filtroDevHasta").value;
+
+        if (idProv) params.append("id_proveedor", idProv);
+        if (motivo) params.append("motivo", motivo);
+        if (estado) params.append("estado", estado);
+        if (desde) params.append("desde", desde);
+        if (hasta) params.append("hasta", hasta);
+
+        try {
+          const res = await fetch("/api/devoluciones-proveedor?" + params.toString());
+          const data = await res.json();
+
+          if (!res.ok) throw new Error(data.error || "Error");
+
+          const devoluciones = data.devoluciones || [];
+
+          if (devoluciones.length === 0) {
+            contenedor.innerHTML =
+              '<div class="sin-regalias">No hay devoluciones registradas con esos filtros</div>';
+            resumen.innerHTML = "";
+            return;
+          }
+
+          resumen.innerHTML = `
+            <span style="background: #fee2e2; color: #991b1b;">
+              Total unidades: ${data.total_unidades}
+            </span>
+            <span style="background: #fef3c7; color: #92400e;">
+              Monto reclamado: C$${parseFloat(data.total_monto_reclamado || 0).toFixed(2)}
+            </span>
+            <span style="background: #e0e7ff; color: #3730a3;">
+              ${data.total_registros} devolucion(es)
+            </span>
+          `;
+
+          contenedor.innerHTML = devoluciones.map(d => {
+            const fecha = d.Fecha ? new Date(d.Fecha).toLocaleDateString("es-ES") : "Sin fecha";
+            const monto = parseFloat(d.Monto_Reclamado || 0).toFixed(2);
+            const estadoActual = d.Estado || "pendiente";
+
+            let acciones = "";
+            if (estadoActual === "pendiente") {
+              acciones = `
+                <button class="btn-dev btn-dev-aprobar" onclick="cambiarEstadoDevolucion(${d.Id_Devolucion}, 'reembolsado')">Marcar Reembolsado</button>
+                <button class="btn-dev btn-dev-aprobar" style="background:#3b82f6;" onclick="cambiarEstadoDevolucion(${d.Id_Devolucion}, 'reemplazado')">Reemplazado</button>
+                <button class="btn-dev btn-dev-eliminar" onclick="eliminarDevolucion(${d.Id_Devolucion})">Eliminar</button>
+              `;
+            } else {
+              acciones = `
+                <button class="btn-dev btn-dev-eliminar" onclick="eliminarDevolucion(${d.Id_Devolucion})">Eliminar</button>
+              `;
+            }
+
+            return `
+              <div class="dev-item">
+                <div class="dev-header">
+                  <div class="dev-producto">
+                    ${escapeHtml(d.Nombre_Producto || "Producto")} 
+                    <span style="font-weight:400;color:#666;font-size:12px;">x${d.Cantidad}</span>
+                  </div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    ${obtenerBadgeMotivo(d.Motivo)}
+                    ${obtenerBadgeEstado(estadoActual)}
+                  </div>
+                </div>
+                <div class="dev-detalle">
+                  <strong>Proveedor:</strong> ${escapeHtml(d.Nombre_Proveedor || "N/A")} - ${escapeHtml(d.Empresa_Proveedor || "")}<br>
+                  <strong>Fecha:</strong> ${fecha} | <strong>Monto reclamado:</strong> C$${monto}<br>
+                  ${d.Descripcion ? `<strong>Descripción:</strong> ${escapeHtml(d.Descripcion)}<br>` : ""}
+                  ${d.Registrado_Por ? `<strong>Registrado por:</strong> ${escapeHtml(d.Registrado_Por)}<br>` : ""}
+                  ${d.Notas_Resolucion ? `<strong>Notas resolución:</strong> ${escapeHtml(d.Notas_Resolucion)}` : ""}
+                </div>
+                <div class="dev-acciones">${acciones}</div>
+              </div>
+            `;
+          }).join("");
+        } catch (error) {
+          console.error("Error cargando devoluciones:", error);
+          contenedor.innerHTML =
+            '<div class="sin-regalias" style="color:#c00">Error al cargar devoluciones</div>';
+          resumen.innerHTML = "";
+        }
+      }
+
+      function cambiarEstadoDevolucion(idDevolucion, nuevoEstado) {
+        mostrarConfirmacion(
+          `¿Marcar esta devolución como "${nuevoEstado}"?`,
+          async () => {
+            try {
+              const res = await fetch(`/api/devoluciones-proveedor/${idDevolucion}/estado`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  Estado: nuevoEstado,
+                  Notas_Resolucion: null
+                }),
+              });
+
+              const data = await res.json();
+
+              if (!res.ok) throw new Error(data.error || "Error al actualizar");
+
+              mostrarExito("Estado actualizado correctamente", () => {
+                cargarHistorialDevoluciones();
+              });
+            } catch (error) {
+              console.error("Error cambiando estado:", error);
+              mostrarError(error.message || "Error al actualizar estado");
+            }
+          }
+        );
+      }
+
+      function eliminarDevolucion(idDevolucion) {
+        mostrarConfirmacion(
+          "¿Está seguro de eliminar esta devolución?\nSe revertirá el stock automáticamente.",
+          async () => {
+            try {
+              const res = await fetch(`/api/devoluciones-proveedor/${idDevolucion}`, {
+                method: "DELETE",
+              });
+
+              const data = await res.json();
+
+              if (!res.ok) throw new Error(data.error || "Error al eliminar");
+
+              mostrarExito(
+                `Devolución eliminada. Stock revertido: +${data.cantidad_revertida} unidades`,
+                () => {
+                  cargarHistorialDevoluciones();
+                  cargarProveedores();
+                }
+              );
+            } catch (error) {
+              console.error("Error eliminando devolución:", error);
+              mostrarError(error.message || "Error al eliminar devolución");
+            }
+          }
+        );
+      }
+
+      // ========== INICIALIZACIÓN ==========
+      window.onload = async function () {
+        // Intentar obtener el admin actual desde localStorage
+        try {
+          const adminId = localStorage.getItem("adminId");
+          const adminNombre = localStorage.getItem("adminNombre") || localStorage.getItem("usuario");
+          if (adminId) {
+            adminActual.id = parseInt(adminId);
+            adminActual.nombre = adminNombre;
+          }
+        } catch (e) {
+          console.warn("No se pudo obtener admin actual:", e);
+        }
+
+        cargarProveedores();
+      };
     </script>
   </body>
 </html>

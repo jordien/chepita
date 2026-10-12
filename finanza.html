@@ -1,1947 +1,1483 @@
 <!doctype html>
 <html lang="es">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Panel Financiero — Tienda Chepita</title>
-    <meta
-      http-equiv="Cache-Control"
-      content="no-cache, no-store, must-revalidate"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Centro de Reportes — Tienda Chepita</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-    <style>
-      :root {
-        /* PALETA CHEPITA */
-        --primary: #8d679f;
-        --primary-dark: #6f4b7d;
-        --primary-light: #b78bc8;
+    
+    <link rel="stylesheet" href="finanza.css" />
+</head>
+<body>
 
-        --gold: #e7c85b;
-        --gold-dark: #d9ae33;
-
-        --success: #22c55e;
-        --danger: #ef4444;
-        --warning: #f59e0b;
-        --info: #3b82f6;
-
-        --bg-base: #f5f0f7;
-        --bg-panel: #f8f4fc;
-        --bg-card: #ffffff;
-        --bg-card-hover: #fcf8ff;
-        --bg-input: #ffffff;
-
-        --text-primary: #2d1f35;
-        --text-secondary: #6f5b79;
-        --text-muted: #8f7b99;
-
-        --border: #e8dff0;
-        --border-focus: #b78bc8;
-
-        --accent: #8d679f;
-        --accent-light: #b78bc8;
-        --accent-glow: rgba(141, 103, 159, 0.25);
-
-        --green: #22c55e;
-        --green-bg: rgba(34, 197, 94, 0.12);
-
-        --red: #ef4444;
-        --red-bg: rgba(239, 68, 68, 0.12);
-
-        --amber: #e7c85b;
-        --amber-bg: rgba(231, 200, 91, 0.15);
-
-        --blue: #8d679f;
-        --blue-bg: rgba(141, 103, 159, 0.12);
-
-        --radius-sm: 12px;
-        --radius: 18px;
-        --radius-lg: 24px;
-
-        --transition: 0.25s ease;
-      }
-
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-
-        background: url("imagenes/FONDO3F.png") center/cover no-repeat;
-
-        z-index: -2;
-      }
-
-      body::after {
-        content: "";
-        position: fixed;
-        inset: 0;
-
-        background: rgba(255, 255, 255, 0.35);
-
-        z-index: -1;
-      }
-
-      /* ───── LOADER ───── */
-      .loader-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(13, 15, 20, 0.85);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 3000;
-        backdrop-filter: blur(8px);
-      }
-      .loader-box {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        padding: 36px 56px;
-        text-align: center;
-      }
-      .loader-box .spinner {
-        width: 48px;
-        height: 48px;
-        border: 3px solid var(--border);
-        border-top-color: var(--accent);
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-        margin: 0 auto 16px;
-      }
-      .loader-box p {
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-        font-weight: 500;
-      }
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      /* ───── TOPBAR ───── */
-      /* ───── TOPBAR ESTILO INVENTARIO ───── */
-
-      .topbar {
-        position: sticky;
-        top: 0;
-        left: 0;
-        right: 0;
-
-        height: 85px;
-
-        background: linear-gradient(
-          135deg,
-          #6f4b7d 0%,
-          #8d679f 55%,
-          #b78bc8 100%
-        );
-
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-
-        padding: 0 35px;
-
-        z-index: 999;
-
-        overflow: hidden;
-
-        box-shadow:
-          0 8px 25px rgba(0, 0, 0, 0.15),
-          0 0 20px rgba(141, 103, 159, 0.25);
-      }
-
-      /* brillo superior */
-      .topbar::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-
-        background: radial-gradient(
-          circle at top right,
-          rgba(255, 247, 191, 0.35),
-          transparent 40%
-        );
-
-        pointer-events: none;
-      }
-
-      /* línea dorada inferior */
-      .topbar::after {
-        content: "";
-
-        position: absolute;
-        left: 30px;
-        right: 30px;
-        bottom: 0;
-
-        height: 2px;
-
-        background: linear-gradient(
-          90deg,
-          transparent,
-          #fff7bf,
-          #e7c85b,
-          #fff7bf,
-          transparent
-        );
-
-        box-shadow:
-          0 0 6px rgba(231, 200, 91, 0.6),
-          0 0 12px rgba(231, 200, 91, 0.3);
-      }
-      .topbar-left,
-      .topbar-actions {
-        position: relative;
-        z-index: 2;
-      }
-
-      .topbar .main-title h1 {
-        color: #fff;
-        background: none;
-        -webkit-background-clip: initial;
-      }
-
-      .topbar .subtitle {
-        color: rgba(255, 255, 255, 0.85);
-      }
-
-      .clock-badge {
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        color: white;
-      }
-
-      .btn-back,
-      .btn-excel,
-      .btn-pdf {
-        backdrop-filter: blur(8px);
-      }
-      .topbar-left {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-      }
-      .topbar-title {
-        font-size: 1rem;
-        font-weight: 600;
-      }
-      .topbar-title span {
-        color: var(--text-muted);
-        font-weight: 400;
-      }
-      .main-title {
-        text-align: center;
-        margin-bottom: 30px;
-      }
-      .main-title {
-        margin: 0;
-        text-align: left;
-      }
-
-      .main-title h1 {
-        font-size: 2rem;
-        font-weight: 700;
-
-        color: white;
-
-        background: none;
-        -webkit-background-clip: initial;
-
-        letter-spacing: 1px;
-      }
-
-      .subtitle {
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 0.9rem;
-        margin-top: 4px;
-      }
-
-      .clock-badge {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(255, 255, 255, 0.15);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        border-radius: 40px;
-        padding: 7px 16px;
-        font-size: 0.8rem;
-        color: white;
-        font-family: "JetBrains Mono", monospace;
-      }
-      .clock-badge i {
-        color: var(--accent);
-      }
-
-      .topbar-actions {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      .btn-action {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        padding: 8px 16px;
-        border-radius: 40px;
-        border: none;
-        font-size: 0.8rem;
-        font-weight: 600;
-        cursor: pointer;
-        font-family: "Inter", sans-serif;
-        transition: all var(--transition);
-      }
-      .btn-back {
-        background: linear-gradient(135deg, #e7c85b, #d9ae33);
-        color: white;
-        border: none;
-      }
-
-      .btn-back:hover {
-        background: #7a2a5f;
-      }
-      .btn-excel {
-        background: var(--green-bg);
-        color: var(--green);
-        border: 1px solid rgba(34, 211, 165, 0.2);
-      }
-      .btn-excel:hover {
-        background: rgba(34, 211, 165, 0.2);
-      }
-      .btn-pdf {
-        background: var(--red-bg);
-        color: var(--red);
-        border: 1px solid rgba(244, 91, 105, 0.2);
-      }
-      .btn-pdf:hover {
-        background: rgba(244, 91, 105, 0.2);
-      }
-
-      /* ───── MAIN ───── */
-      .main {
-        margin-left: 0;
-        padding-top: 64px;
-        min-height: 100vh;
-        width: 100%;
-      }
-      .page-content {
-        padding: 28px 32px;
-        max-width: 1400px;
-      }
-      .chart-card,
-      .table-card {
-        overflow: visible;
-      }
-      .chart-card-header,
-      .table-header {
-        border-radius: 24px 24px 0 0;
-      }
-
-      /* ───── ALERT BANNER ───── */
-      .alert-banner {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        background: #ffffff;
-        border: 1px solid #eadff2;
-
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-        box-shadow: 0 8px 25px rgba(111, 75, 125, 0.08);
-        border-radius: var(--radius);
-        padding: 14px 20px;
-        margin-bottom: 24px;
-        font-size: 0.86rem;
-      }
-      .alert-banner i {
-        color: var(--amber);
-        font-size: 18px;
-        flex-shrink: 0;
-      }
-      #alertMensaje {
-        color: var(--text-primary);
-      }
-
-      /* ───── FILTER CARD ───── */
-      .filter-card {
-        background: white;
-        border: 1px solid #eadff2;
-        box-shadow: 0 8px 25px rgba(111, 75, 125, 0.08);
-        border-radius: var(--radius-lg);
-        padding: 20px 24px;
-        margin-bottom: 24px;
-      }
-      .filter-card h3 {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--primary-dark);
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        margin-bottom: 16px;
-      }
-      .filtros-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 14px;
-        align-items: flex-end;
-      }
-      .filtro-group {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .filtro-group label {
-        font-size: 0.76rem;
-        font-weight: 500;
-        color: var(--text-secondary);
-      }
-      .filtro-group select,
-      .filtro-group input {
-        background: #fff;
-        border: 1px solid #e4d7ec;
-        color: var(--text-primary);
-        border-radius: var(--radius-sm);
-        font-family: "Inter", sans-serif;
-        font-size: 0.85rem;
-        padding: 10px 14px;
-        min-width: 150px;
-        transition: border-color var(--transition);
-        outline: none;
-      }
-      .filtro-group select:focus,
-      .filtro-group input:focus {
-        border-color: var(--primary-light);
-        box-shadow: 0 0 0 4px rgba(183, 139, 200, 0.15);
-      }
-
-      .btn-filtrar {
-        background: linear-gradient(
-          135deg,
-          var(--primary),
-          var(--primary-light)
-        );
-        box-shadow: 0 8px 20px rgba(141, 103, 159, 0.25);
-        color: #fff;
-        border: none;
-        padding: 11px 26px;
-        border-radius: 40px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-family: "Inter", sans-serif;
-        transition: all var(--transition);
-      }
-      .btn-filtrar:hover {
-        transform: translateY(-2px);
-        background: linear-gradient(
-          135deg,
-          var(--primary-dark),
-          var(--primary)
-        );
-      }
-
-      /* ───── KPI CARDS ───── */
-      .kpi-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 18px;
-        margin-bottom: 24px;
-      }
-      .kpi-card {
-        background: white;
-        border: 1px solid #eadff2;
-        box-shadow: 0 8px 25px rgba(111, 75, 125, 0.08);
-        border-radius: var(--radius-lg);
-        padding: 22px 22px 18px;
-        cursor: pointer;
-        transition: all var(--transition);
-        position: relative;
-        overflow: hidden;
-      }
-      .kpi-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-      }
-      .kpi-card.ingresos::before {
-        background: #22c55e;
-      }
-
-      .kpi-card.egresos::before {
-        background: #ef4444;
-      }
-
-      .kpi-card.utilidad::before {
-        background: #8d679f;
-      }
-
-      .kpi-card.margen::before {
-        background: #e7c85b;
-      }
-
-      .kpi-card:hover {
-        background: white;
-        border-color: #d9c4e5;
-        box-shadow: 0 15px 35px rgba(111, 75, 125, 0.12);
-      }
-      .kpi-card:hover .kpi-glow {
-        opacity: 1;
-      }
-      .kpi-glow {
-        position: absolute;
-        inset: 0;
-        opacity: 0;
-        transition: opacity var(--transition);
-        pointer-events: none;
-        border-radius: inherit;
-      }
-      .kpi-card.ingresos .kpi-glow {
-        background: radial-gradient(
-          ellipse at top left,
-          rgba(34, 211, 165, 0.08),
-          transparent 70%
-        );
-      }
-      .kpi-card.egresos .kpi-glow {
-        background: radial-gradient(
-          ellipse at top left,
-          rgba(244, 91, 105, 0.08),
-          transparent 70%
-        );
-      }
-      .kpi-card.utilidad .kpi-glow {
-        background: radial-gradient(
-          ellipse at top left,
-          rgba(96, 165, 250, 0.08),
-          transparent 70%
-        );
-      }
-      .kpi-card.margen .kpi-glow {
-        background: radial-gradient(
-          ellipse at top left,
-          rgba(251, 191, 36, 0.08),
-          transparent 70%
-        );
-      }
-
-      .kpi-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 14px;
-      }
-      .kpi-label {
-        font-size: 0.74rem;
-        font-weight: 600;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-      .kpi-icon {
-        width: 34px;
-        height: 34px;
-        border-radius: 9px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-      }
-      .kpi-card.ingresos .kpi-icon {
-        background: rgba(34, 197, 94, 0.12);
-        color: #22c55e;
-      }
-
-      .kpi-card.egresos .kpi-icon {
-        background: rgba(239, 68, 68, 0.12);
-        color: #ef4444;
-      }
-
-      .kpi-card.utilidad .kpi-icon {
-        background: rgba(141, 103, 159, 0.12);
-        color: #8d679f;
-      }
-
-      .kpi-card.margen .kpi-icon {
-        background: rgba(231, 200, 91, 0.15);
-        color: #d9ae33;
-      }
-
-      .kpi-value {
-        font-size: 1.65rem;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        font-family: "JetBrains Mono", monospace;
-        margin-bottom: 8px;
-      }
-      .kpi-card.ingresos .kpi-value {
-        color: var(--green);
-      }
-      .kpi-card.egresos .kpi-value {
-        color: var(--red);
-      }
-      .kpi-card.utilidad .kpi-value {
-        color: var(--blue);
-      }
-      .kpi-card.margen .kpi-value {
-        color: var(--amber);
-      }
-
-      .kpi-trend {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.75rem;
-        color: var(--text-muted);
-      }
-      .kpi-trend .pill {
-        background: var(--bg-base);
-        border-radius: 20px;
-        padding: 2px 8px;
-        font-size: 0.7rem;
-        font-weight: 600;
-      }
-
-      /* ───── CHARTS GRID ───── */
-      .charts-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 18px;
-        margin-bottom: 24px;
-      }
-      .chart-card {
-        background: white;
-        border: 1px solid #eadff2;
-        box-shadow: 0 8px 25px rgba(111, 75, 125, 0.08);
-        border-radius: var(--radius-lg);
-        overflow: hidden; /* importante */
-        padding: 0;
-      }
-      .chart-card canvas {
-        padding: 0;
-      }
-      .chart-card-header {
-        position: relative;
-
-        background: linear-gradient(
-          135deg,
-          #6f4b7d 0%,
-          #8d679f 55%,
-          #b78bc8 100%
-        );
-
-        padding: 16px 22px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-      }
-      .chart-card-header h3 {
-        font-size: 0.88rem;
-        font-weight: 600;
-        color: white;
-        display: flex;
-        align-items: center;
-        gap: 9px;
-      }
-      .chart-card-header h3 i {
-        color: white;
-        font-size: 0.85rem;
-      }
-      canvas {
-        max-height: 220px;
-      }
-
-      /* ───── TABLES ───── */
-      .tables-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 18px;
-        margin-bottom: 24px;
-      }
-      .table-card {
-        background: white;
-        border: 1px solid #eadff2;
-        box-shadow: 0 8px 25px rgba(111, 75, 125, 0.08);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-      }
-      .table-card.full-width {
-        grid-column: 1/-1;
-      }
-      .table-header {
-        position: relative;
-
-        background: linear-gradient(
-          135deg,
-          #6f4b7d 0%,
-          #8d679f 55%,
-          #b78bc8 100%
-        );
-        padding: 18px 22px 16px;
-        border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-      .table-header h3 {
-        font-size: 0.88rem;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 9px;
-        color: white;
-      }
-      .table-header h3 i {
-        color: white;
-      }
-      .table-badge {
-        background: rgba(255, 255, 255, 0.15);
-
-        color: white;
-
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        border-radius: 20px;
-        padding: 3px 10px;
-        font-size: 0.7rem;
-      }
-      .table-wrap {
-        overflow-x: auto;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      thead th {
-        background: #f8f4fc;
-        color: #6f4b7d;
-        font-size: 0.72rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        padding: 11px 22px;
-        text-align: left;
-      }
-      tbody td {
-        padding: 11px 22px;
-        font-size: 0.83rem;
-        color: var(--text-primary);
-        border-bottom: 1px solid var(--border);
-      }
-      tbody tr:last-child td {
-        border-bottom: none;
-      }
-      tbody tr:hover td {
-        background: #faf7fd;
-      }
-      tbody tr.row-section td {
-        background: #f8f4fc;
-        color: #8d679f;
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-      }
-      tbody tr.row-total td {
-        font-weight: 700;
-      }
-      tbody tr.row-positive td:last-child {
-        color: var(--green);
-      }
-      tbody tr.row-negative td:last-child {
-        color: var(--red);
-      }
-      .chart-card-header::after,
-      .table-header::after {
-        content: "";
-
-        position: absolute;
-        left: 18px;
-        right: 18px;
-        bottom: 0;
-
-        height: 2px;
-
-        background: linear-gradient(
-          90deg,
-          transparent,
-          #fff7bf,
-          #e7c85b,
-          #fff7bf,
-          transparent
-        );
-
-        box-shadow:
-          0 0 6px rgba(231, 200, 91, 0.6),
-          0 0 12px rgba(231, 200, 91, 0.3);
-      }
-      /* ───── MODAL ───── */
-      .modal-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(13, 15, 20, 0.8);
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        backdrop-filter: blur(6px);
-      }
-      .modal-container {
-        background: white;
-        border: 1px solid #eadff2;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-        border-radius: var(--radius-lg);
-        width: 90%;
-        max-width: 520px;
-        max-height: 80vh;
-        overflow-y: auto;
-      }
-      .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px 24px;
-        border-bottom: 1px solid var(--border);
-        background: #faf6fd;
-      }
-      .modal-header h3 {
-        font-size: 0.95rem;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        color: #6f4b7d;
-      }
-      .modal-header h3 i {
-        color: #e7c85b;
-      }
-      .modal-close {
-        background: var(--bg-input);
-        border: none;
-        color: var(--text-secondary);
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        cursor: pointer;
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background var(--transition);
-      }
-      .modal-close:hover {
-        background: var(--red-bg);
-        color: var(--red);
-      }
-      .modal-body {
-        padding: 24px;
-      }
-      .modal-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 11px 0;
-        border-bottom: 1px solid var(--border);
-        font-size: 0.85rem;
-      }
-      .modal-item span:first-child {
-        color: var(--text-secondary);
-      }
-      .modal-item span:last-child {
-        font-weight: 600;
-        font-family: "JetBrains Mono", monospace;
-      }
-      .modal-total {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: var(--bg-panel);
-        border-radius: var(--radius-sm);
-        padding: 14px 16px;
-        margin-top: 16px;
-        font-weight: 700;
-      }
-      .modal-total span:last-child {
-        font-family: "JetBrains Mono", monospace;
-        color: var(--accent-light);
-      }
-      .modal-subtitulo {
-        color: var(--accent-light);
-        font-weight: 600;
-        font-size: 0.8rem;
-        margin: 16px 0 8px;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-
-      /* ───── FOOTER ───── */
-      .admin-footer {
-        padding: 20px 32px;
-        background: white;
-        border-top: 1px solid #eadff2;
-        color: #8f7b99;
-        font-size: 0.75rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      /* ───── STATUS PILLS ───── */
-      .pill-good {
-        background: var(--green-bg);
-        color: var(--green);
-        border-radius: 20px;
-        padding: 3px 10px;
-        font-size: 0.72rem;
-        font-weight: 600;
-      }
-      .pill-warning {
-        background: var(--amber-bg);
-        color: var(--amber);
-        border-radius: 20px;
-        padding: 3px 10px;
-        font-size: 0.72rem;
-        font-weight: 600;
-      }
-      .pill-critical {
-        background: var(--red-bg);
-        color: var(--red);
-        border-radius: 20px;
-        padding: 3px 10px;
-        font-size: 0.72rem;
-        font-weight: 600;
-      }
-
-      /* ───── LOADING TEXT ───── */
-      .loading-cell {
-        text-align: center;
-        color: var(--text-muted);
-        padding: 28px !important;
-        font-size: 0.85rem;
-      }
-
-      /* ───── SCROLLBAR ───── */
-      ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-      }
-      ::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: var(--border);
-        border-radius: 3px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: var(--accent);
-      }
-
-      /* ───── MODAL DE CONFIRMACION ───── */
-      .confirm-modal-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(15, 23, 42, 0.55);
-        justify-content: center;
-        align-items: center;
-        z-index: 10000;
-        overflow-y: auto;
-      }
-
-      .confirm-modal {
-        font-family: "Inter", sans-serif;
-        background: white;
-        padding: 28px;
-        border-radius: 18px;
-        max-width: 450px;
-        width: 90%;
-        text-align: center;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-        animation: modalFadeIn 0.25s ease;
-        border: 1px solid #e2e8f0;
-      }
-
-      @keyframes modalFadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(-20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .confirm-modal h3 {
-        margin: 0 0 15px 0;
-        color: #1e293b;
-        font-size: 20px;
-        font-weight: 600;
-      }
-
-      .confirm-modal p {
-        margin: 15px 0;
-        color: #64748b;
-        font-size: 15px;
-        line-height: 1.6;
-      }
-
-      .confirm-modal-buttons {
-        display: flex;
-        gap: 12px;
-        justify-content: center;
-        margin-top: 10px;
-      }
-
-      .confirm-modal-btn {
-        padding: 10px 24px;
-        border-radius: 12px;
-        border: none;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 14px;
-        transition: all 0.25s ease;
-      }
-
-      .confirm-modal-btn.confirm {
-        background: linear-gradient(135deg, #7a5b8f 0%, #8d679f 60%, #b78bc8 100%);
-        color: white;
-        border: 1px solid rgba(231, 200, 91, 0.35);
-        box-shadow: 0 8px 18px rgba(141, 103, 159, 0.3), 0 0 10px rgba(231, 200, 91, 0.15);
-      }
-
-      .confirm-modal-btn.confirm:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 24px rgba(141, 103, 159, 0.4), 0 0 18px rgba(231, 200, 91, 0.25);
-      }
-
-      .confirm-modal-btn.cancel {
-        background: #f1f5f9;
-        color: #334155;
-      }
-
-      .confirm-modal-btn.cancel:hover {
-        background: #e2e8f0;
-      }
-
-      /* ───── RESPONSIVE ───── */
-      @media (max-width: 1100px) {
-        .kpi-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-        .charts-grid {
-          grid-template-columns: 1fr 1fr;
-        }
-      }
-      @media (max-width: 768px) {
-        .kpi-grid {
-          grid-template-columns: 1fr 1fr;
-        }
-        .charts-grid {
-          grid-template-columns: 1fr;
-        }
-        .tables-grid {
-          grid-template-columns: 1fr;
-        }
-        .page-content {
-          padding: 20px 16px;
-        }
-        .topbar {
-          left: 0;
-          padding: 0 16px;
-        }
-        .main {
-          margin-left: 0;
-          width: 100%;
-        }
-        .confirm-modal {
-          width: 95%;
-          padding: 20px;
-        }
-        .confirm-modal-btn {
-          padding: 8px 16px;
-          font-size: 13px;
-        }
-        .confirm-modal-buttons {
-          flex-direction: column;
-        }
-      }
-      @media (max-width: 480px) {
-        .kpi-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-    </style>
-  </head>
-  <body>
     <!-- LOADER -->
     <div class="loader-overlay" id="loaderOverlay">
-      <div class="loader-box">
-        <div class="spinner"></div>
-        <p>Analizando datos financieros…</p>
-      </div>
+        <div class="loader-box">
+            <div class="spinner"></div>
+            <p>Cargando reporte…</p>
+        </div>
     </div>
 
     <!-- TOPBAR -->
     <header class="topbar">
-      <div class="topbar-left">
-        <div class="main-title">
-          <h1>FINANZAS</h1>
-          <p class="subtitle">Estado financiero y rentabilidad del negocio</p>
+        <div class="topbar-left">
+            <div class="main-title">
+                <h1>CENTRO DE REPORTES</h1>
+                <p class="subtitle">Análisis completo del negocio</p>
+            </div>
         </div>
-      </div>
-      <div class="topbar-actions">
-        <div class="clock-badge" id="currentDate">
-          <i
-            class="fas fa-circle"
-            style="font-size: 7px; color: var(--green)"
-          ></i>
-          <span id="clockText">—</span>
+        <div class="topbar-actions">
+            <div class="clock-badge">
+                <i class="fas fa-circle" style="font-size: 7px; color: #22c55e"></i>
+                <span id="clockText">—</span>
+            </div>
+            <button class="btn-action btn-excel" onclick="exportarExcel()">
+                <i class="fas fa-file-excel"></i> Excel
+            </button>
+            <button class="btn-action btn-pdf" onclick="exportarPDF()">
+                <i class="fas fa-file-pdf"></i> PDF
+            </button>
+            <button class="btn-action btn-back" onclick="mostrarConfirmacionVolver()">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
         </div>
-        <button class="btn-action btn-excel" onclick="exportarExcel()">
-          <i class="fas fa-file-excel"></i> Excel
-        </button>
-        <button class="btn-action btn-pdf" onclick="exportarPDF()">
-          <i class="fas fa-file-pdf"></i> PDF
-        </button>
-        <button
-          class="btn-action btn-back"
-          onclick="mostrarConfirmacionVolver()"
-        >
-          <i class="fas fa-arrow-left"></i> Volver
-        </button>
-      </div>
     </header>
 
     <!-- MAIN -->
     <div class="main">
-      <div class="page-content" id="reportContent">
-        <!-- ALERT STOCK -->
-        <div class="alert-banner" id="alertStockBajo">
-          <i class="fas fa-exclamation-triangle"></i>
-          <span id="alertMensaje">Verificando inventario…</span>
+        <div class="page-content">
+
+            <!-- PESTAÑAS -->
+            <div class="tabs-container">
+                <button class="tab-btn active" data-tab="ventas">
+                    <i class="fas fa-shopping-cart"></i> Historial Ventas
+                </button>
+                <button class="tab-btn" data-tab="financiero">
+                    <i class="fas fa-chart-line"></i> Financiero
+                </button>
+                <button class="tab-btn" data-tab="asistencia">
+                    <i class="fas fa-user-clock"></i> Asistencia
+                </button>
+                <button class="tab-btn" data-tab="mercancia">
+                    <i class="fas fa-truck-loading"></i> Mercancía
+                </button>
+                <button class="tab-btn" data-tab="devoluciones">
+                    <i class="fas fa-undo-alt"></i> Devoluciones
+                </button>
+                <button class="tab-btn" data-tab="existencias">
+                    <i class="fas fa-boxes-stacked"></i> Existencias
+                </button>
+                <button class="tab-btn" data-tab="desempeno">
+                    <i class="fas fa-trophy"></i> Desempeño
+                </button>
+                <button class="tab-btn" data-tab="mermas">
+                    <i class="fas fa-exclamation-triangle"></i> Mermas
+                </button>
+                <button class="tab-btn" data-tab="config">
+                    <i class="fas fa-cog"></i> Configuración
+                </button>
+            </div>
+
+            <!-- FILTROS GENERALES -->
+            <div class="filter-card">
+                <h3>Parámetros del Reporte</h3>
+                <div class="filtros-grid">
+                    <div class="filtro-group" id="grupoDesde">
+                        <label>Desde</label>
+                        <input type="date" id="fechaDesde" />
+                    </div>
+                    <div class="filtro-group" id="grupoHasta">
+                        <label>Hasta</label>
+                        <input type="date" id="fechaHasta" />
+                    </div>
+                    <div class="filtro-group" id="grupoAnio" style="display: none;">
+                        <label>Año</label>
+                        <select id="anioSelect"></select>
+                    </div>
+                    <div class="filtro-group" id="grupoMes" style="display: none;">
+                        <label>Mes</label>
+                        <select id="mesSelect">
+                            <option value="1">Enero</option>
+                            <option value="2">Febrero</option>
+                            <option value="3">Marzo</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Mayo</option>
+                            <option value="6">Junio</option>
+                            <option value="7">Julio</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
+                        </select>
+                    </div>
+                    <div class="filtro-group" id="grupoProveedor" style="display: none;">
+                        <label>Proveedor</label>
+                        <select id="proveedorSelect"><option value="">Todos</option></select>
+                    </div>
+                    <div class="filtro-group" id="grupoMotivo" style="display: none;">
+                        <label>Motivo</label>
+                        <select id="motivoSelect">
+                            <option value="">Todos</option>
+                            <option value="mal_estado">Mal estado</option>
+                            <option value="vencimiento">Vencimiento</option>
+                            <option value="error_entrega">Error entrega</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+                    <div class="filtro-group" id="grupoEstadoDev" style="display: none;">
+                        <label>Estado</label>
+                        <select id="estadoDevSelect">
+                            <option value="">Todos</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="enviado">Enviado</option>
+                            <option value="reembolsado">Reembolsado</option>
+                            <option value="reemplazado">Reemplazado</option>
+                            <option value="cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                    <div class="filtro-group">
+                        <button class="btn-filtrar" id="btnFiltrar">
+                            <i class="fas fa-search"></i> Consultar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENIDO DE LAS PESTAÑAS -->
+            <div class="report-content" id="reportContent">
+
+                <!-- PESTAÑA: VENTAS -->
+                <div class="tab-content active" id="tab-ventas">
+                    <div class="kpi-grid">
+                        <div class="kpi-card ingresos">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Total Ventas</span>
+                                <div class="kpi-icon"><i class="fas fa-shopping-cart"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiVentasTotal">C$ 0.00</div>
+                        </div>
+                        <div class="kpi-card utilidad">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Facturas</span>
+                                <div class="kpi-icon"><i class="fas fa-file-invoice"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiVentasCantidad">0</div>
+                        </div>
+                        <div class="kpi-card margen">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Pagos Mixtos</span>
+                                <div class="kpi-icon"><i class="fas fa-coins"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiVentasMixtas">0</div>
+                        </div>
+                    </div>
+
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3><i class="fas fa-list"></i> Detalle de Ventas</h3>
+                        </div>
+                        <div class="table-wrap">
+                            <table id="tablaVentas">
+                                <thead>
+                                    <tr>
+                                        <th>Factura</th>
+                                        <th>Fecha</th>
+                                        <th>Cliente</th>
+                                        <th>Vendedor</th>
+                                        <th>Método</th>
+                                        <th>Monto</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="7" class="loading-cell">Presione "Consultar" para cargar datos</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA: FINANCIERO -->
+                <div class="tab-content" id="tab-financiero">
+                    <div class="kpi-grid">
+                        <div class="kpi-card ingresos">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Ventas Netas</span>
+                                <div class="kpi-icon"><i class="fas fa-arrow-trend-up"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiFinVentas">C$ 0.00</div>
+                        </div>
+                        <div class="kpi-card egresos">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Compras</span>
+                                <div class="kpi-icon"><i class="fas fa-truck"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiFinCompras">C$ 0.00</div>
+                        </div>
+                        <div class="kpi-card utilidad">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Utilidad Neta</span>
+                                <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiFinUtilidad">C$ 0.00</div>
+                        </div>
+                        <div class="kpi-card margen">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Margen</span>
+                                <div class="kpi-icon"><i class="fas fa-percent"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiFinMargen">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3><i class="fas fa-file-invoice-dollar"></i> Estado de Resultados</h3>
+                        </div>
+                        <div class="table-wrap">
+                            <table id="tablaFinanciero">
+                                <thead>
+                                    <tr><th>Concepto</th><th>Monto</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="2" class="loading-cell">Presione "Consultar" para cargar datos</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA: ASISTENCIA -->
+                <div class="tab-content" id="tab-asistencia">
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3><i class="fas fa-user-clock"></i> Reporte de Asistencia del Personal</h3>
+                            <span class="table-badge" id="badgeAsistencia">—</span>
+                        </div>
+                        <div class="table-wrap">
+                            <table id="tablaAsistencia">
+                                <thead>
+                                    <tr>
+                                        <th>Trabajador</th>
+                                        <th>Días Asistidos</th>
+                                        <th>Jornadas Completas</th>
+                                        <th>Total Horas</th>
+                                        <th>% Asistencia</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="5" class="loading-cell">Presione "Consultar" para cargar datos</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA: MERCANCÍA -->
+                <div class="tab-content" id="tab-mercancia">
+                    <div class="kpi-grid">
+                        <div class="kpi-card ingresos">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Total Registros</span>
+                                <div class="kpi-icon"><i class="fas fa-box"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiMercRegistros">0</div>
+                        </div>
+                        <div class="kpi-card utilidad">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Total Unidades</span>
+                                <div class="kpi-icon"><i class="fas fa-cubes"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiMercUnidades">0</div>
+                        </div>
+                        <div class="kpi-card margen">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Total Invertido</span>
+                                <div class="kpi-icon"><i class="fas fa-money-bill"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiMercInvertido">C$ 0.00</div>
+                        </div>
+                    </div>
+
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3><i class="fas fa-truck-loading"></i> Mercancía Ingresada por Proveedor</h3>
+                        </div>
+                        <div class="table-wrap">
+                            <table id="tablaMercancia">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Proveedor</th>
+                                        <th>Empresa</th>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Precio Compra</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="7" class="loading-cell">Presione "Consultar" para cargar datos</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA: DEVOLUCIONES -->
+                <div class="tab-content" id="tab-devoluciones">
+                    <div class="kpi-grid">
+                        <div class="kpi-card egresos">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Total Devoluciones</span>
+                                <div class="kpi-icon"><i class="fas fa-undo"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiDevTotal">0</div>
+                        </div>
+                        <div class="kpi-card margen">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Unidades Devueltas</span>
+                                <div class="kpi-icon"><i class="fas fa-boxes"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiDevUnidades">0</div>
+                        </div>
+                        <div class="kpi-card utilidad">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Monto Reclamado</span>
+                                <div class="kpi-icon"><i class="fas fa-hand-holding-dollar"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiDevMonto">C$ 0.00</div>
+                        </div>
+                    </div>
+
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3><i class="fas fa-undo-alt"></i> Devoluciones y Rechazos a Proveedores</h3>
+                        </div>
+                        <div class="table-wrap">
+                            <table id="tablaDevoluciones">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Proveedor</th>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Motivo</th>
+                                        <th>Estado</th>
+                                        <th>Monto</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="7" class="loading-cell">Presione "Consultar" para cargar datos</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA: EXISTENCIAS -->
+                <div class="tab-content" id="tab-existencias">
+                    <div class="kpi-grid">
+                        <div class="kpi-card utilidad">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Total Productos</span>
+                                <div class="kpi-icon"><i class="fas fa-boxes-stacked"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiExiTotal">0</div>
+                        </div>
+                        <div class="kpi-card egresos">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Bajo Stock</span>
+                                <div class="kpi-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiExiBajo">0</div>
+                        </div>
+                        <div class="kpi-card ingresos">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Total Unidades</span>
+                                <div class="kpi-icon"><i class="fas fa-cubes"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiExiUnidades">0</div>
+                        </div>
+                    </div>
+
+                    <div class="filter-inline">
+                        <label>
+                            <input type="checkbox" id="chkSoloBajoStock" /> 
+                            Mostrar solo productos con bajo stock
+                        </label>
+                    </div>
+
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3><i class="fas fa-boxes-stacked"></i> Existencias de Inventario</h3>
+                        </div>
+                        <div class="table-wrap">
+                            <table id="tablaExistencias">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Categoría</th>
+                                        <th>Marca</th>
+                                        <th>Stock Actual</th>
+                                        <th>Nivel Mínimo</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="7" class="loading-cell">Presione "Consultar" para cargar datos</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA: DESEMPEÑO -->
+                <div class="tab-content" id="tab-desempeno">
+                    <div class="winner-card" id="cardGanador">
+                        <div class="winner-badge"><i class="fas fa-trophy"></i> MEJOR DESEMPEÑO DEL MES</div>
+                        <h2 id="winnerName">Sin datos</h2>
+                        <div class="winner-stats">
+                            <div class="winner-stat">
+                                <span class="stat-value" id="winnerVentas">0</span>
+                                <span class="stat-label">Ventas</span>
+                            </div>
+                            <div class="winner-stat">
+                                <span class="stat-value" id="winnerAsistencia">0%</span>
+                                <span class="stat-label">Asistencia</span>
+                            </div>
+                            <div class="winner-stat">
+                                <span class="stat-value" id="winnerMinimo">80%</span>
+                                <span class="stat-label">Mínimo Requerido</span>
+                            </div>
+                            <div class="winner-stat highlight">
+                                <span class="stat-value" id="winnerIncentivo">C$ 0.00</span>
+                                <span class="stat-label">Incentivo</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3><i class="fas fa-users"></i> Desempeño de Todos los Trabajadores</h3>
+                        </div>
+                        <div class="table-wrap">
+                            <table id="tablaDesempeno">
+                                <thead>
+                                    <tr>
+                                        <th>Posición</th>
+                                        <th>Nombre</th>
+                                        <th>Ventas</th>
+                                        <th>% Asistencia</th>
+                                        <th>Cumple Mínimo</th>
+                                        <th>Puntaje</th>
+                                        <th>Incentivo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="7" class="loading-cell">Presione "Consultar" para cargar datos</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA: MERMAS -->
+                <div class="tab-content" id="tab-mermas">
+                    <div class="kpi-grid">
+                        <div class="kpi-card egresos">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Total Registros</span>
+                                <div class="kpi-icon"><i class="fas fa-exclamation-circle"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiMermaRegistros">0</div>
+                        </div>
+                        <div class="kpi-card margen">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Unidades Perdidas</span>
+                                <div class="kpi-icon"><i class="fas fa-times-circle"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiMermaUnidades">0</div>
+                        </div>
+                    </div>
+
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3><i class="fas fa-exclamation-triangle"></i> Mermas y Pérdidas</h3>
+                        </div>
+                        <div class="table-wrap">
+                            <table id="tablaMermas">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Producto</th>
+                                        <th>Marca</th>
+                                        <th>Categoría</th>
+                                        <th>Cantidad</th>
+                                        <th>Motivo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="6" class="loading-cell">Presione "Consultar" para cargar datos</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA: CONFIGURACIÓN -->
+                <div class="tab-content" id="tab-config">
+                    <div class="config-card">
+                        <div class="config-header">
+                            <h3><i class="fas fa-cog"></i> Configuración de Incentivos</h3>
+                            <p>Configure el porcentaje mínimo de asistencia y los montos de incentivo mensual</p>
+                        </div>
+
+                        <div class="config-form">
+                            <div class="config-group">
+                                <label>Porcentaje Mínimo de Asistencia (%)</label>
+                                <input type="number" id="cfgPorcentaje" min="0" max="100" step="0.01" value="80" />
+                                <small>Rango: 0% - 100%</small>
+                            </div>
+
+                            <div class="config-section">
+                                <h4><i class="fas fa-award"></i> Montos de Incentivos (C$)</h4>
+                                <div class="config-montos-grid">
+                                    <div class="config-group">
+                                        <label>1er Lugar</label>
+                                        <input type="number" id="cfgMonto1" min="0" step="0.01" value="1500" />
+                                    </div>
+                                    <div class="config-group">
+                                        <label>2do Lugar</label>
+                                        <input type="number" id="cfgMonto2" min="0" step="0.01" value="1000" />
+                                    </div>
+                                    <div class="config-group">
+                                        <label>3er Lugar</label>
+                                        <input type="number" id="cfgMonto3" min="0" step="0.01" value="500" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="config-actions">
+                                <button class="btn-save-config" onclick="guardarConfigIncentivos()">
+                                    <i class="fas fa-save"></i> Guardar Configuración
+                                </button>
+                                <button class="btn-reload-config" onclick="cargarConfigIncentivos()">
+                                    <i class="fas fa-redo"></i> Recargar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-footer">
+                <span>Sistema de Gestión Comercial — Versión 3.0</span>
+                <span>Centro de Reportes</span>
+            </div>
         </div>
-
-        <!-- FILTERS -->
-        <div class="filter-card">
-          <h3>Parámetros del Reporte</h3>
-          <div class="filtros-grid">
-            <div class="filtro-group">
-              <label>Tipo de Reporte</label>
-              <select id="tipoReporte">
-                <option value="dia">Por Día</option>
-                <option value="semana">Por Semana</option>
-                <option value="mes" selected>Por Mes</option>
-                <option value="anio">Por Año</option>
-                <option value="rango">Rango Personalizado</option>
-              </select>
-            </div>
-            <div class="filtro-group" id="grupoAnio">
-              <label>Año</label>
-              <select id="anioSelect"></select>
-            </div>
-            <div class="filtro-group" id="grupoMes" style="display: none">
-              <label>Mes</label>
-              <select id="mesSelect">
-                <option value="1">Enero</option>
-                <option value="2">Febrero</option>
-                <option value="3">Marzo</option>
-                <option value="4">Abril</option>
-                <option value="5">Mayo</option>
-                <option value="6">Junio</option>
-                <option value="7">Julio</option>
-                <option value="8">Agosto</option>
-                <option value="9">Septiembre</option>
-                <option value="10">Octubre</option>
-                <option value="11">Noviembre</option>
-                <option value="12">Diciembre</option>
-              </select>
-            </div>
-            <div class="filtro-group" id="grupoRango" style="display: none">
-              <label>Desde</label>
-              <input type="date" id="fechaDesde" />
-            </div>
-            <div
-              class="filtro-group"
-              id="grupoRangoHasta"
-              style="display: none"
-            >
-              <label>Hasta</label>
-              <input type="date" id="fechaHasta" />
-            </div>
-            <div class="filtro-group">
-              <button class="btn-filtrar" id="btnFiltrar">
-                <i class="fas fa-search"></i> Consultar
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- KPI CARDS -->
-        <div class="kpi-grid">
-          <div class="kpi-card ingresos" onclick="abrirModalIngresos()">
-            <div class="kpi-glow"></div>
-            <div class="kpi-header">
-              <span class="kpi-label">Ingresos Netos</span>
-              <div class="kpi-icon"><i class="fas fa-arrow-trend-up"></i></div>
-            </div>
-            <div class="kpi-value" id="totalIngresos">C$ 0.00</div>
-            <div class="kpi-trend">
-              <span id="trendIngresos" class="pill">vs anterior: —</span>
-            </div>
-          </div>
-          <div class="kpi-card egresos" onclick="abrirModalEgresos()">
-            <div class="kpi-glow"></div>
-            <div class="kpi-header">
-              <span class="kpi-label">Egresos Totales</span>
-              <div class="kpi-icon">
-                <i class="fas fa-arrow-trend-down"></i>
-              </div>
-            </div>
-            <div class="kpi-value" id="totalEgresos">C$ 0.00</div>
-            <div class="kpi-trend">
-              <span id="trendEgresos" class="pill">vs anterior: —</span>
-            </div>
-          </div>
-          <div class="kpi-card utilidad" onclick="abrirModalUtilidad()">
-            <div class="kpi-glow"></div>
-            <div class="kpi-header">
-              <span class="kpi-label">Utilidad Neta</span>
-              <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
-            </div>
-            <div class="kpi-value" id="utilidadNeta">C$ 0.00</div>
-            <div class="kpi-trend">
-              <span id="trendUtilidad" class="pill">vs anterior: —</span>
-            </div>
-          </div>
-          <div class="kpi-card margen" onclick="abrirModalMargen()">
-            <div class="kpi-glow"></div>
-            <div class="kpi-header">
-              <span class="kpi-label">Margen de Utilidad</span>
-              <div class="kpi-icon"><i class="fas fa-percent"></i></div>
-            </div>
-            <div class="kpi-value" id="margenUtilidad">0%</div>
-            <div class="kpi-trend">
-              <span id="statusMargen" class="pill">—</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- CHARTS -->
-        <div class="charts-grid">
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <h3><i class="fas fa-chart-bar"></i> Ingresos vs Egresos</h3>
-            </div>
-            <canvas id="chartComparativo"></canvas>
-          </div>
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <h3><i class="fas fa-chart-area"></i> Evolución del Período</h3>
-            </div>
-            <canvas id="chartEvolucion"></canvas>
-          </div>
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <h3><i class="fas fa-chart-pie"></i> Ventas por Categoría</h3>
-            </div>
-            <canvas id="chartCategorias"></canvas>
-          </div>
-        </div>
-
-        <!-- TABLES -->
-        <div class="tables-grid">
-          <!-- Estado de Resultados -->
-          <div class="table-card">
-            <div class="table-header">
-              <h3>
-                <i class="fas fa-file-invoice-dollar"></i> Estado de Resultados
-              </h3>
-            </div>
-            <div class="table-wrap">
-              <table id="tablaEstadoResultados">
-                <thead>
-                  <tr>
-                    <th>Concepto</th>
-                    <th>Monto</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td colspan="2" class="loading-cell">Cargando…</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Top Clientes -->
-          <div class="table-card">
-            <div class="table-header">
-              <h3><i class="fas fa-trophy"></i> Top Clientes</h3>
-              <span class="table-badge">Top 10</span>
-            </div>
-            <div class="table-wrap">
-              <table id="tablaTopClientes">
-                <thead>
-                  <tr>
-                    <th>Cliente</th>
-                    <th>Compras</th>
-                    <th>Unidades</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td colspan="3" class="loading-cell">Cargando…</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Costo de Ventas -->
-          <div class="table-card full-width">
-            <div class="table-header">
-              <h3>
-                <i class="fas fa-boxes-stacked"></i> Desglose Costo de Ventas
-              </h3>
-              <span class="table-badge">Top 15 productos</span>
-            </div>
-            <div class="table-wrap">
-              <table id="tablaCostoVentas">
-                <thead>
-                  <tr>
-                    <th>Producto</th>
-                    <th>Cantidad</th>
-                    <th>Costo Unit.</th>
-                    <th>Costo Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td colspan="4" class="loading-cell">Cargando…</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- /page-content -->
-
-      <div class="admin-footer">
-        <span>Sistema de Gestión Comercial — Versión 3.0</span>
-        <span>Panel Financiero Profesional</span>
-      </div>
     </div>
-    <!-- /main -->
 
-    <!-- MODAL DESGLOSE -->
-    <div id="modalDesglose" class="modal-overlay">
-      <div class="modal-container">
-        <div class="modal-header">
-          <h3 id="modalTitulo"><i class="fas fa-info-circle"></i> Desglose</h3>
-          <button class="modal-close" onclick="cerrarModal()">
-            <i class="fas fa-times"></i>
-          </button>
+    <!-- MODAL DETALLE FACTURA -->
+    <div id="modalDetalleFactura" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="modalFacturaTitulo"><i class="fas fa-file-invoice"></i> Detalle de Factura</h3>
+                <button class="modal-close" onclick="cerrarModalDetalle()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalFacturaBody">Cargando…</div>
         </div>
-        <div class="modal-body" id="modalBody">Cargando…</div>
-      </div>
     </div>
 
-    <!-- MODAL DE CONFIRMACION -->
+    <!-- MODAL CONFIRMAR VOLVER -->
     <div class="confirm-modal-overlay" id="confirmModal">
-      <div class="confirm-modal">
-        <h3>Confirmar acción</h3>
-        <p id="confirmMessage">¿Está seguro de que desea volver al menú principal?</p>
-        <div class="confirm-modal-buttons">
-          <button class="confirm-modal-btn confirm" id="confirmYes">
-            Sí, continuar
-          </button>
-          <button class="confirm-modal-btn cancel" id="confirmNo">
-            Cancelar
-          </button>
+        <div class="confirm-modal">
+            <h3>Confirmar acción</h3>
+            <p id="confirmMessage">¿Está seguro de que desea volver al menú principal?</p>
+            <div class="confirm-modal-buttons">
+                <button class="confirm-modal-btn confirm" id="confirmYes">Sí, continuar</button>
+                <button class="confirm-modal-btn cancel" id="confirmNo">Cancelar</button>
+            </div>
         </div>
-      </div>
     </div>
 
+    <!-- MODAL SUCCESS -->
+    <div class="success-modal-overlay" id="successModal">
+        <div class="success-modal">
+            <h3><i class="fas fa-check-circle"></i> Éxito</h3>
+            <p id="successMessage">Operación realizada correctamente</p>
+            <button class="success-modal-btn" id="successBtn">Aceptar</button>
+        </div>
+    </div>
+
+    <!-- MODAL ERROR -->
+    <div class="error-modal-overlay" id="errorModal">
+        <div class="error-modal">
+            <h3><i class="fas fa-times-circle"></i> Error</h3>
+            <p id="errorMessage">Ha ocurrido un error</p>
+            <button class="error-modal-btn" id="errorBtn">Aceptar</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         JAVASCRIPT INTEGRADO
+         ═══════════════════════════════════════════════════════════ -->
     <script>
-      /* ─────────── Chart.js global defaults ─────────── */
-      Chart.defaults.color = "#8b90a7";
-      Chart.defaults.borderColor = "rgba(255,255,255,0.07)";
-      Chart.defaults.plugins.legend.labels.boxWidth = 10;
-      Chart.defaults.plugins.legend.labels.padding = 16;
-      Chart.defaults.plugins.legend.labels.font = { family: "Inter", size: 11 };
-      Chart.defaults.font.family = "Inter";
+    /* ════════════════════════════════════════════════════════════
+       VARIABLES GLOBALES
+       ════════════════════════════════════════════════════════════ */
+    let tabActual = "ventas";
+    let facturasCache = [];
 
-      /* ─────────── State ─────────── */
-      let datosActuales = {
-        ingresos: 0,
-        egresos: 0,
-        utilidad: 0,
-        margen: 0,
-        ventasNetas: 0,
-        costoVentas: 0,
-        salarios: 0,
-        mermas: 0,
-        consumos: 0,
-        iva: 0,
-        ventasBrutas: 0,
-      };
-      let datosPeriodoAnterior = { ingresos: 0, egresos: 0, utilidad: 0 };
+    /* ════════════════════════════════════════════════════════════
+       HELPERS
+       ════════════════════════════════════════════════════════════ */
+    const fmt = (n) => "C$ " + (parseFloat(n) || 0).toLocaleString("es-NI", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
 
-      /* ─────────── Helpers ─────────── */
-      const showLoader = (v) =>
-        (document.getElementById("loaderOverlay").style.display = v
-          ? "flex"
-          : "none");
-      const cerrarModal = () =>
-        (document.getElementById("modalDesglose").style.display = "none");
-      const fmt = (n) =>
-        "C$ " + n.toLocaleString("es-NI", { minimumFractionDigits: 2 });
+    const escapeHtml = (text) => {
+        if (text === null || text === undefined) return "";
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+    };
 
-      /* ─────────── Clock ─────────── */
-      function mostrarFecha() {
+    const mostrarLoader = (mostrar) => {
+        const loader = document.getElementById("loaderOverlay");
+        if (loader) loader.classList.toggle("active", mostrar);
+    };
+
+    const mostrarError = (msg) => {
+        const modal = document.getElementById("errorModal");
+        const mensaje = document.getElementById("errorMessage");
+        if (modal && mensaje) {
+            mensaje.textContent = msg;
+            modal.classList.add("active");
+        } else {
+            alert("Error: " + msg);
+        }
+    };
+
+    const mostrarExito = (msg) => {
+        const modal = document.getElementById("successModal");
+        const mensaje = document.getElementById("successMessage");
+        if (modal && mensaje) {
+            mensaje.textContent = msg;
+            modal.classList.add("active");
+        } else {
+            alert("Éxito: " + msg);
+        }
+    };
+
+    /* ════════════════════════════════════════════════════════════
+       RELOJ
+       ════════════════════════════════════════════════════════════ */
+    function mostrarFecha() {
         const now = new Date();
         const date = now.toLocaleDateString("es-ES", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-          weekday: "short",
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            weekday: "short"
         });
         const time = now.toLocaleTimeString("es-ES", {
-          hour: "2-digit",
-          minute: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
         });
-        document.getElementById("clockText").textContent = `${date}  ${time}`;
+        const clock = document.getElementById("clockText");
+        if (clock) clock.textContent = `${date}  ${time}`;
         setTimeout(mostrarFecha, 30000);
-      }
+    }
 
-      /* ─────────── Session ─────────── */
-      async function verificarSesion() {
+    /* ════════════════════════════════════════════════════════════
+       VERIFICAR SESIÓN
+       ════════════════════════════════════════════════════════════ */
+    async function verificarSesion() {
         const token = localStorage.getItem("token");
-        if (!token || localStorage.getItem("tipoUsuario") !== "admin") {
-          localStorage.clear();
-          window.location.replace("PAG.html");
-        }
-        try {
-          const res = await fetch("/api/verificar-sesion", {
-            headers: { "x-auth-token": token },
-          });
-          const data = await res.json();
-          if (!data.autenticado) {
+        const tipoUsuario = localStorage.getItem("tipoUsuario");
+
+        if (!token || tipoUsuario !== "admin") {
             localStorage.clear();
             window.location.replace("PAG.html");
-          }
-        } catch (e) {
-          localStorage.clear();
-          window.location.replace("PAG.html");
+            return;
         }
-      }
 
-      /* ─────────── Stock alert ─────────── */
-      async function cargarAlertasStock() {
         try {
-          const res = await fetch("/api/productos/bajo-stock");
-          const data = await res.json();
-          const banner = document.getElementById("alertStockBajo");
-          const msg = document.getElementById("alertMensaje");
-          if (data && data.length > 0) {
-            banner.style.background = "#fff5f5";
-            banner.style.borderColor = "#ef4444";
-            banner.querySelector("i").style.color = "#ef4444";
-            msg.innerHTML = `<strong>⚠️ ALERTA DE INVENTARIO:</strong> ${data.length} producto(s) con stock bajo. Revise inventario.`;
-          } else {
-            banner.style.background = "#f0fdf4";
-            banner.style.borderColor = "#22c55e";
-            banner.querySelector("i").style.color = "#22c55e";
-            msg.innerHTML = `<strong>✅ INVENTARIO SALUDABLE:</strong> Todos los productos tienen stock suficiente.`;
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }
-
-      /* ─────────── Top clients ─────────── */
-      async function cargarTopClientes() {
-        try {
-          const res = await fetch("/api/top-clientes?periodo=mes&limite=10");
-          const data = await res.json();
-          const tbody = document.querySelector("#tablaTopClientes tbody");
-          if (data && data.length > 0) {
-            tbody.innerHTML = data
-              .map(
-                (c) => `
-                    <tr>
-                        <td>${c.nombre}</td>
-                        <td>${c.compras} compras</td>
-                        <td>${c.unidades_compradas || 0} uds.</td>
-                    </tr>`,
-              )
-              .join("");
-          } else {
-            tbody.innerHTML =
-              '<tr><td colspan="3" class="loading-cell">Sin datos de clientes</td></tr>';
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }
-
-      /* ─────────── Load data ─────────── */
-      async function cargarDatos() {
-        showLoader(true);
-        try {
-          const tipo = document.getElementById("tipoReporte").value;
-          const anio = document.getElementById("anioSelect").value;
-          const mes = document.getElementById("mesSelect").value;
-          const desde = document.getElementById("fechaDesde").value;
-          const hasta = document.getElementById("fechaHasta").value;
-
-          let params = new URLSearchParams();
-          if (tipo === "mes") {
-            params.append("anio", anio);
-            params.append("mes", mes);
-          } else if (tipo === "anio") {
-            params.append("anio", anio);
-          } else if (tipo === "rango" && desde && hasta) {
-            params.append("desde", desde);
-            params.append("hasta", hasta);
-          } else if (tipo === "dia") {
-            const hoy = new Date().toISOString().split("T")[0];
-            params.append("desde", hoy);
-            params.append("hasta", hoy);
-          } else if (tipo === "semana") {
-            const s = new Date();
-            s.setDate(s.getDate() - 7);
-            params.append("desde", s.toISOString().split("T")[0]);
-            params.append("hasta", new Date().toISOString().split("T")[0]);
-          }
-
-          const resER = await fetch(
-            "/api/financiero/estado-resultados?" + params,
-          );
-          const erData = await resER.json();
-
-          datosActuales = {
-            ingresos: erData.ingresos?.ventas_netas || 0,
-            egresos:
-              (erData.costos?.costo_ventas || 0) +
-              (erData.gastos_operativos?.total || 0),
-            utilidad: erData.utilidad_neta || 0,
-            margen: erData.margen_utilidad || 0,
-            ventasNetas: erData.ingresos?.ventas_netas || 0,
-            costoVentas: erData.costos?.costo_ventas || 0,
-            salarios: erData.gastos_operativos?.salarios || 0,
-            mermas: erData.gastos_operativos?.mermas || 0,
-            consumos: erData.gastos_operativos?.consumos_internos || 0,
-            iva: erData.ingresos?.iva || 0,
-            ventasBrutas: erData.ingresos?.ventas_brutas || 0,
-          };
-
-          /* periodo anterior */
-          let paramsAnt = new URLSearchParams(params);
-          if (tipo === "mes") {
-            let ma = parseInt(mes) - 1,
-              aa = anio;
-            if (ma < 1) {
-              ma = 12;
-              aa = parseInt(anio) - 1;
+            const res = await fetch("/api/verificar-sesion", {
+                headers: { "x-auth-token": token }
+            });
+            const data = await res.json();
+            if (!data.autenticado) {
+                localStorage.clear();
+                window.location.replace("PAG.html");
             }
-            paramsAnt.set("anio", aa);
-            paramsAnt.set("mes", ma);
-          } else if (tipo === "anio") {
-            paramsAnt.set("anio", parseInt(anio) - 1);
-          }
-          if (
-            (tipo === "mes" && parseInt(mes) > 1) ||
-            (tipo === "anio" && parseInt(anio) > 2020)
-          ) {
-            const ra = await fetch(
-              "/api/financiero/estado-resultados?" + paramsAnt,
-            );
-            const ant = await ra.json();
-            datosPeriodoAnterior = {
-              ingresos: ant.ingresos?.ventas_netas || 0,
-              egresos:
-                (ant.costos?.costo_ventas || 0) +
-                (ant.gastos_operativos?.total || 0),
-              utilidad: ant.utilidad_neta || 0,
-            };
-          }
-
-          actualizarUI();
-          actualizarTablaEstadoResultados(erData);
-
-          const resCV = await fetch("/api/financiero/costo-ventas?" + params);
-          const cvData = await resCV.json();
-          actualizarTablaCostoVentas(cvData);
-
-          const resCat = await fetch("/api/estadisticas-ventas?" + params);
-          const catData = await resCat.json();
-          if (catData.categorias && catData.totales_categorias)
-            actualizarGraficaCategorias(
-              catData.categorias,
-              catData.totales_categorias,
-            );
-
-          await cargarTopClientes();
         } catch (e) {
-          console.error(e);
-          alert("Error al cargar datos financieros");
+            console.warn("No se pudo verificar sesión:", e);
+        }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PESTAÑAS
+       ════════════════════════════════════════════════════════════ */
+    function inicializarTabs() {
+        const tabButtons = document.querySelectorAll(".tab-btn");
+        tabButtons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const tab = btn.dataset.tab;
+
+                tabButtons.forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+
+                document.querySelectorAll(".tab-content").forEach(tc => {
+                    tc.classList.remove("active");
+                });
+                const tabContent = document.getElementById(`tab-${tab}`);
+                if (tabContent) tabContent.classList.add("active");
+
+                tabActual = tab;
+                ajustarFiltrosPorTab(tab);
+                cargarDatosTab(tab);
+            });
+        });
+    }
+
+    function ajustarFiltrosPorTab(tab) {
+        const grupoDesde = document.getElementById("grupoDesde");
+        const grupoHasta = document.getElementById("grupoHasta");
+        const grupoAnio = document.getElementById("grupoAnio");
+        const grupoMes = document.getElementById("grupoMes");
+        const grupoProveedor = document.getElementById("grupoProveedor");
+        const grupoMotivo = document.getElementById("grupoMotivo");
+        const grupoEstadoDev = document.getElementById("grupoEstadoDev");
+
+        [grupoDesde, grupoHasta, grupoAnio, grupoMes, grupoProveedor, grupoMotivo, grupoEstadoDev].forEach(g => {
+            if (g) g.style.display = "none";
+        });
+
+        switch (tab) {
+            case "ventas":
+            case "financiero":
+            case "asistencia":
+            case "mercancia":
+            case "mermas":
+                if (grupoDesde) grupoDesde.style.display = "flex";
+                if (grupoHasta) grupoHasta.style.display = "flex";
+                break;
+
+            case "devoluciones":
+                if (grupoDesde) grupoDesde.style.display = "flex";
+                if (grupoHasta) grupoHasta.style.display = "flex";
+                if (grupoProveedor) grupoProveedor.style.display = "flex";
+                if (grupoMotivo) grupoMotivo.style.display = "flex";
+                if (grupoEstadoDev) grupoEstadoDev.style.display = "flex";
+                cargarSelectProveedores();
+                break;
+
+            case "existencias":
+                break;
+
+            case "desempeno":
+                if (grupoAnio) grupoAnio.style.display = "flex";
+                if (grupoMes) grupoMes.style.display = "flex";
+                break;
+
+            case "config":
+                break;
+        }
+    }
+
+    async function cargarSelectProveedores() {
+        const select = document.getElementById("proveedorSelect");
+        if (!select || select.dataset.cargado === "true") return;
+
+        try {
+            const res = await fetch("/api/proveedores");
+            const data = await res.json();
+
+            select.innerHTML = '<option value="">Todos</option>';
+            (data || []).forEach(p => {
+                const opt = document.createElement("option");
+                opt.value = p.Id_Proveedor;
+                opt.textContent = `${p.Nombre || "Sin nombre"} - ${p.Empresa || ""}`;
+                select.appendChild(opt);
+            });
+            select.dataset.cargado = "true";
+        } catch (e) {
+            console.error("Error cargando proveedores:", e);
+        }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PARÁMETROS DE FILTRO
+       ════════════════════════════════════════════════════════════ */
+    function obtenerParametrosFecha() {
+        const params = new URLSearchParams();
+        const desde = document.getElementById("fechaDesde")?.value;
+        const hasta = document.getElementById("fechaHasta")?.value;
+        const anio = document.getElementById("anioSelect")?.value;
+        const mes = document.getElementById("mesSelect")?.value;
+        const proveedor = document.getElementById("proveedorSelect")?.value;
+        const motivo = document.getElementById("motivoSelect")?.value;
+        const estado = document.getElementById("estadoDevSelect")?.value;
+
+        if (desde) params.append("desde", desde);
+        if (hasta) params.append("hasta", hasta);
+        if (anio) params.append("anio", anio);
+        if (mes) params.append("mes", mes);
+        if (proveedor) params.append("id_proveedor", proveedor);
+        if (motivo) params.append("motivo", motivo);
+        if (estado) params.append("estado", estado);
+
+        return params.toString();
+    }
+
+    function cargarDatosTab(tab) {
+        switch (tab) {
+            case "ventas":       cargarVentas(); break;
+            case "financiero":   cargarFinanciero(); break;
+            case "asistencia":   cargarAsistencia(); break;
+            case "mercancia":    cargarMercancia(); break;
+            case "devoluciones": cargarDevoluciones(); break;
+            case "existencias":  cargarExistencias(); break;
+            case "desempeno":    cargarDesempeno(); break;
+            case "mermas":       cargarMermas(); break;
+            case "config":       cargarConfigIncentivos(); break;
+        }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       REPORTE 1: VENTAS
+       ════════════════════════════════════════════════════════════ */
+    async function cargarVentas() {
+        mostrarLoader(true);
+        try {
+            const params = obtenerParametrosFecha();
+            const res = await fetch("/api/reportes/ventas?" + params);
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Error al cargar ventas");
+
+            const facturas = data.facturas || [];
+            const montoTotal = facturas.reduce((s, f) => s + (parseFloat(f.Monto_Total) || 0), 0);
+            const facturasMixtas = facturas.filter(f => f.cantidad_desglose > 1).length;
+
+            document.getElementById("kpiVentasTotal").textContent = fmt(montoTotal);
+            document.getElementById("kpiVentasCantidad").textContent = facturas.length;
+            document.getElementById("kpiVentasMixtas").textContent = facturasMixtas;
+
+            const tbody = document.querySelector("#tablaVentas tbody");
+            if (facturas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="loading-cell">Sin ventas en el período</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = facturas.map(f => {
+                const esMixto = f.cantidad_desglose > 1;
+                const badgeMetodo = esMixto 
+                    ? '<span class="badge badge-amber"><i class="fas fa-coins"></i> Pago Mixto</span>'
+                    : `<span class="badge badge-blue">${escapeHtml(f.Nombre_Metodo || "N/A")}</span>`;
+
+                return `<tr>
+                    <td><strong>#${f.Num_Factura}</strong></td>
+                    <td>${f.Fecha ? new Date(f.Fecha).toLocaleDateString("es-ES") : "—"}</td>
+                    <td>${escapeHtml(f.Cliente)}</td>
+                    <td>${escapeHtml(f.Nombre_Vendedor)}</td>
+                    <td>${badgeMetodo}</td>
+                    <td><strong>${fmt(f.Monto_Total)}</strong></td>
+                    <td><button class="btn-tabla btn-tabla-primary" onclick="verDetalleFactura(${f.Num_Factura})"><i class="fas fa-eye"></i> Ver</button></td>
+                </tr>`;
+            }).join("");
+
+            facturasCache = facturas;
+        } catch (e) {
+            console.error(e);
+            mostrarError(e.message || "Error al cargar ventas");
         } finally {
-          showLoader(false);
+            mostrarLoader(false);
         }
-      }
+    }
 
-      /* ─────────── Update UI ─────────── */
-      function actualizarUI() {
-        const ti = datosPeriodoAnterior.ingresos
-          ? (
-              ((datosActuales.ingresos - datosPeriodoAnterior.ingresos) /
-                datosPeriodoAnterior.ingresos) *
-              100
-            ).toFixed(1)
-          : 0;
-        const te = datosPeriodoAnterior.egresos
-          ? (
-              ((datosActuales.egresos - datosPeriodoAnterior.egresos) /
-                datosPeriodoAnterior.egresos) *
-              100
-            ).toFixed(1)
-          : 0;
-        const tu = datosPeriodoAnterior.utilidad
-          ? (
-              ((datosActuales.utilidad - datosPeriodoAnterior.utilidad) /
-                Math.abs(datosPeriodoAnterior.utilidad)) *
-              100
-            ).toFixed(1)
-          : 0;
+    async function verDetalleFactura(numFactura) {
+        const factura = facturasCache.find(f => f.Num_Factura === numFactura);
+        if (!factura) return;
 
-        document.getElementById("totalIngresos").textContent = fmt(
-          datosActuales.ingresos,
-        );
-        document.getElementById("totalEgresos").textContent = fmt(
-          datosActuales.egresos,
-        );
-        document.getElementById("utilidadNeta").textContent = fmt(
-          datosActuales.utilidad,
-        );
-        document.getElementById("margenUtilidad").textContent =
-          datosActuales.margen.toFixed(2) + "%";
+        let desglosePagos = [];
+        try {
+            const res = await fetch(`/api/compras/${numFactura}/pagos`);
+            if (res.ok) desglosePagos = await res.json();
+        } catch (e) { console.warn(e); }
 
-        document.getElementById("trendIngresos").textContent =
-          `vs anterior: ${ti >= 0 ? "▲ +" : "▼ "}${Math.abs(ti)}%`;
-        document.getElementById("trendEgresos").textContent =
-          `vs anterior: ${te <= 0 ? "▼ " : "▲ +"}${Math.abs(te)}%`;
-        document.getElementById("trendUtilidad").textContent =
-          `vs anterior: ${tu >= 0 ? "▲ +" : "▼ "}${Math.abs(tu)}%`;
+        const productosHtml = (factura.productos || []).map(p => `
+            <tr>
+                <td style="padding:6px 8px;">${escapeHtml(p.Producto)}</td>
+                <td style="padding:6px 8px;text-align:center;">${p.Cantidad}</td>
+                <td style="padding:6px 8px;text-align:right;">${fmt(p.Precio)}</td>
+                <td style="padding:6px 8px;text-align:right;">${fmt(p.Subtotal)}</td>
+            </tr>`).join("") || '<tr><td colspan="4" style="text-align:center;color:#999;">Sin productos</td></tr>';
 
-        const m = datosActuales.margen;
-        const statusText =
-          m >= 20
-            ? "✅ Excelente"
-            : m >= 10
-              ? "👍 Buena"
-              : m >= 5
-                ? "⚠️ Aceptable"
-                : "🔴 Crítica";
-        document.getElementById("statusMargen").textContent = statusText;
+        const pagosHtml = (desglosePagos.length > 0)
+            ? desglosePagos.map(p => `
+                <div class="modal-item">
+                    <span>${escapeHtml(p.Nombre_Metodo)} ${p.Referencia ? `<small style="color:#999;">(${escapeHtml(p.Referencia)})</small>` : ""}</span>
+                    <span>${fmt(p.Monto)}</span>
+                </div>`).join("")
+            : `<div class="modal-item"><span>${escapeHtml(factura.Nombre_Metodo)}</span><span>${fmt(factura.Monto_Total)}</span></div>`;
 
-        // Color utilidad
-        document.getElementById("utilidadNeta").style.color =
-          datosActuales.utilidad >= 0 ? "var(--blue)" : "var(--red)";
-
-        actualizarGraficaComparativa(
-          datosActuales.ingresos,
-          datosActuales.egresos,
-        );
-      }
-
-      /* ─────────── Tables ─────────── */
-      function actualizarTablaEstadoResultados(data) {
-        const tbody = document.querySelector("#tablaEstadoResultados tbody");
-        tbody.innerHTML = `
-            <tr class="row-section"><td colspan="2">Ingresos</td></tr>
-            <tr><td>Ventas Brutas</td><td>${fmt(data.ingresos?.ventas_brutas || 0)}</td></tr>
-            <tr><td>(−) IVA 15%</td><td>${fmt(data.ingresos?.iva || 0)}</td></tr>
-            <tr class="row-total row-positive"><td>= Ventas Netas</td><td>${fmt(data.ingresos?.ventas_netas || 0)}</td></tr>
-            <tr class="row-section"><td colspan="2">Costos</td></tr>
-            <tr><td>(−) Costo de Ventas</td><td>${fmt(data.costos?.costo_ventas || 0)}</td></tr>
-            <tr class="row-total row-positive"><td>= Utilidad Bruta</td><td>${fmt(data.utilidad_bruta || 0)}</td></tr>
-            <tr class="row-section"><td colspan="2">Gastos Operativos</td></tr>
-            <tr><td>Salarios</td><td>${fmt(data.gastos_operativos?.salarios || 0)}</td></tr>
-            <tr><td>Mermas</td><td>${fmt(data.gastos_operativos?.mermas || 0)}</td></tr>
-            <tr><td>Consumo Interno</td><td>${fmt(data.gastos_operativos?.consumos_internos || 0)}</td></tr>
-            <tr class="row-total"><td>Total Gastos</td><td>${fmt(data.gastos_operativos?.total || 0)}</td></tr>
-            <tr class="row-total ${(data.utilidad_neta || 0) >= 0 ? "row-positive" : "row-negative"}">
-                <td>= Utilidad Neta</td>
-                <td>${fmt(data.utilidad_neta || 0)}</td>
-            </tr>
-            <tr><td>Margen de Utilidad</td><td>${(data.margen_utilidad || 0).toFixed(2)}%</td></tr>
+        document.getElementById("modalFacturaTitulo").innerHTML = `<i class="fas fa-file-invoice"></i> Factura #${factura.Num_Factura}`;
+        document.getElementById("modalFacturaBody").innerHTML = `
+            <div class="modal-item"><span>Fecha</span><span>${factura.Fecha ? new Date(factura.Fecha).toLocaleDateString("es-ES") : "—"}</span></div>
+            <div class="modal-item"><span>Cliente</span><span>${escapeHtml(factura.Cliente)}</span></div>
+            <div class="modal-item"><span>Vendedor</span><span>${escapeHtml(factura.Nombre_Vendedor)}</span></div>
+            <div class="modal-item"><span>Cajero</span><span>${escapeHtml(factura.Cajero || "—")}</span></div>
+            <div class="modal-item"><span>Canal</span><span>${escapeHtml(factura.Nombre_Canal || "—")}</span></div>
+            
+            <div class="modal-subtitulo">Productos</div>
+            <table style="width:100%;font-size:0.82rem;border-collapse:collapse;">
+                <thead style="background:#f8f4fc;color:#6f4b7d;">
+                    <tr>
+                        <th style="padding:6px 8px;text-align:left;">Producto</th>
+                        <th style="padding:6px 8px;text-align:center;">Cant.</th>
+                        <th style="padding:6px 8px;text-align:right;">Precio</th>
+                        <th style="padding:6px 8px;text-align:right;">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>${productosHtml}</tbody>
+            </table>
+            
+            <div class="modal-subtitulo">Desglose de Pago</div>
+            ${pagosHtml}
+            
+            <div class="modal-total">
+                <span>TOTAL</span>
+                <span>${fmt(factura.Monto_Total)}</span>
+            </div>
         `;
-      }
 
-      function actualizarTablaCostoVentas(data) {
-        const tbody = document.querySelector("#tablaCostoVentas tbody");
-        if (data.productos?.length) {
-          tbody.innerHTML = data.productos
-            .slice(0, 15)
-            .map(
-              (p) => `
-                <tr>
-                    <td>${p.nombre_producto}</td>
-                    <td>${p.cantidad_vendida}</td>
-                    <td>C$ ${p.costo_unitario.toFixed(2)}</td>
-                    <td>C$ ${p.costo_total.toFixed(2)}</td>
-                </tr>`,
-            )
-            .join("");
-        } else {
-          tbody.innerHTML =
-            '<tr><td colspan="4" class="loading-cell">Sin datos de productos</td></tr>';
+        document.getElementById("modalDetalleFactura").classList.add("active");
+    }
+
+    function cerrarModalDetalle() {
+        document.getElementById("modalDetalleFactura").classList.remove("active");
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       REPORTE 2: FINANCIERO
+       ════════════════════════════════════════════════════════════ */
+    async function cargarFinanciero() {
+        mostrarLoader(true);
+        try {
+            const params = obtenerParametrosFecha();
+            const res = await fetch("/api/financiero/estado-resultados?" + params);
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Error al cargar financiero");
+
+            document.getElementById("kpiFinVentas").textContent = fmt(data.ingresos?.ventas_netas || 0);
+            document.getElementById("kpiFinCompras").textContent = fmt(data.costos?.costo_ventas || 0);
+            document.getElementById("kpiFinUtilidad").textContent = fmt(data.utilidad_neta || 0);
+            document.getElementById("kpiFinMargen").textContent = (data.margen_utilidad || 0).toFixed(2) + "%";
+
+            const tbody = document.querySelector("#tablaFinanciero tbody");
+            tbody.innerHTML = `
+                <tr style="background:#f8f4fc;color:#6f4b7d;font-weight:700;"><td colspan="2">INGRESOS</td></tr>
+                <tr><td>Ventas Brutas</td><td>${fmt(data.ingresos?.ventas_brutas || 0)}</td></tr>
+                <tr><td>(−) IVA 15%</td><td>${fmt(data.ingresos?.iva || 0)}</td></tr>
+                <tr style="font-weight:700;"><td>= Ventas Netas</td><td>${fmt(data.ingresos?.ventas_netas || 0)}</td></tr>
+                
+                <tr style="background:#f8f4fc;color:#6f4b7d;font-weight:700;"><td colspan="2">COSTOS</td></tr>
+                <tr><td>(−) Costo de Ventas</td><td>${fmt(data.costos?.costo_ventas || 0)}</td></tr>
+                <tr style="font-weight:700;"><td>= Utilidad Bruta</td><td>${fmt(data.utilidad_bruta || 0)}</td></tr>
+                
+                <tr style="background:#f8f4fc;color:#6f4b7d;font-weight:700;"><td colspan="2">GASTOS OPERATIVOS</td></tr>
+                <tr><td>Salarios</td><td>${fmt(data.gastos_operativos?.salarios || 0)}</td></tr>
+                <tr><td>Mermas</td><td>${fmt(data.gastos_operativos?.mermas || 0)}</td></tr>
+                <tr><td>Consumo Interno</td><td>${fmt(data.gastos_operativos?.consumos_internos || 0)}</td></tr>
+                <tr style="font-weight:700;"><td>Total Gastos</td><td>${fmt(data.gastos_operativos?.total || 0)}</td></tr>
+                
+                <tr style="background:#f8f4fc;font-weight:800;">
+                    <td>= UTILIDAD NETA</td>
+                    <td style="color:${(data.utilidad_neta || 0) >= 0 ? '#22c55e' : '#ef4444'};">${fmt(data.utilidad_neta || 0)}</td>
+                </tr>
+                <tr><td>Margen de Utilidad</td><td><strong>${(data.margen_utilidad || 0).toFixed(2)}%</strong></td></tr>
+            `;
+        } catch (e) {
+            console.error(e);
+            mostrarError(e.message || "Error al cargar financiero");
+        } finally {
+            mostrarLoader(false);
         }
-      }
+    }
 
-      /* ─────────── Charts ─────────── */
-      function actualizarGraficaComparativa(ingresos, egresos) {
-        const ctx = document
-          .getElementById("chartComparativo")
-          .getContext("2d");
-        if (window.chartComp) window.chartComp.destroy();
-        window.chartComp = new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: ["Ingresos Netos", "Egresos Totales"],
-            datasets: [
-              {
-                label: "Monto (C$)",
-                data: [ingresos, egresos],
-                backgroundColor: ["rgba(34,197,94,.75)", "rgba(239,68,68,.75)"],
-                borderColor: ["#22d3a5", "#f45b69"],
-                borderWidth: 1,
-                borderRadius: 8,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: { display: false },
-              tooltip: { callbacks: { label: (ctx) => fmt(ctx.raw) } },
-            },
-            scales: {
-              x: { grid: { display: false } },
-              y: {
-                grid: { color: "rgba(255,255,255,0.05)" },
-                ticks: { callback: (v) => "C$" + v.toLocaleString() },
-              },
-            },
-          },
-        });
-      }
+    /* ════════════════════════════════════════════════════════════
+       REPORTE 3: ASISTENCIA
+       ════════════════════════════════════════════════════════════ */
+    async function cargarAsistencia() {
+        mostrarLoader(true);
+        try {
+            const params = obtenerParametrosFecha();
+            const res = await fetch("/api/reportes/asistencia?" + params);
+            const data = await res.json();
 
-      function actualizarGraficaCategorias(labels, data) {
-        const ctx = document.getElementById("chartCategorias").getContext("2d");
-        if (window.chartCat) window.chartCat.destroy();
-        window.chartCat = new Chart(ctx, {
-          type: "doughnut",
-          data: {
-            labels,
-            datasets: [
-              {
-                data,
-                backgroundColor: [
-                  "#8d679f",
-                  "#b78bc8",
-                  "#e7c85b",
-                  "#6f4b7d",
-                  "#22c55e",
-                  "#cba6d9",
-                ],
-                borderColor: "var(--bg-card)",
-                borderWidth: 2,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            cutout: "65%",
-            plugins: { legend: { position: "bottom" } },
-          },
-        });
-      }
+            if (!res.ok) throw new Error(data.error || "Error al cargar asistencia");
 
-      /* ─────────── Modals ─────────── */
-      function abrirModalIngresos() {
-        const d = datosActuales;
-        document.getElementById("modalTitulo").innerHTML =
-          '<i class="fas fa-arrow-up"></i> Desglose de Ingresos';
-        document.getElementById("modalBody").innerHTML = `
-            <div class="modal-item"><span>Ventas Brutas</span><span>${fmt(d.ventasBrutas)}</span></div>
-            <div class="modal-item"><span>(−) IVA 15%</span><span>${fmt(d.iva)}</span></div>
-            <div class="modal-total"><span>INGRESOS NETOS</span><span>${fmt(d.ingresos)}</span></div>
-            <div class="modal-subtitulo">Rentabilidad</div>
-            <div class="modal-item"><span>Costo de Ventas</span><span>${fmt(d.costoVentas)}</span></div>
-            <div class="modal-item"><span>Utilidad Bruta</span><span>${fmt(d.ingresos - d.costoVentas)}</span></div>
-        `;
-        document.getElementById("modalDesglose").style.display = "flex";
-      }
+            document.getElementById("badgeAsistencia").textContent = 
+                `${data.dias_laborables || 0} días laborables`;
 
-      function abrirModalEgresos() {
-        const d = datosActuales;
-        document.getElementById("modalTitulo").innerHTML =
-          '<i class="fas fa-arrow-down"></i> Desglose de Egresos';
-        document.getElementById("modalBody").innerHTML = `
-            <div class="modal-item"><span>Costo de Ventas</span><span>${fmt(d.costoVentas)}</span></div>
-            <div class="modal-item"><span>Mermas</span><span>${fmt(d.mermas)}</span></div>
-            <div class="modal-item"><span>Consumo Interno</span><span>${fmt(d.consumos)}</span></div>
-            <div class="modal-item"><span>Salarios</span><span>${fmt(d.salarios)}</span></div>
-            <div class="modal-total"><span>TOTAL EGRESOS</span><span>${fmt(d.egresos)}</span></div>
-        `;
-        document.getElementById("modalDesglose").style.display = "flex";
-      }
+            const tbody = document.querySelector("#tablaAsistencia tbody");
+            const resumen = data.resumen || [];
 
-      function abrirModalUtilidad() {
-        const d = datosActuales;
-        document.getElementById("modalTitulo").innerHTML =
-          '<i class="fas fa-chart-line"></i> Utilidad Neta';
-        document.getElementById("modalBody").innerHTML = `
-            <div class="modal-item"><span>Ingresos Netos</span><span>${fmt(d.ingresos)}</span></div>
-            <div class="modal-item"><span>Egresos Totales</span><span>${fmt(d.egresos)}</span></div>
-            <div class="modal-total"><span>UTILIDAD NETA</span><span>${fmt(d.utilidad)}</span></div>
-        `;
-        document.getElementById("modalDesglose").style.display = "flex";
-      }
+            if (resumen.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="loading-cell">Sin datos de asistencia en el período</td></tr>';
+                return;
+            }
 
-      function abrirModalMargen() {
-        const d = datosActuales;
-        document.getElementById("modalTitulo").innerHTML =
-          '<i class="fas fa-percent"></i> Margen de Utilidad';
-        document.getElementById("modalBody").innerHTML = `
-            <div class="modal-item"><span>Utilidad Neta</span><span>${fmt(d.utilidad)}</span></div>
-            <div class="modal-item"><span>Ingresos Netos</span><span>${fmt(d.ingresos)}</span></div>
-            <div class="modal-total"><span>MARGEN</span><span>${d.margen.toFixed(2)}%</span></div>
-            <div class="modal-subtitulo">Interpretación</div>
-            <div class="modal-item"><span>Por cada C$1 de ingreso</span><span>C$ ${(d.margen / 100).toFixed(3)} son utilidad</span></div>
-        `;
-        document.getElementById("modalDesglose").style.display = "flex";
-      }
+            tbody.innerHTML = resumen.map(r => {
+                const pct = parseFloat(r.porcentaje_asistencia) || 0;
+                let badgeClass = "badge-red";
+                if (pct >= 90) badgeClass = "badge-green";
+                else if (pct >= 75) badgeClass = "badge-amber";
 
-      /* ─────────── Export ─────────── */
-      function exportarPDF() {
+                return `<tr>
+                    <td><strong>${escapeHtml(r.nombre)}</strong></td>
+                    <td>${r.dias_asistidos}</td>
+                    <td>${r.jornadas_completas}</td>
+                    <td>${r.total_horas}h</td>
+                    <td><span class="badge ${badgeClass}">${pct.toFixed(2)}%</span></td>
+                </tr>`;
+            }).join("");
+        } catch (e) {
+            console.error(e);
+            mostrarError(e.message || "Error al cargar asistencia");
+        } finally {
+            mostrarLoader(false);
+        }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       REPORTE 4: MERCANCÍA
+       ════════════════════════════════════════════════════════════ */
+    async function cargarMercancia() {
+        mostrarLoader(true);
+        try {
+            const params = obtenerParametrosFecha();
+            const res = await fetch("/api/reportes/mercancia-proveedor?" + params);
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Error al cargar mercancía");
+
+            document.getElementById("kpiMercRegistros").textContent = data.total_registros || 0;
+            document.getElementById("kpiMercUnidades").textContent = data.total_unidades || 0;
+            document.getElementById("kpiMercInvertido").textContent = fmt(data.total_invertido || 0);
+
+            const tbody = document.querySelector("#tablaMercancia tbody");
+            const registros = data.registros || [];
+
+            if (registros.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="loading-cell">Sin registros en el período</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = registros.map(r => {
+                const total = (parseFloat(r.Precio_Compra) || 0) * (parseInt(r.Cantidad_Entrada) || 0);
+                return `<tr>
+                    <td>${r.FechaEntrada ? new Date(r.FechaEntrada).toLocaleDateString("es-ES") : "—"}</td>
+                    <td><strong>${escapeHtml(r.Nombre_Proveedor || "N/A")}</strong></td>
+                    <td>${escapeHtml(r.Empresa_Proveedor || "—")}</td>
+                    <td>${escapeHtml(r.Nombre_Producto || "N/A")}</td>
+                    <td><span class="badge badge-green">+${r.Cantidad_Entrada}</span></td>
+                    <td>${fmt(r.Precio_Compra)}</td>
+                    <td><strong>${fmt(total)}</strong></td>
+                </tr>`;
+            }).join("");
+        } catch (e) {
+            console.error(e);
+            mostrarError(e.message || "Error al cargar mercancía");
+        } finally {
+            mostrarLoader(false);
+        }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       REPORTE 5: DEVOLUCIONES
+       ════════════════════════════════════════════════════════════ */
+    async function cargarDevoluciones() {
+        mostrarLoader(true);
+        try {
+            const params = obtenerParametrosFecha();
+            const res = await fetch("/api/devoluciones-proveedor?" + params);
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Error al cargar devoluciones");
+
+            document.getElementById("kpiDevTotal").textContent = data.total_registros || 0;
+            document.getElementById("kpiDevUnidades").textContent = data.total_unidades || 0;
+            document.getElementById("kpiDevMonto").textContent = fmt(data.total_monto_reclamado || 0);
+
+            const tbody = document.querySelector("#tablaDevoluciones tbody");
+            const devoluciones = data.devoluciones || [];
+
+            if (devoluciones.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="loading-cell">Sin devoluciones en el período</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = devoluciones.map(d => {
+                const motivoBadge = `<span class="badge badge-${d.Motivo || "otro"}">${escapeHtml(d.Motivo || "—")}</span>`;
+                const estadoBadge = `<span class="badge badge-${d.Estado || "pendiente"}">${escapeHtml(d.Estado || "pendiente")}</span>`;
+                return `<tr>
+                    <td>${d.Fecha ? new Date(d.Fecha).toLocaleDateString("es-ES") : "—"}</td>
+                    <td>${escapeHtml(d.Nombre_Proveedor || "N/A")}<br><small style="color:#999;">${escapeHtml(d.Empresa_Proveedor || "")}</small></td>
+                    <td>${escapeHtml(d.Nombre_Producto || "N/A")}</td>
+                    <td>${d.Cantidad}</td>
+                    <td>${motivoBadge}</td>
+                    <td>${estadoBadge}</td>
+                    <td><strong>${fmt(d.Monto_Reclamado)}</strong></td>
+                </tr>`;
+            }).join("");
+        } catch (e) {
+            console.error(e);
+            mostrarError(e.message || "Error al cargar devoluciones");
+        } finally {
+            mostrarLoader(false);
+        }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       REPORTE 6: EXISTENCIAS
+       ════════════════════════════════════════════════════════════ */
+    async function cargarExistencias() {
+        mostrarLoader(true);
+        try {
+            const soloBajo = document.getElementById("chkSoloBajoStock")?.checked;
+            const url = "/api/reportes/existencias" + (soloBajo ? "?solo_bajo_stock=true" : "");
+
+            const res = await fetch(url);
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Error al cargar existencias");
+
+            document.getElementById("kpiExiTotal").textContent = data.total_productos || 0;
+            document.getElementById("kpiExiBajo").textContent = data.total_bajo_stock || 0;
+            document.getElementById("kpiExiUnidades").textContent = data.total_unidades || 0;
+
+            const tbody = document.querySelector("#tablaExistencias tbody");
+            const productos = data.productos || [];
+
+            if (productos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="loading-cell">Sin productos</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = productos.map(p => {
+                const badgeClass = p.bajo_stock ? "badge-red" : "badge-green";
+                const estadoTxt = p.bajo_stock ? "Bajo Stock" : "OK";
+                return `<tr>
+                    <td>#${p.Codigo}</td>
+                    <td><strong>${escapeHtml(p.Nombre)}</strong></td>
+                    <td>${escapeHtml(p.Categoria)}</td>
+                    <td>${escapeHtml(p.Marca || "—")}</td>
+                    <td><strong>${p.Cantidad_Disponible}</strong></td>
+                    <td>${p.Nivel_Minimo_Stock}</td>
+                    <td><span class="badge ${badgeClass}">${estadoTxt}</span></td>
+                </tr>`;
+            }).join("");
+        } catch (e) {
+            console.error(e);
+            mostrarError(e.message || "Error al cargar existencias");
+        } finally {
+            mostrarLoader(false);
+        }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       REPORTE 7: DESEMPEÑO
+       ════════════════════════════════════════════════════════════ */
+    async function cargarDesempeno() {
+        mostrarLoader(true);
+        try {
+            const anio = document.getElementById("anioSelect")?.value || new Date().getFullYear();
+            const mes = document.getElementById("mesSelect")?.value || (new Date().getMonth() + 1);
+
+            const res = await fetch(`/api/reportes/desempeno-incentivo?anio=${anio}&mes=${mes}`);
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Error al cargar desempeño");
+
+            const ganador = data.mejor_desempeno;
+            if (ganador) {
+                document.getElementById("winnerName").textContent = ganador.nombre_completo || "Sin datos";
+                document.getElementById("winnerVentas").textContent = ganador.total_ventas || 0;
+                document.getElementById("winnerAsistencia").textContent = (ganador.porcentaje_asistencia || 0).toFixed(2) + "%";
+                document.getElementById("winnerMinimo").textContent = (data.porcentaje_minimo || 80) + "%";
+                document.getElementById("winnerIncentivo").textContent = fmt(data.incentivo || 0);
+            } else {
+                document.getElementById("winnerName").textContent = "Sin datos";
+                document.getElementById("winnerVentas").textContent = "0";
+                document.getElementById("winnerAsistencia").textContent = "0%";
+                document.getElementById("winnerMinimo").textContent = (data.porcentaje_minimo || 80) + "%";
+                document.getElementById("winnerIncentivo").textContent = fmt(0);
+            }
+
+            const tbody = document.querySelector("#tablaDesempeno tbody");
+            const trabajadores = data.trabajadores || [];
+
+            if (trabajadores.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="loading-cell">Sin datos de desempeño</td></tr>';
+                return;
+            }
+
+            const elegibles = trabajadores.filter(t => t.cumple_asistencia);
+
+            tbody.innerHTML = trabajadores.map((t, idx) => {
+                const cumpleBadge = t.cumple_asistencia 
+                    ? '<span class="badge badge-green">Sí</span>'
+                    : '<span class="badge badge-red">No</span>';
+
+                let incentivoTxt = "—";
+                if (t.cumple_asistencia) {
+                    const pos = elegibles.findIndex(e => e.id_trabajador === t.id_trabajador) + 1;
+                    if (pos === 1) incentivoTxt = fmt(data.monto_incentivo_1 || 1500);
+                    else if (pos === 2) incentivoTxt = fmt(data.monto_incentivo_2 || 1000);
+                    else if (pos === 3) incentivoTxt = fmt(data.monto_incentivo_3 || 500);
+                    else incentivoTxt = "—";
+                }
+
+                return `<tr>
+                    <td><strong>${idx + 1}</strong></td>
+                    <td>${escapeHtml(t.nombre_completo)}</td>
+                    <td>${t.total_ventas}</td>
+                    <td>${(t.porcentaje_asistencia || 0).toFixed(2)}%</td>
+                    <td>${cumpleBadge}</td>
+                    <td>${(t.puntaje || 0).toFixed(2)}</td>
+                    <td><strong>${incentivoTxt}</strong></td>
+                </tr>`;
+            }).join("");
+        } catch (e) {
+            console.error(e);
+            mostrarError(e.message || "Error al cargar desempeño");
+        } finally {
+            mostrarLoader(false);
+        }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       REPORTE 8: MERMAS
+       ════════════════════════════════════════════════════════════ */
+    async function cargarMermas() {
+        mostrarLoader(true);
+        try {
+            const params = obtenerParametrosFecha();
+            const res = await fetch("/api/reportes/mermas-perdidas?" + params);
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Error al cargar mermas");
+
+            document.getElementById("kpiMermaRegistros").textContent = data.total_registros || 0;
+            document.getElementById("kpiMermaUnidades").textContent = data.total_unidades_perdidas || 0;
+
+            const tbody = document.querySelector("#tablaMermas tbody");
+            const registros = data.registros || [];
+
+            if (registros.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="loading-cell">Sin registros de mermas en el período</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = registros.map(r => `<tr>
+                <td>${r.Fecha ? new Date(r.Fecha).toLocaleDateString("es-ES") : "—"}</td>
+                <td><strong>${escapeHtml(r.Nombre_Producto || "N/A")}</strong></td>
+                <td>${escapeHtml(r.Marca || "—")}</td>
+                <td>${escapeHtml(r.Categoria || "—")}</td>
+                <td><span class="badge badge-red">-${r.Cantidad}</span></td>
+                <td>${escapeHtml(r.Motivo || "—")}</td>
+            </tr>`).join("");
+        } catch (e) {
+            console.error(e);
+            mostrarError(e.message || "Error al cargar mermas");
+        } finally {
+            mostrarLoader(false);
+        }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       REPORTE 9: CONFIGURACIÓN
+       ════════════════════════════════════════════════════════════ */
+    async function cargarConfigIncentivos() {
+        mostrarLoader(true);
+        try {
+            const res = await fetch("/api/configuracion-incentivos");
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Error al cargar configuración");
+
+            document.getElementById("cfgPorcentaje").value = data.porcentaje_minimo_asistencia || 80;
+            document.getElementById("cfgMonto1").value = data.monto_incentivo_1 || 1500;
+            document.getElementById("cfgMonto2").value = data.monto_incentivo_2 || 1000;
+            document.getElementById("cfgMonto3").value = data.monto_incentivo_3 || 500;
+        } catch (e) {
+            console.error(e);
+            mostrarError(e.message || "Error al cargar configuración");
+        } finally {
+            mostrarLoader(false);
+        }
+    }
+
+    async function guardarConfigIncentivos() {
+        const porcentaje = parseFloat(document.getElementById("cfgPorcentaje").value);
+        const m1 = parseFloat(document.getElementById("cfgMonto1").value);
+        const m2 = parseFloat(document.getElementById("cfgMonto2").value);
+        const m3 = parseFloat(document.getElementById("cfgMonto3").value);
+
+        if (isNaN(porcentaje) || porcentaje < 0 || porcentaje > 100) {
+            mostrarError("El porcentaje debe estar entre 0 y 100");
+            return;
+        }
+        if (isNaN(m1) || isNaN(m2) || isNaN(m3) || m1 < 0 || m2 < 0 || m3 < 0) {
+            mostrarError("Los montos no pueden ser negativos");
+            return;
+        }
+
+        mostrarLoader(true);
+        try {
+            const res = await fetch("/api/configuracion-incentivos", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    porcentaje_minimo_asistencia: porcentaje,
+                    monto_incentivo_1: m1,
+                    monto_incentivo_2: m2,
+                    monto_incentivo_3: m3
+                })
+            });
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Error al guardar");
+
+            mostrarExito("Configuración guardada correctamente");
+        } catch (e) {
+            console.error(e);
+            mostrarError(e.message || "Error al guardar");
+        } finally {
+            mostrarLoader(false);
+        }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       EXPORTAR
+       ════════════════════════════════════════════════════════════ */
+    function exportarPDF() {
         const el = document.getElementById("reportContent");
         const opt = {
-          margin: [0.5, 0.5, 0.5, 0.5],
-          filename: `Reporte_Financiero_${new Date().toISOString().split("T")[0]}.pdf`,
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2 },
-          jsPDF: { unit: "in", format: "a4", orientation: "landscape" },
+            margin: [0.5, 0.5, 0.5, 0.5],
+            filename: `Reporte_${tabActual}_${new Date().toISOString().split("T")[0]}.pdf`,
+            image: { type: "jpeg", quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: "in", format: "a4", orientation: "landscape" }
         };
         html2pdf().set(opt).from(el).save();
-      }
+    }
 
-      function exportarExcel() {
+    function exportarExcel() {
+        const html = document.getElementById("reportContent").innerHTML;
         const blob = new Blob(
-          [
-            `<html><head><meta charset="UTF-8"></head><body>${document.getElementById("reportContent").innerHTML}</body></html>`,
-          ],
-          { type: "application/vnd.ms-excel" },
+            [`<html><head><meta charset="UTF-8"></head><body>${html}</body></html>`],
+            { type: "application/vnd.ms-excel" }
         );
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `Reporte_Financiero_${new Date().toISOString().split("T")[0]}.xls`;
+        link.download = `Reporte_${tabActual}_${new Date().toISOString().split("T")[0]}.xls`;
         link.click();
-      }
+    }
 
-      function cerrarSesion() {
-        localStorage.clear();
-        window.location.replace("PAG.html");
-      }
-
-      /* ─────────── Filter toggle ─────────── */
-      document
-        .getElementById("tipoReporte")
-        .addEventListener("change", function () {
-          document.getElementById("grupoMes").style.display =
-            this.value === "mes" ? "flex" : "none";
-          document.getElementById("grupoRango").style.display =
-            this.value === "rango" ? "flex" : "none";
-          document.getElementById("grupoRangoHasta").style.display =
-            this.value === "rango" ? "flex" : "none";
-        });
-      document
-        .getElementById("btnFiltrar")
-        .addEventListener("click", cargarDatos);
-
-      /* Close modal on overlay click */
-      document
-        .getElementById("modalDesglose")
-        .addEventListener("click", function (e) {
-          if (e.target === this) cerrarModal();
-        });
-
-      /* ─────────── FUNCIÓN VOLVER AL MENÚ CON CONFIRMACIÓN ─────────── */
-      function volverMenuAdmin() {
+    /* ════════════════════════════════════════════════════════════
+       VOLVER
+       ════════════════════════════════════════════════════════════ */
+    function volverMenuAdmin() {
         window.location.href = "menu_admin.html";
-      }
+    }
 
-      function mostrarConfirmacionVolver() {
+    function mostrarConfirmacionVolver() {
         const modal = document.getElementById("confirmModal");
-        document.getElementById("confirmMessage").innerText = "¿Está seguro de que desea volver al menú principal?";
-        modal.style.display = "flex";
+        modal.classList.add("active");
 
-        const btnSi = document.getElementById("confirmYes");
+        const btnYes = document.getElementById("confirmYes");
         const btnNo = document.getElementById("confirmNo");
 
-        const newBtnSi = btnSi.cloneNode(true);
+        const newBtnYes = btnYes.cloneNode(true);
         const newBtnNo = btnNo.cloneNode(true);
-        btnSi.parentNode.replaceChild(newBtnSi, btnSi);
+        btnYes.parentNode.replaceChild(newBtnYes, btnYes);
         btnNo.parentNode.replaceChild(newBtnNo, btnNo);
 
-        newBtnSi.onclick = function() {
-          modal.style.display = "none";
-          volverMenuAdmin();
+        newBtnYes.onclick = function () {
+            modal.classList.remove("active");
+            volverMenuAdmin();
         };
-        newBtnNo.onclick = function() {
-          modal.style.display = "none";
+        newBtnNo.onclick = function () {
+            modal.classList.remove("active");
         };
-      }
+    }
 
-      /* ─────────── Init ─────────── */
-      (function init() {
+    /* ════════════════════════════════════════════════════════════
+       INIT
+       ════════════════════════════════════════════════════════════ */
+    function inicializarAnios() {
+        const select = document.getElementById("anioSelect");
+        if (!select) return;
         const anioActual = new Date().getFullYear();
-        const sel = document.getElementById("anioSelect");
-        for (let i = 2020; i <= anioActual + 1; i++) sel.add(new Option(i, i));
-        sel.value = anioActual;
-        mostrarFecha();
+        for (let i = 2020; i <= anioActual + 1; i++) {
+            select.appendChild(new Option(i, i));
+        }
+        select.value = anioActual;
+    }
+
+    function inicializarFechasPorDefecto() {
+        const hoy = new Date();
+        const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+        const desde = document.getElementById("fechaDesde");
+        const hasta = document.getElementById("fechaHasta");
+        if (desde && !desde.value) desde.value = primerDiaMes.toISOString().split("T")[0];
+        if (hasta && !hasta.value) hasta.value = hoy.toISOString().split("T")[0];
+    }
+
+    function cerrarModales() {
+        document.querySelectorAll(".modal-overlay, .confirm-modal-overlay, .success-modal-overlay, .error-modal-overlay")
+            .forEach(m => m.classList.remove("active"));
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
         verificarSesion();
-        cargarAlertasStock();
-        cargarDatos();
-      })();
+        mostrarFecha();
+        inicializarAnios();
+        inicializarFechasPorDefecto();
+        inicializarTabs();
+
+        const btnFiltrar = document.getElementById("btnFiltrar");
+        if (btnFiltrar) {
+            btnFiltrar.addEventListener("click", () => cargarDatosTab(tabActual));
+        }
+
+        const chk = document.getElementById("chkSoloBajoStock");
+        if (chk) chk.addEventListener("change", cargarExistencias);
+
+        document.getElementById("errorBtn")?.addEventListener("click", cerrarModales);
+        document.getElementById("successBtn")?.addEventListener("click", cerrarModales);
+
+        document.getElementById("modalDetalleFactura")?.addEventListener("click", function (e) {
+            if (e.target === this) cerrarModalDetalle();
+        });
+
+        cargarDatosTab("ventas");
+    });
     </script>
-  </body>
+</body>
 </html>
